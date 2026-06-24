@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+:root {
+  --blue-primary: #2563EB;
+  --blue-dark: #1E3A8A;
+  --pink: #F472B6;
+  --yellow: #FACC15;
+  --bg: #F8FAFC;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #F8FAFC;
+  color: #1F2937;
+  -webkit-font-smoothing: antialiased;
+}

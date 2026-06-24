@@ -10,7 +10,14 @@ O projeto está em desenvolvimento como Trabalho de Conclusão de Curso (TCC) e 
 - Backend em Java com Spring Boot
 - Frontend em React com Vite
 - API de autenticação JWT
+- Documentação de API via Swagger/OpenAPI
 - Rotas protegidas por perfil de usuário
+
+## Tecnologias
+
+- Backend: Java 21, Spring Boot, Spring Data JPA, PostgreSQL, Spring Security, JWT, Springdoc OpenAPI (Swagger UI)
+- Frontend: React, TypeScript, Vite
+- Autenticação e autorização via perfis de usuário
 
 ## Estrutura
 
@@ -24,6 +31,9 @@ O projeto está em desenvolvimento como Trabalho de Conclusão de Curso (TCC) e 
 1. Navegue para o diretório raiz do projeto
 2. Execute:
    - `./mvnw.cmd spring-boot:run`
+3. Se quiser após o backend iniciar, acesse a documentação Swagger em:
+   - `http://localhost:8080/swagger-ui/index.html`
+   - ou `http://localhost:8080/swagger-ui.html`
 
 ### Frontend
 1. Navegue para `petlink-frontend`

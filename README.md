@@ -31,7 +31,9 @@ O projeto está em desenvolvimento como Trabalho de Conclusão de Curso (TCC) e 
 1. Navegue para o diretório raiz do projeto
 2. Execute:
    - `./mvnw.cmd spring-boot:run`
-3. Se quiser após o backend iniciar, acesse a documentação Swagger em:
+3. O backend é exposto em:
+   - `http://localhost:8080`
+4. Para acessar a documentação Swagger:
    - `http://localhost:8080/swagger-ui/index.html`
    - ou `http://localhost:8080/swagger-ui.html`
 
@@ -40,6 +42,15 @@ O projeto está em desenvolvimento como Trabalho de Conclusão de Curso (TCC) e 
 2. Execute:
    - `npm install`
    - `npm run dev`
+3. O frontend Vite roda em:
+   - `http://localhost:3000`
+
+### Docker Compose
+1. No diretório raiz, execute:
+   - `sudo docker compose up`
+2. Os serviços expostos são:
+   - frontend: `http://localhost:3000`
+   - backend: `http://localhost:8080`
 
 ## Observação
 

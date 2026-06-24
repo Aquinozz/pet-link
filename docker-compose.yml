@@ -1,0 +1,18 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '8080:8080'
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./petlink-frontend
+      dockerfile: Dockerfile
+    ports:
+      - '3000:80'
+    restart: unless-stopped

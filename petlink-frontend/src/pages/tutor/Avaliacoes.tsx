@@ -12,8 +12,29 @@ export default function Avaliacoes() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ prestadorId: '', nota: 5, comentario: '' })
+  const [prestadorSearch, setPrestadorSearch] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
+  const selectedPrestador = prestadores.find(p => String(p.id) === form.prestadorId)
+  const prestadorSuggestions = prestadorSearch ? prestadores.filter(p => {
+    const term = prestadorSearch.toLowerCase()
+    return p.nomePrestador.toLowerCase().includes(term)
+      || p.cidade?.toLowerCase().includes(term)
+      || p.bairro?.toLowerCase().includes(term)
+      || p.servicos?.toLowerCase().includes(term)
+  }).slice(0, 8) : []
+  const showPrestadorSuggestions = !!prestadorSearch && !selectedPrestador
+
+  const handlePrestadorSearch = (value: string) => {
+    setPrestadorSearch(value)
+    setForm(f => ({ ...f, prestadorId: '' }))
+  }
+
+  const selectPrestador = (prestadorId: number, nome: string) => {
+    setForm(f => ({ ...f, prestadorId: String(prestadorId) }))
+    setPrestadorSearch(nome)
+  }
 
   const load = async () => {
     try {
@@ -61,13 +82,41 @@ export default function Avaliacoes() {
         <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #e5e7eb', marginBottom: 24 }}>
           <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 20 }}>Avaliar prestador</h2>
           <form onSubmit={handleSave}>
-            <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 16, maxWidth: 500 }}>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Prestador</label>
-              <select value={form.prestadorId} onChange={e => setForm(f => ({ ...f, prestadorId: e.target.value }))} required
-                style={{ width: '100%', maxWidth: 360, padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14 }}>
-                <option value="">Selecione</option>
-                {prestadores.map(p => <option key={p.id} value={p.id}>{p.nomePrestador}</option>)}
-              </select>
+              <input value={prestadorSearch} onChange={e => handlePrestadorSearch(e.target.value)}
+                placeholder="Digite nome, cidade, bairro ou serviço..."
+                style={{ width: '100%', maxWidth: 500, padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, boxSizing: 'border-box' }}
+              />
+              {showPrestadorSuggestions && (
+                <div style={{ marginTop: 8, maxWidth: 500, backgroundColor: '#fff', border: '1px solid #d1d5db', borderRadius: 12, boxShadow: '0 10px 30px rgba(15, 23, 42, 0.05)' }}>
+                  {prestadorSuggestions.length > 0 ? prestadorSuggestions.map(p => (
+                    <button key={p.id} type="button" onClick={() => selectPrestador(p.id, p.nomePrestador)}
+                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', border: 'none', borderBottom: '1px solid #f3f4f6', background: 'transparent', cursor: 'pointer' }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: '#111827' }}>{p.nomePrestador}</div>
+                      <div style={{ fontSize: 12, color: '#6b7280' }}>{[p.bairro, p.cidade].filter(Boolean).join(', ')} · {p.servicos?.split(',').slice(0, 2).map(s => s.trim()).join(', ')}</div>
+                    </button>
+                  )) : (
+                    <div style={{ padding: '10px 14px', fontSize: 13, color: '#6b7280' }}>Nenhum prestador encontrado.</div>
+                  )}
+                </div>
+              )}
+              <input type="hidden" value={form.prestadorId} />
+              {selectedPrestador && (
+                <div style={{ marginTop: 12, padding: '12px 14px', borderRadius: 12, backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 12 }}>
+                    <div>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: '#111827', marginBottom: 4 }}>{selectedPrestador.nomePrestador}</p>
+                      <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>{[selectedPrestador.bairro, selectedPrestador.cidade].filter(Boolean).join(', ')}</p>
+                      <p style={{ fontSize: 12, color: '#16a34a' }}>{selectedPrestador.servicos}</p>
+                    </div>
+                    <button type="button" onClick={() => { setForm(f => ({ ...f, prestadorId: '' })); setPrestadorSearch('') }}
+                      style={{ padding: '6px 12px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 12 }}>
+                      Alterar
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 8 }}>Nota</label>

@@ -21,9 +21,34 @@ export default function Agendamentos() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ petId: '', prestadorId: '', dataHora: '', servico: '' })
+  const [prestadorSearch, setPrestadorSearch] = useState('')
   const [servicosPrestador, setServicosPrestador] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
+  const selectedPrestador = prestadores.find(p => String(p.id) === form.prestadorId)
+  const prestadorSuggestions = prestadorSearch ? prestadores.filter(p => {
+    const term = prestadorSearch.toLowerCase()
+    return p.nomePrestador.toLowerCase().includes(term)
+      || p.cidade?.toLowerCase().includes(term)
+      || p.bairro?.toLowerCase().includes(term)
+      || p.servicos?.toLowerCase().includes(term)
+  }).slice(0, 8) : []
+  const showPrestadorSuggestions = !!prestadorSearch && !selectedPrestador
+
+  const handlePrestadorSearch = (value: string) => {
+    setPrestadorSearch(value)
+    setForm(f => ({ ...f, prestadorId: '' }))
+    setServicosPrestador([])
+  }
+
+  const selectPrestador = (prestadorId: number, nome: string) => {
+    setForm(f => ({ ...f, prestadorId: String(prestadorId), servico: '' }))
+    setPrestadorSearch(nome)
+    const prest = prestadores.find(p => p.id === prestadorId)
+    if (prest?.servicos) setServicosPrestador(prest.servicos.split(',').map(s => s.trim()).filter(Boolean))
+    else setServicosPrestador([])
+  }
 
   const load = async () => {
     try {
@@ -42,16 +67,6 @@ export default function Agendamentos() {
   }
 
   useEffect(() => { load() }, [])
-
-  const handlePrestadorChange = (prestadorId: string) => {
-    setForm(f => ({ ...f, prestadorId, servico: '' }))
-    const p = prestadores.find(p => String(p.id) === prestadorId)
-    if (p?.servicos) {
-      setServicosPrestador(p.servicos.split(',').map(s => s.trim()).filter(Boolean))
-    } else {
-      setServicosPrestador([])
-    }
-  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -109,11 +124,32 @@ export default function Agendamentos() {
             </div>
             <div>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Prestador</label>
-              <select value={form.prestadorId} onChange={e => handlePrestadorChange(e.target.value)} required
-                style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, boxSizing: 'border-box' }}>
-                <option value="">Selecione o prestador</option>
-                {prestadores.map(p => <option key={p.id} value={p.id}>{p.nomePrestador}</option>)}
-              </select>
+              <input value={prestadorSearch} onChange={e => handlePrestadorSearch(e.target.value)}
+                placeholder="Digite nome, cidade, bairro ou serviço..."
+                style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, boxSizing: 'border-box' }}
+              />
+              {showPrestadorSuggestions && (
+                <div style={{ marginTop: 8, backgroundColor: '#fff', border: '1px solid #d1d5db', borderRadius: 12, maxHeight: 280, overflowY: 'auto', boxShadow: '0 10px 30px rgba(15, 23, 42, 0.05)' }}>
+                  {prestadorSuggestions.length > 0 ? prestadorSuggestions.map(p => (
+                    <button key={p.id} type="button" onClick={() => selectPrestador(p.id, p.nomePrestador)}
+                      style={{ width: '100%', textAlign: 'left', padding: '12px 14px', border: 'none', borderBottom: '1px solid #f3f4f6', background: 'transparent', cursor: 'pointer' }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: '#111827' }}>{p.nomePrestador}</div>
+                      <div style={{ fontSize: 12, color: '#6b7280' }}>{[p.bairro, p.cidade].filter(Boolean).join(', ')}</div>
+                      <div style={{ fontSize: 12, color: '#16a34a', marginTop: 4 }}>{p.servicos?.split(',').slice(0, 2).map(s => s.trim()).join(', ')}</div>
+                    </button>
+                  )) : (
+                    <div style={{ padding: '10px 14px', fontSize: 13, color: '#6b7280' }}>Nenhum prestador encontrado.</div>
+                  )}
+                </div>
+              )}
+              <input type="hidden" value={form.prestadorId} />
+              {selectedPrestador && (
+                <div style={{ marginTop: 12, padding: '12px 14px', borderRadius: 12, backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: '#111827', marginBottom: 4 }}>{selectedPrestador.nomePrestador}</p>
+                  <p style={{ fontSize: 12, color: '#6b7280' }}>{[selectedPrestador.bairro, selectedPrestador.cidade].filter(Boolean).join(', ')}</p>
+                  <p style={{ fontSize: 12, color: '#16a34a', marginTop: 6 }}>{selectedPrestador.servicos}</p>
+                </div>
+              )}
             </div>
             {servicosPrestador.length > 0 && (
               <div>

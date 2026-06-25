@@ -32,19 +32,23 @@ public class ReviewService {
         Users tutor = userRepository.findById(dto.getTutorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Tutor com ID " + dto.getTutorId() + " não encontrado."));
 
-        PrestadorModel prestador = prestadorRepository.findById(dto.getPrestadorId())
-                .orElseThrow(() -> new ResourceNotFoundException("Prestador com ID " + dto.getPrestadorId() + " não encontrado."));
+        Users prestadorUsuario = userRepository.findById(dto.getPrestadorId())
+                .orElseThrow(() -> new ResourceNotFoundException("Profissional com ID " + dto.getPrestadorId() + " não encontrado."));
+
+        if (prestadorUsuario.getPrestador() == null) {
+            throw new ResourceNotFoundException("Prestador vinculado ao usuário com ID " + dto.getPrestadorId() + " não encontrado.");
+        }
 
         ReviewModel review = new ReviewModel();
         review.setTutor(tutor);
-        review.setPrestador(prestador);
+        review.setPrestador(prestadorUsuario.getPrestador());
         review.setNota(dto.getNota());
         review.setComentario(dto.getComentario());
         review.setDataCriacao(LocalDateTime.now());
 
         ReviewModel reviewSalva = reviewRepository.save(review);
 
-        atualizarMediaPrestador(prestador);
+        atualizarMediaPrestador(prestadorUsuario.getPrestador());
 
         log.info("Review criada com sucesso. Id={}", reviewSalva.getId());
 

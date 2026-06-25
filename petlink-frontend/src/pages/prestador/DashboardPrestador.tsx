@@ -13,7 +13,7 @@ const statusStyle: Record<string, { bg: string; color: string; label: string }> 
 }
 
 export default function DashboardPrestador() {
-  const { user } = useAuth()
+  const { user, prestadorId } = useAuth()
   const [agendamentos, setAgendamentos] = useState<AgendamentoResponseDto[]>([])
   const [reviews, setReviews] = useState<ReviewResponseDto[]>([])
   const [loading, setLoading] = useState(true)
@@ -22,11 +22,11 @@ export default function DashboardPrestador() {
     Promise.all([agendamentoService.listar(), reviewService.listar()])
       .then(([ags, rvs]) => {
         setAgendamentos(ags.filter(a => a.prestador?.email === user?.email))
-        setReviews(rvs)
+        setReviews(prestadorId ? rvs.filter(r => r.prestadorId === prestadorId) : [])
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [])
+  }, [user?.email, prestadorId])
 
   const mediaAvaliacao = reviews.length > 0
     ? (reviews.reduce((acc, r) => acc + r.nota, 0) / reviews.length).toFixed(1)

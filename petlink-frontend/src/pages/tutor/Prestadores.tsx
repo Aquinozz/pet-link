@@ -21,6 +21,9 @@ export default function Prestadores() {
   const [loading, setLoading] = useState(true)
   const [busca, setBusca] = useState('')
   const [servicoFiltro, setServicoFiltro] = useState('')
+  const [cidadeFiltro, setCidadeFiltro] = useState('')
+  const [bairroFiltro, setBairroFiltro] = useState('')
+  const [filtrosAplicados, setFiltrosAplicados] = useState({ busca: '', servico: '', cidade: '', bairro: '' })
 
   useEffect(() => {
     prestadorService.listar().then(setPrestadores).catch(() => {}).finally(() => setLoading(false))
@@ -31,10 +34,21 @@ export default function Prestadores() {
   )).filter(Boolean)
 
   const filtrados = prestadores.filter(p => {
-    const matchBusca = p.nomePrestador.toLowerCase().includes(busca.toLowerCase())
-    const matchServico = !servicoFiltro || (p.servicos && p.servicos.toLowerCase().includes(servicoFiltro.toLowerCase()))
-    return matchBusca && matchServico
+    const matchBusca = !filtrosAplicados.busca || p.nomePrestador.toLowerCase().includes(filtrosAplicados.busca.toLowerCase())
+    const matchServico = !filtrosAplicados.servico || (p.servicos && p.servicos.toLowerCase().includes(filtrosAplicados.servico.toLowerCase()))
+    const matchCidade = !filtrosAplicados.cidade || (p.cidade && p.cidade.toLowerCase().includes(filtrosAplicados.cidade.toLowerCase()))
+    const matchBairro = !filtrosAplicados.bairro || (p.bairro && p.bairro.toLowerCase().includes(filtrosAplicados.bairro.toLowerCase()))
+    return matchBusca && matchServico && matchCidade && matchBairro
   })
+
+  const handleAplicarFiltros = () => {
+    setFiltrosAplicados({
+      busca,
+      servico: servicoFiltro,
+      cidade: cidadeFiltro,
+      bairro: bairroFiltro,
+    })
+  }
 
   const stars = (n: number) =>
     Array.from({ length: 5 }, (_, i) => (
@@ -52,11 +66,21 @@ export default function Prestadores() {
         <input value={busca} onChange={e => setBusca(e.target.value)}
           placeholder="Buscar por nome..."
           style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, minWidth: 220 }} />
+        <input value={cidadeFiltro} onChange={e => setCidadeFiltro(e.target.value)}
+          placeholder="Cidade"
+          style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, minWidth: 160 }} />
+        <input value={bairroFiltro} onChange={e => setBairroFiltro(e.target.value)}
+          placeholder="Bairro"
+          style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, minWidth: 160 }} />
         <select value={servicoFiltro} onChange={e => setServicoFiltro(e.target.value)}
           style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, minWidth: 200 }}>
           <option value="">Todos os serviços</option>
           {todosServicos.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
+        <button type="button" onClick={handleAplicarFiltros}
+          style={{ padding: '10px 18px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', minWidth: 160 }}>
+          Aplicar filtros
+        </button>
       </div>
 
       {loading ? <p style={{ color: '#6b7280' }}>Carregando...</p> : (

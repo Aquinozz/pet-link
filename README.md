@@ -27,7 +27,7 @@ O projeto está em desenvolvimento como Trabalho de Conclusão de Curso (TCC) e 
 
 ## Como rodar
 
-### Backendmelhore 
+### Backend
 1. Navegue para o diretório raiz do projeto
 2. Execute:
    - `./mvnw.cmd spring-boot:run`

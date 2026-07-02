@@ -36,46 +36,46 @@ public class SecurityConfiguration {
         return http
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
-
                 .headers(headers ->
                         headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
                 )
-
-                .sessionManagement(sessions ->
-                        sessions.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-                        .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            response.setStatus(HttpStatus.FORBIDDEN.value());
-                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) ->
+                                response.setStatus(HttpStatus.FORBIDDEN.value())
+                        )
                 )
-                .authorizeHttpRequests(auth ->
-                        auth
-                                .requestMatchers("/h2-console/**").permitAll()
-                                .requestMatchers("/swagger-ui/**").permitAll()
-                                .requestMatchers("/v3/api-docs/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/auth/me").authenticated()
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/favicon.ico").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
 
-                                .requestMatchers(HttpMethod.POST, "/prestadores", "/prestadores/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/prestadores", "/prestadores/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.PATCH, "/prestadores/meu-perfil").hasRole("PROFISSIONAL")
-                                .requestMatchers(HttpMethod.GET, "/prestadores", "/prestadores/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/auth/me").authenticated()
 
-                                .requestMatchers(HttpMethod.POST, "/pets", "/pets/**").hasRole("TUTOR")
-                                .requestMatchers(HttpMethod.DELETE, "/pets", "/pets/**").hasRole("TUTOR")
-                                .requestMatchers(HttpMethod.GET, "/pets", "/pets/**").hasRole("TUTOR")
+                        .requestMatchers(HttpMethod.POST, "/users").permitAll()
 
-                                .requestMatchers("/appointment", "/appointment/**").hasAnyRole("PROFISSIONAL", "TUTOR")
+                        .requestMatchers(HttpMethod.GET, "/prestadores/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/prestadores/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/prestadores/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/prestadores/meu-perfil").hasRole("PROFISSIONAL")
 
-                                .requestMatchers("/reviews", "/reviews/**").hasAnyRole("TUTOR", "PROFISSIONAL", "ADMIN")
+                        .requestMatchers("/pets/**").hasRole("TUTOR")
 
-                                .requestMatchers("/users", "/users/**").hasRole("ADMIN")
-                                .requestMatchers("/dados", "/dados/**").hasRole("ADMIN")
-                                .anyRequest().authenticated()
+                        .requestMatchers("/appointment/**")
+                        .hasAnyRole("PROFISSIONAL", "TUTOR")
+
+                        .requestMatchers("/reviews/**")
+                        .hasAnyRole("TUTOR", "PROFISSIONAL", "ADMIN")
+
+                        .requestMatchers("/dados/**").hasRole("ADMIN")
+
+                        .anyRequest().authenticated()
                 )
-
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
@@ -83,12 +83,15 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+
         configuration.setAllowedOrigins(List.of("*"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 
@@ -98,7 +101,8 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 }

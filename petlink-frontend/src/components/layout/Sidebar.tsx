@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { BrandLogo } from '../BrandLogo'
 
 const menuTutor = [
   { path: '/tutor/dashboard', label: 'Dashboard', icon: '📋' },
@@ -25,14 +26,12 @@ export default function Sidebar() {
   return (
     <aside style={{
       width: 240, minHeight: '100vh', backgroundColor: '#fff',
-      borderRight: '1px solid #e5e7eb', display: 'flex',
+      borderRight: '1px solid #F4F7F6', display: 'flex',
       flexDirection: 'column', padding: '24px 0', flexShrink: 0,
     }}>
-      <div style={{ padding: '0 24px 24px', borderBottom: '1px solid #f3f4f6' }}>
+      <div style={{ padding: '0 24px 24px', borderBottom: '1px solid #F4F7F6' }}>
         <Link to="/" style={{ textDecoration: 'none' }}>
-          <span style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>
-            Pet<span style={{ color: '#2563EB' }}>Link</span>
-          </span>
+          <BrandLogo size={24} />
         </Link>
       </div>
 
@@ -47,8 +46,8 @@ export default function Sidebar() {
               display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
               borderRadius: 8, marginBottom: 2, textDecoration: 'none', fontSize: 14,
               fontWeight: active ? 600 : 400,
-              color: active ? '#2563EB' : '#374151',
-              backgroundColor: active ? '#eff6ff' : 'transparent',
+              color: active ? '#0D3B34' : '#374151',
+              backgroundColor: active ? '#EAF8ED' : 'transparent',
             }}>
               <span>{item.icon}</span>{item.label}
             </Link>
@@ -62,7 +61,7 @@ export default function Sidebar() {
         </p>
         <p style={{ fontSize: 11, color: '#9ca3af', marginBottom: 12 }}>{user?.email}</p>
         <button onClick={handleLogout} style={{
-          width: '100%', padding: '8px 0', borderRadius: 8, border: '1px solid #e5e7eb',
+          width: '100%', padding: '8px 0', borderRadius: 8, border: '1px solid #F4F7F6',
           background: 'transparent', fontSize: 13, color: '#6b7280', cursor: 'pointer',
         }}>
           Sair

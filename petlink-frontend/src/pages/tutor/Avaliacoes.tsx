@@ -73,13 +73,13 @@ export default function Avaliacoes() {
           <h1 style={{ fontSize: 24, fontWeight: 800, color: '#111827' }}>Avaliações</h1>
           <p style={{ color: '#6b7280', fontSize: 14 }}>Avalie os prestadores que atenderam seu pet</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} style={{ padding: '10px 20px', backgroundColor: '#2563EB', color: '#fff', borderRadius: 8, border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+        <button onClick={() => setShowForm(!showForm)} style={{ padding: '10px 20px', backgroundColor: '#22C55E', color: '#fff', borderRadius: 8, border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
           {showForm ? 'Cancelar' : '+ Nova avaliação'}
         </button>
       </div>
 
       {showForm && (
-        <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #e5e7eb', marginBottom: 24 }}>
+        <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6', marginBottom: 24 }}>
           <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 20 }}>Avaliar prestador</h2>
           <form onSubmit={handleSave}>
             <div style={{ marginBottom: 16, maxWidth: 500 }}>
@@ -103,7 +103,7 @@ export default function Avaliacoes() {
               )}
               <input type="hidden" value={form.prestadorId} />
               {selectedPrestador && (
-                <div style={{ marginTop: 12, padding: '12px 14px', borderRadius: 12, backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                <div style={{ marginTop: 12, padding: '12px 14px', borderRadius: 12, backgroundColor: '#F4F7F6', border: '1px solid #e2e8f0' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 12 }}>
                     <div>
                       <p style={{ fontSize: 14, fontWeight: 700, color: '#111827', marginBottom: 4 }}>{selectedPrestador.nomePrestador}</p>
@@ -139,7 +139,7 @@ export default function Avaliacoes() {
             {error && (
               <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#b91c1c' }}>{error}</div>
             )}
-            <button type="submit" disabled={saving} style={{ padding: '10px 24px', backgroundColor: '#2563EB', color: '#fff', borderRadius: 8, border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+            <button type="submit" disabled={saving} style={{ padding: '10px 24px', backgroundColor: '#22C55E', color: '#fff', borderRadius: 8, border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
               {saving ? 'Enviando...' : 'Enviar avaliação'}
             </button>
           </form>
@@ -147,14 +147,14 @@ export default function Avaliacoes() {
       )}
 
       {loading ? <p style={{ color: '#6b7280' }}>Carregando...</p> : reviews.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px 0', backgroundColor: '#fff', borderRadius: 16, border: '1px solid #e5e7eb' }}>
+        <div style={{ textAlign: 'center', padding: '60px 0', backgroundColor: '#fff', borderRadius: 16, border: '1px solid #F4F7F6' }}>
           <p style={{ fontSize: 48, marginBottom: 12 }}>⭐</p>
           <p style={{ fontSize: 16, fontWeight: 600, color: '#374151' }}>Nenhuma avaliação ainda</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {reviews.map(r => (
-            <div key={r.id} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20, border: '1px solid #e5e7eb' }}>
+            <div key={r.id} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20, border: '1px solid #F4F7F6' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                 <p style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>{r.prestadorNome}</p>
                 <div>{Array.from({ length: r.nota }, (_, i) => <span key={i} style={{ color: '#facc15' }}>★</span>)}</div>

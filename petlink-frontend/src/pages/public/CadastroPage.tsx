@@ -29,18 +29,18 @@ export default function CadastroPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#F4F7F6', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div style={{ width: '100%', maxWidth: 420 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <Link to="/" style={{ textDecoration: 'none' }}>
             <span style={{ fontSize: 28, fontWeight: 800, color: '#111827' }}>
-              Pet<span style={{ color: '#2563EB' }}>Link</span>
+              Pet<span style={{ color: '#22C55E' }}>Link</span>
             </span>
           </Link>
           <p style={{ color: '#6b7280', marginTop: 8, fontSize: 15 }}>Crie sua conta gratuita</p>
         </div>
 
-        <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 32, border: '1px solid #e5e7eb', boxShadow: '0 1px 8px rgba(0,0,0,0.06)' }}>
+        <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 32, border: '1px solid #F4F7F6', boxShadow: '0 1px 8px rgba(0,0,0,0.06)' }}>
           <form onSubmit={handleSubmit}>
             {(['nome', 'email', 'senha'] as const).map((field) => (
               <div key={field} style={{ marginBottom: 16 }}>
@@ -66,7 +66,7 @@ export default function CadastroPage() {
 
             <button type="submit" disabled={loading} style={{
               width: '100%', padding: 12, borderRadius: 10, border: 'none',
-              backgroundColor: loading ? '#93c5fd' : '#2563EB', color: '#fff',
+              backgroundColor: loading ? '#A7E07E' : '#22C55E', color: '#fff',
               fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', marginTop: 8,
             }}>
               {loading ? 'Cadastrando...' : 'Criar conta'}
@@ -76,7 +76,7 @@ export default function CadastroPage() {
 
         <p style={{ textAlign: 'center', marginTop: 20, fontSize: 14, color: '#6b7280' }}>
           Já tem conta?{' '}
-          <Link to="/login" style={{ color: '#2563EB', fontWeight: 600, textDecoration: 'none' }}>Entrar</Link>
+          <Link to="/login" style={{ color: '#22C55E', fontWeight: 600, textDecoration: 'none' }}>Entrar</Link>
         </p>
       </div>
     </div>

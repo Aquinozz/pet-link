@@ -52,7 +52,7 @@ export default function Prestadores() {
 
   const stars = (n: number) =>
     Array.from({ length: 5 }, (_, i) => (
-      <span key={i} style={{ color: i < Math.round(n) ? '#facc15' : '#e5e7eb', fontSize: 14 }}>★</span>
+      <span key={i} style={{ color: i < Math.round(n) ? '#facc15' : '#F4F7F6', fontSize: 14 }}>★</span>
     ))
 
   return (
@@ -78,7 +78,7 @@ export default function Prestadores() {
           {todosServicos.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
         <button type="button" onClick={handleAplicarFiltros}
-          style={{ padding: '10px 18px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', minWidth: 160 }}>
+          style={{ padding: '10px 18px', backgroundColor: '#22C55E', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', minWidth: 160 }}>
           Aplicar filtros
         </button>
       </div>
@@ -86,15 +86,15 @@ export default function Prestadores() {
       {loading ? <p style={{ color: '#6b7280' }}>Carregando...</p> : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
           {filtrados.map(p => (
-            <div key={p.id} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #e5e7eb' }}>
+                    <div key={p.id} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🏥</div>
-                <div style={{ flex: 1 }}>
+                        <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: '#EAF8ED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🏥</div>
+                        <div style={{ flex: 1 }}>
                   <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', marginBottom: 2 }}>{p.nomePrestador}</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div style={{ display: 'flex', gap: 2 }}>{stars(p.avaliacaoMedia ?? 0)}</div>
                     {p.type && (
-                      <span style={{ fontSize: 11, backgroundColor: '#eff6ff', color: '#2563EB', padding: '2px 8px', borderRadius: 6, fontWeight: 600 }}>
+                      <span style={{ fontSize: 11, backgroundColor: '#EAF8ED', color: '#22C55E', padding: '2px 8px', borderRadius: 6, fontWeight: 600 }}>
                         {tipoLabel[p.type] ?? p.type}
                       </span>
                     )}
@@ -107,7 +107,7 @@ export default function Prestadores() {
               {p.servicos && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
                   {p.servicos.split(',').map(s => s.trim()).filter(Boolean).map(s => (
-                    <span key={s} style={{ fontSize: 11, backgroundColor: '#f0fdf4', color: '#16a34a', padding: '3px 10px', borderRadius: 20, fontWeight: 600, border: '1px solid #bbf7d0' }}>
+                    <span key={s} style={{ fontSize: 11, backgroundColor: '#EAF8ED', color: '#0D3B34', padding: '3px 10px', borderRadius: 20, fontWeight: 600, border: '1px solid #A7E07E' }}>
                       {s}
                     </span>
                   ))}

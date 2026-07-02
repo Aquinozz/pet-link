@@ -69,7 +69,7 @@ export default function MeuPerfil() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-        <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #e5e7eb' }}>
+        <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6' }}>
           <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 20 }}>Informações do perfil</h2>
           <form onSubmit={handleSave}>
             {[
@@ -103,13 +103,13 @@ export default function MeuPerfil() {
                 ✓ Perfil atualizado com sucesso!
               </div>
             )}
-            <button type="submit" disabled={saving} style={{ padding: '10px 24px', backgroundColor: '#2563EB', color: '#fff', borderRadius: 8, border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+            <button type="submit" disabled={saving} style={{ padding: '10px 24px', backgroundColor: '#22C55E', color: '#fff', borderRadius: 8, border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
               {saving ? 'Salvando...' : 'Salvar alterações'}
             </button>
           </form>
         </div>
 
-        <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #e5e7eb' }}>
+        <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6' }}>
           <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 20 }}>Meus serviços</h2>
           <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>
             Adicione ou remova os serviços que você oferece. Os tutores poderão filtrar por esses serviços.
@@ -138,7 +138,7 @@ export default function MeuPerfil() {
               style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14 }}
             />
             <button onClick={adicionarServico}
-              style={{ padding: '10px 16px', backgroundColor: '#2563EB', color: '#fff', borderRadius: 8, border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+              style={{ padding: '10px 16px', backgroundColor: '#22C55E', color: '#fff', borderRadius: 8, border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
               + Adicionar
             </button>
           </div>

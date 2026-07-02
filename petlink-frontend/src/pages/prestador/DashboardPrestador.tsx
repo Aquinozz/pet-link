@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import type { AgendamentoResponseDto, ReviewResponseDto } from '../../types'
 
 const statusStyle: Record<string, { bg: string; color: string; label: string }> = {
-  AGENDADO: { bg: '#eff6ff', color: '#2563EB', label: 'Agendado' },
+  AGENDADO: { bg: '#EAF8ED', color: '#0D3B34', label: 'Agendado' },
   CONFIRMADO: { bg: '#f0fdf4', color: '#16a34a', label: 'Confirmado' },
   FINALIZADO: { bg: '#f3f4f6', color: '#374151', label: 'Finalizado' },
   CANCELADO: { bg: '#fef2f2', color: '#b91c1c', label: 'Cancelado' },
@@ -57,18 +57,18 @@ export default function DashboardPrestador() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 32 }}>
         {[
-          { label: 'Total agendamentos', value: agendamentos.length, cor: '#2563EB' },
+          { label: 'Total agendamentos', value: agendamentos.length, cor: '#22C55E' },
           { label: 'Aguardando', value: agendamentos.filter(a => a.status === 'AGENDADO').length, cor: '#d97706' },
           { label: 'Avaliação média', value: mediaAvaliacao, cor: '#16a34a' },
         ].map(card => (
-          <div key={card.label} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #e5e7eb' }}>
+          <div key={card.label} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6' }}>
             <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 8 }}>{card.label}</p>
             <p style={{ fontSize: 36, fontWeight: 800, color: card.cor }}>{card.value}</p>
           </div>
         ))}
       </div>
 
-      <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #e5e7eb' }}>
+      <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6' }}>
         <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 20 }}>Minha agenda</h2>
         {loading ? <p style={{ color: '#6b7280' }}>Carregando...</p> : agendamentos.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 0' }}>
@@ -108,7 +108,7 @@ export default function DashboardPrestador() {
       </div>
 
       {reviews.length > 0 && (
-        <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #e5e7eb', marginTop: 20 }}>
+            <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6', marginTop: 20 }}>
           <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 16 }}>Avaliações recebidas</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {reviews.map(r => (

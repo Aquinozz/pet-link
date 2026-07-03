@@ -1,19 +1,55 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authService } from '../../api/authService'
+import type { RegisterRequestDto } from '../../types'
+import { getCoordinates, getLocationErrorMessage, type Coordinates } from '../../utils/geolocationUtils'
 
 export default function CadastroPage() {
   const navigate = useNavigate()
   const [form, setForm] = useState({ nome: '', email: '', senha: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [coordinates, setCoordinates] = useState<Coordinates | null>(null)
+  const [locationMessage, setLocationMessage] = useState('')
+
+  useEffect(() => {
+    const tryGetLocation = async () => {
+      try {
+        const nextCoordinates = await getCoordinates()
+        setCoordinates(nextCoordinates)
+        setLocationMessage('Localização capturada automaticamente.')
+      } catch (geoError) {
+        setLocationMessage(getLocationErrorMessage(geoError))
+      }
+    }
+
+    void tryGetLocation()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
+
     try {
-      await authService.register(form)
+      const payload: RegisterRequestDto = { ...form }
+
+      try {
+        let nextCoordinates = coordinates
+
+        if (!nextCoordinates) {
+          setLocationMessage('Solicitando permissão de localização...')
+          nextCoordinates = await getCoordinates()
+        }
+
+        setCoordinates(nextCoordinates)
+        payload.latitude = nextCoordinates.latitude
+        payload.longitude = nextCoordinates.longitude
+      } catch (geoError) {
+        setLocationMessage(getLocationErrorMessage(geoError))
+      }
+
+      await authService.register(payload)
       navigate('/login')
     } catch {
       setError('Erro ao cadastrar. Verifique os dados ou tente outro email.')
@@ -57,6 +93,12 @@ export default function CadastroPage() {
                 />
               </div>
             ))}
+
+            {locationMessage && (
+              <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#166534' }}>
+                {locationMessage}
+              </div>
+            )}
 
             {error && (
               <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#b91c1c' }}>

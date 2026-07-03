@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { prestadorService } from '../../api/prestadorService'
 import type { PrestadorResponseDto } from '../../types'
+import { calculateDistanceKm, getCoordinates, getLocationErrorMessage, type Coordinates } from '../../utils/geolocationUtils'
 
 const whatsappLink = (tel: string) =>
   `https://api.whatsapp.com/send?phone=55${tel.replace(/\D/g, '')}&text=${encodeURIComponent('Olá! Vi seu perfil no PetLink e gostaria de agendar um serviço.')}`
@@ -24,22 +25,56 @@ export default function Prestadores() {
   const [cidadeFiltro, setCidadeFiltro] = useState('')
   const [bairroFiltro, setBairroFiltro] = useState('')
   const [filtrosAplicados, setFiltrosAplicados] = useState({ busca: '', servico: '', cidade: '', bairro: '' })
+  const [userLocation, setUserLocation] = useState<Coordinates | null>(null)
+  const [locationMessage, setLocationMessage] = useState('')
 
   useEffect(() => {
-    prestadorService.listar().then(setPrestadores).catch(() => {}).finally(() => setLoading(false))
+    const carregarPrestadores = async () => {
+      try {
+        const data = await prestadorService.listar()
+        setPrestadores(data)
+      } catch {
+        setPrestadores([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    carregarPrestadores()
+
+    getCoordinates()
+      .then(setUserLocation)
+      .catch((error) => setLocationMessage(getLocationErrorMessage(error)))
   }, [])
 
   const todosServicos = Array.from(new Set(
     prestadores.flatMap(p => p.servicos ? p.servicos.split(',').map(s => s.trim()) : [])
   )).filter(Boolean)
 
-  const filtrados = prestadores.filter(p => {
+  const filtrados = useMemo(() => prestadores.filter(p => {
     const matchBusca = !filtrosAplicados.busca || p.nomePrestador.toLowerCase().includes(filtrosAplicados.busca.toLowerCase())
     const matchServico = !filtrosAplicados.servico || (p.servicos && p.servicos.toLowerCase().includes(filtrosAplicados.servico.toLowerCase()))
     const matchCidade = !filtrosAplicados.cidade || (p.cidade && p.cidade.toLowerCase().includes(filtrosAplicados.cidade.toLowerCase()))
     const matchBairro = !filtrosAplicados.bairro || (p.bairro && p.bairro.toLowerCase().includes(filtrosAplicados.bairro.toLowerCase()))
     return matchBusca && matchServico && matchCidade && matchBairro
-  })
+  }), [prestadores, filtrosAplicados])
+
+  const prestadoresOrdenados = useMemo(() => {
+    if (!userLocation) {
+      return filtrados
+    }
+
+    return [...filtrados].sort((a, b) => {
+      const aDistancia = a.latitude !== undefined && a.longitude !== undefined
+        ? calculateDistanceKm(userLocation, { latitude: a.latitude, longitude: a.longitude })
+        : Number.POSITIVE_INFINITY
+      const bDistancia = b.latitude !== undefined && b.longitude !== undefined
+        ? calculateDistanceKm(userLocation, { latitude: b.latitude, longitude: b.longitude })
+        : Number.POSITIVE_INFINITY
+
+      return aDistancia - bDistancia
+    })
+  }, [filtrados, userLocation])
 
   const handleAplicarFiltros = () => {
     setFiltrosAplicados({
@@ -61,6 +96,10 @@ export default function Prestadores() {
         <h1 style={{ fontSize: 24, fontWeight: 800, color: '#111827', marginBottom: 4 }}>Prestadores</h1>
         <p style={{ color: '#6b7280', fontSize: 14 }}>{prestadores.length} profissional(is) disponível(is)</p>
       </div>
+
+      {locationMessage && (
+        <p style={{ color: '#6b7280', fontSize: 13, marginBottom: 14 }}>{locationMessage}</p>
+      )}
 
       <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
         <input value={busca} onChange={e => setBusca(e.target.value)}
@@ -85,8 +124,8 @@ export default function Prestadores() {
 
       {loading ? <p style={{ color: '#6b7280' }}>Carregando...</p> : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
-          {filtrados.map(p => (
-                    <div key={p.id} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6' }}>
+          {prestadoresOrdenados.map(p => (
+            <div key={p.id} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
                         <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: '#EAF8ED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🏥</div>
                         <div style={{ flex: 1 }}>
@@ -120,6 +159,12 @@ export default function Prestadores() {
                 </p>
               )}
 
+              {userLocation && p.latitude !== undefined && p.longitude !== undefined && (
+                <p style={{ fontSize: 12, color: '#22C55E', marginBottom: 10, fontWeight: 600 }}>
+                  📍 {calculateDistanceKm(userLocation, { latitude: p.latitude, longitude: p.longitude })} km de você
+                </p>
+              )}
+
               {p.horarioFuncionamento && (
                 <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 10 }}>🕐 {p.horarioFuncionamento}</p>
               )}
@@ -133,7 +178,7 @@ export default function Prestadores() {
               )}
             </div>
           ))}
-          {filtrados.length === 0 && (
+          {prestadoresOrdenados.length === 0 && (
             <p style={{ color: '#6b7280', gridColumn: '1/-1' }}>Nenhum prestador encontrado.</p>
           )}
         </div>

@@ -27,7 +27,9 @@ public class MeResponseDto {
         this.id = user.getId();
         this.nome = user.getNome();
         this.email = user.getEmail();
-        this.role = user.getRoles().iterator().next().getNome();
+        this.role = user.getRoles() != null && !user.getRoles().isEmpty()
+                ? user.getRoles().iterator().next().getNome()
+                : null;
 
         if (user.getPrestador() != null) {
             this.prestadorModelId = user.getPrestador().getId();

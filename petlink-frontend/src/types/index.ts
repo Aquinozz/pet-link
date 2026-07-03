@@ -7,6 +7,8 @@ export interface RegisterRequestDto {
   nome: string
   email: string
   senha: string
+  longitude?: number
+  latitude?: number
 }
 
 export interface TokenResponseDto {
@@ -58,6 +60,8 @@ export interface PrestadorResponseDto {
   bairro: string
   type: string
   horarioFuncionamento?: string
+  latitude?: number
+  longitude?: number
 }
 
 export interface AgendamentoRequestDto {

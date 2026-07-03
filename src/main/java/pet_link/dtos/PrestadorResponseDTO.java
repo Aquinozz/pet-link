@@ -22,6 +22,8 @@ public class PrestadorResponseDTO {
     private String bairro;
     private PrestadorType type;
     private String horarioFuncionamento;
+    private Double latitude;
+    private Double longitude;
 
     public PrestadorResponseDTO(Users prestador) {
         if (prestador != null) {
@@ -40,6 +42,11 @@ public class PrestadorResponseDTO {
                 this.horarioFuncionamento = prestador.getPrestador().getHorarioFuncionamento();
             } else {
                 this.avaliacaoMedia = 0.0;
+            }
+
+            if (prestador.getLocalizacao() != null) {
+                this.latitude = prestador.getLocalizacao().getY();
+                this.longitude = prestador.getLocalizacao().getX();
             }
         }
     }

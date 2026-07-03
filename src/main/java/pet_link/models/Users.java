@@ -2,8 +2,8 @@ package pet_link.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.locationtech.jts.geom.Point;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -32,17 +32,19 @@ public class Users implements UserDetails {
     @Column(nullable = false)
     private String senha;
 
+    @Column(columnDefinition = "geometry(Point, 4326)")
+    private Point localizacao;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private PrestadorModel prestador;
+
+    @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private PrestadorModel prestador;
-
-    @Builder.Default
     private Set<RolesEntity> roles = new HashSet<>();
 
     @Override

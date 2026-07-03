@@ -27,22 +27,23 @@ function RedirectByRole() {
 
   useEffect(() => {
     if (!isAuthenticated) { navigate('/login'); return }
-    const navigateByRole = () => {
-      if (user?.role === 'ROLE_PROFISSIONAL') navigate('/prestador/dashboard')
-      else if (user?.role === 'ROLE_ADMIN') navigate('/admin/dashboard')
+    const navigateByRole = (role?: string) => {
+      if (role === 'ROLE_PROFISSIONAL') navigate('/prestador/dashboard')
+      else if (role === 'ROLE_ADMIN') navigate('/admin/dashboard')
       else navigate('/tutor/dashboard')
     }
 
     authService.me().then(me => {
+      const role = me.role ?? user?.role
       if (me.id) {
-        if (user?.role === 'ROLE_TUTOR') setTutorId(me.id)
-        if (user?.role === 'ROLE_PROFISSIONAL' && me.prestadorModelId) setPrestadorId(me.prestadorModelId)
+        if (role === 'ROLE_TUTOR') setTutorId(me.id)
+        if (role === 'ROLE_PROFISSIONAL' && me.prestadorModelId) setPrestadorId(me.prestadorModelId)
       }
-      navigateByRole()
+      navigateByRole(role)
     }).catch(() => {
-      navigateByRole()
+      navigateByRole(user?.role)
     }).finally(() => setLoading(false))
-  }, [])
+  }, [isAuthenticated, navigate, setPrestadorId, setTutorId, user?.role])
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>

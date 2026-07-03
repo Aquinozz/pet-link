@@ -1,5 +1,7 @@
 package pet_link.dtos;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -17,4 +19,13 @@ public class RegisterRequestDto {
     private String email;
     @NotBlank
     private String senha;
+
+    @JsonProperty("longitude")
+    @JsonAlias({"lng", "lon", "longitude"})
+    private Double longitude;
+
+    @JsonProperty("latitude")
+    @JsonAlias({"lat", "latitude"})
+    private Double latitude;
+
 }

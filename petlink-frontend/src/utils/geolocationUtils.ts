@@ -6,6 +6,19 @@ export interface Coordinates {
   longitude: number
 }
 
+export const calculateDistanceKm = (from: Coordinates, to: Coordinates): number => {
+  const earthRadiusKm = 6371
+  const dLat = (to.latitude - from.latitude) * (Math.PI / 180)
+  const dLon = (to.longitude - from.longitude) * (Math.PI / 180)
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(from.latitude * (Math.PI / 180)) * Math.cos(to.latitude * (Math.PI / 180)) * Math.sin(dLon / 2) ** 2
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return Number((earthRadiusKm * c).toFixed(1))
+}
+
 /**
  * Obtém a localização do usuário via Geolocation API
  * @param options - Opções da Geolocation API
@@ -18,8 +31,14 @@ export const getCoordinates = (
   }
 ): Promise<Coordinates> => {
   return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
+    if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
       reject(new Error('Geolocalização não é suportada neste navegador'))
+      return
+    }
+
+    if (typeof window !== 'undefined' && !window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      reject(new Error('Geolocalização requer HTTPS ou localhost.'))
+      return
     }
 
     navigator.geolocation.getCurrentPosition(

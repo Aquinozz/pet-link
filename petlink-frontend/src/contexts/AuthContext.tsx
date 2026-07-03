@@ -26,7 +26,7 @@ function parseToken(token: string): AuthUser | null {
   try {
     const payload = jwtDecode<JwtPayload>(token)
     const roles: string[] = payload.roles ?? (payload.role ? [payload.role] : [])
-    const role = roles[0] as UserRole
+    const role = (roles[0] ?? 'ROLE_TUTOR') as UserRole
     return { email: payload.sub, role }
   } catch {
     return null

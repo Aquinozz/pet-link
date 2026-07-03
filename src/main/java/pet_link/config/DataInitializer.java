@@ -1,6 +1,8 @@
 package pet_link.config;
 
 import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import pet_link.enums.PrestadorType;
@@ -23,6 +25,7 @@ public class DataInitializer implements CommandLineRunner {
     private final PetRepository petRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     private final PrestadorRepository prestadorRepository;
+    private final GeometryFactory geometryFactory;
 
     @Override
     public void run(String... args) {
@@ -43,13 +46,13 @@ public class DataInitializer implements CommandLineRunner {
                 .findByNome(UserRole.ROLE_PROFISSIONAL.name())
                 .orElseThrow(() -> new RuntimeException("ROLE_PROFISSIONAL não encontrada"));
 
-        // Tutor de teste
         if (userRepository.findByEmail("bianca@email.com").isEmpty()) {
             Users tutor = new Users();
             tutor.setNome("Bianca");
             tutor.setEmail("bianca@email.com");
             tutor.setSenha(passwordEncoder.encode("123456"));
             tutor.getRoles().add(roleTutor);
+            tutor.setLocalizacao(geometryFactory.createPoint(new Coordinate(-38.4116, -12.9015)));
             tutor = userRepository.save(tutor);
 
             PetModel pet = new PetModel();
@@ -61,13 +64,13 @@ public class DataInitializer implements CommandLineRunner {
             petRepository.save(pet);
         }
 
-        // Prestador 1 — Clínica Pet Feliz
         if (userRepository.findByEmail("clinica@petfeliz.com").isEmpty()) {
             Users usuarioPrestador = new Users();
             usuarioPrestador.setNome("Clínica Pet Feliz");
             usuarioPrestador.setEmail("clinica@petfeliz.com");
             usuarioPrestador.setSenha(passwordEncoder.encode("123456"));
             usuarioPrestador.getRoles().add(roleProfissional);
+            usuarioPrestador.setLocalizacao(geometryFactory.createPoint(new Coordinate(-38.4172, -12.9056)));
             usuarioPrestador = userRepository.save(usuarioPrestador);
 
             PrestadorModel prestador = new PrestadorModel();
@@ -84,13 +87,13 @@ public class DataInitializer implements CommandLineRunner {
             prestadorRepository.save(prestador);
         }
 
-        // Prestador 2 — Creche Pet Feliz
         if (userRepository.findByEmail("crechepetfeliz@email.com").isEmpty()) {
             Users usuarioCreche = new Users();
             usuarioCreche.setNome("Creche Pet Feliz");
             usuarioCreche.setEmail("crechepetfeliz@email.com");
             usuarioCreche.setSenha(passwordEncoder.encode("123456"));
             usuarioCreche.getRoles().add(roleProfissional);
+            usuarioCreche.setLocalizacao(geometryFactory.createPoint(new Coordinate(-38.4552, -12.9984)));
             usuarioCreche = userRepository.save(usuarioCreche);
 
             PrestadorModel creche = new PrestadorModel();
@@ -107,13 +110,13 @@ public class DataInitializer implements CommandLineRunner {
             prestadorRepository.save(creche);
         }
 
-        // Prestador 3 — Pet Shop Top Dog
         if (userRepository.findByEmail("petshoptopdog@email.com").isEmpty()) {
             Users usuarioPetshop = new Users();
             usuarioPetshop.setNome("Pet Shop Top Dog");
             usuarioPetshop.setEmail("petshoptopdog@email.com");
             usuarioPetshop.setSenha(passwordEncoder.encode("123456"));
             usuarioPetshop.getRoles().add(roleProfissional);
+            usuarioPetshop.setLocalizacao(geometryFactory.createPoint(new Coordinate(-38.5306, -13.0031)));
             usuarioPetshop = userRepository.save(usuarioPetshop);
 
             PrestadorModel petshop = new PrestadorModel();

@@ -22,11 +22,13 @@ public class MeResponseDto {
     private String bairro;
     private PrestadorType type;
     private String horarioFuncionamento;
+    private String cep;
 
     public MeResponseDto(Users user) {
         this.id = user.getId();
         this.nome = user.getNome();
         this.email = user.getEmail();
+        this.cep = user.getCep();
         this.role = user.getRoles() != null && !user.getRoles().isEmpty()
                 ? user.getRoles().iterator().next().getNome()
                 : null;

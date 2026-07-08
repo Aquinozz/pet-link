@@ -2,9 +2,6 @@ package pet_link.services;
 
 import java.util.Set;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
 import pet_link.config.TokenProvider;
 import pet_link.dtos.LoginRequestDto;
 import pet_link.dtos.RegisterRequestDto;
@@ -35,7 +32,6 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final TokenProvider tokenProvider;
-    private final GeometryFactory geometryFactory;
 
     private final long expiration = 86400000;
 
@@ -59,31 +55,17 @@ public class AuthenticationService {
                     );
                 });
 
-        Double longitude = registerRequestDto.getLongitude();
-        Double latitude = registerRequestDto.getLatitude();
-
-        log.info("Coordenadas recebidas no registro: latitude={}, longitude={}", latitude, longitude);
-
-        Point localizacaoUsuario = null;
-        if (latitude != null && longitude != null) {
-            Point point = geometryFactory.createPoint(new Coordinate(longitude, latitude));
-            point.setSRID(4326);
-            localizacaoUsuario = point;
-        }
-
         Users user = Users.builder()
                 .nome(registerRequestDto.getNome())
                 .email(registerRequestDto.getEmail())
                 .senha(passwordEncoder.encode(registerRequestDto.getSenha()))
-                .localizacao(localizacaoUsuario)
+                .cep(registerRequestDto.getCep())
                 .roles(Set.of(role))
                 .build();
 
         userRepository.saveAndFlush(user);
 
-        log.info("Usuário registrado com sucesso: {} | localizacao={}",
-                registerRequestDto.getEmail(),
-                localizacaoUsuario != null ? localizacaoUsuario.toText() : "null");
+        log.info("Usuário registrado com sucesso: {}", registerRequestDto.getEmail());
     }
 
     public TokenResponseDto login(LoginRequestDto dto) throws Exception {

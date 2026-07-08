@@ -14,6 +14,7 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
+
     try {
       const res = await authService.login(form)
       signIn(res.token)

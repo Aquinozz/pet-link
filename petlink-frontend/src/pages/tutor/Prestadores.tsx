@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { prestadorService } from '../../api/prestadorService'
 import type { PrestadorResponseDto } from '../../types'
-import { calculateDistanceKm, getCoordinates, getLocationErrorMessage, type Coordinates } from '../../utils/geolocationUtils'
+import { calculateDistanceKm, getCoordinatesFromCep, getCoordinatesFromPrestador, getLocationErrorMessage, getStoredCep, getStoredCoordinates, saveCep, saveCoordinates, type Coordinates } from '../../utils/geolocationUtils'
 
 const whatsappLink = (tel: string) =>
   `https://api.whatsapp.com/send?phone=55${tel.replace(/\D/g, '')}&text=${encodeURIComponent('Olá! Vi seu perfil no PetLink e gostaria de agendar um serviço.')}`
@@ -27,6 +27,8 @@ export default function Prestadores() {
   const [filtrosAplicados, setFiltrosAplicados] = useState({ busca: '', servico: '', cidade: '', bairro: '' })
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null)
   const [locationMessage, setLocationMessage] = useState('')
+  const [cepInput, setCepInput] = useState('')
+  const [cepLoading, setCepLoading] = useState(false)
 
   useEffect(() => {
     const carregarPrestadores = async () => {
@@ -40,11 +42,38 @@ export default function Prestadores() {
       }
     }
 
-    carregarPrestadores()
+    const carregarLocalizacao = async () => {
+      const storedCep = getStoredCep()
 
-    getCoordinates()
-      .then(setUserLocation)
-      .catch((error) => setLocationMessage(getLocationErrorMessage(error)))
+      if (storedCep) {
+        setCepInput(storedCep)
+        setLocationMessage('Usando o CEP salvo para calcular a distância...')
+
+        try {
+          const coords = await getCoordinatesFromCep(storedCep)
+          saveCoordinates(coords)
+          saveCep(storedCep)
+          setUserLocation(coords)
+          setLocationMessage('CEP salvo encontrado. Os prestadores estão ordenados por proximidade.')
+        } catch (error) {
+          setUserLocation(null)
+          setLocationMessage(getLocationErrorMessage(error))
+        }
+        return
+      }
+
+      const storedLocation = getStoredCoordinates()
+      if (storedLocation) {
+        setUserLocation(storedLocation)
+        setLocationMessage('Usando sua localização salva para ordenar os prestadores.')
+        return
+      }
+
+      setLocationMessage('Informe seu CEP para calcular a distância até os prestadores.')
+    }
+
+    carregarPrestadores()
+    void carregarLocalizacao()
   }, [])
 
   const todosServicos = Array.from(new Set(
@@ -65,11 +94,14 @@ export default function Prestadores() {
     }
 
     return [...filtrados].sort((a, b) => {
-      const aDistancia = a.latitude !== undefined && a.longitude !== undefined
-        ? calculateDistanceKm(userLocation, { latitude: a.latitude, longitude: a.longitude })
+      const aCoords = getCoordinatesFromPrestador(a)
+      const bCoords = getCoordinatesFromPrestador(b)
+
+      const aDistancia = aCoords
+        ? calculateDistanceKm(userLocation, aCoords)
         : Number.POSITIVE_INFINITY
-      const bDistancia = b.latitude !== undefined && b.longitude !== undefined
-        ? calculateDistanceKm(userLocation, { latitude: b.latitude, longitude: b.longitude })
+      const bDistancia = bCoords
+        ? calculateDistanceKm(userLocation, bCoords)
         : Number.POSITIVE_INFINITY
 
       return aDistancia - bDistancia
@@ -83,6 +115,31 @@ export default function Prestadores() {
       cidade: cidadeFiltro,
       bairro: bairroFiltro,
     })
+  }
+
+  const handleCepSubmit = async () => {
+    const cepLimpo = cepInput.replace(/\D/g, '')
+
+    if (cepLimpo.length !== 8) {
+      setLocationMessage('Informe um CEP com 8 dígitos para calcular a distância.')
+      return
+    }
+
+    setCepLoading(true)
+    setLocationMessage('Buscando o CEP para calcular a distância...')
+
+    try {
+      const coords = await getCoordinatesFromCep(cepLimpo)
+      saveCoordinates(coords)
+      saveCep(cepLimpo)
+      setUserLocation(coords)
+      setLocationMessage('CEP encontrado. Os prestadores estão ordenados por proximidade.')
+    } catch (error) {
+      setUserLocation(null)
+      setLocationMessage(getLocationErrorMessage(error))
+    } finally {
+      setCepLoading(false)
+    }
   }
 
   const stars = (n: number) =>
@@ -119,6 +176,16 @@ export default function Prestadores() {
         <button type="button" onClick={handleAplicarFiltros}
           style={{ padding: '10px 18px', backgroundColor: '#22C55E', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', minWidth: 160 }}>
           Aplicar filtros
+        </button>
+      </div>
+
+      <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+        <input value={cepInput} onChange={e => setCepInput(e.target.value)}
+          placeholder="Digite seu CEP"
+          style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, minWidth: 220 }} />
+        <button type="button" onClick={handleCepSubmit} disabled={cepLoading}
+          style={{ padding: '10px 18px', backgroundColor: '#0F766E', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: cepLoading ? 'not-allowed' : 'pointer', minWidth: 180 }}>
+          {cepLoading ? 'Buscando...' : 'Calcular distância'}
         </button>
       </div>
 
@@ -159,9 +226,18 @@ export default function Prestadores() {
                 </p>
               )}
 
-              {userLocation && p.latitude !== undefined && p.longitude !== undefined && (
+              {userLocation && (
                 <p style={{ fontSize: 12, color: '#22C55E', marginBottom: 10, fontWeight: 600 }}>
-                  📍 {calculateDistanceKm(userLocation, { latitude: p.latitude, longitude: p.longitude })} km de você
+                  📍 {(() => {
+                    const coords = getCoordinatesFromPrestador(p)
+                    return coords ? `${calculateDistanceKm(userLocation, coords)} km de você` : 'Distância aproximada indisponível'
+                  })()} 
+                </p>
+              )}
+
+              {!userLocation && (
+                <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 10 }}>
+                  📍 Informe um CEP para ver a distância aproximada.
                 </p>
               )}
 

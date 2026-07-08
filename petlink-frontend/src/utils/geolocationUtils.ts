@@ -6,6 +6,116 @@ export interface Coordinates {
   longitude: number
 }
 
+const LOCATION_STORAGE_KEY = 'petlink_user_location'
+const CEP_STORAGE_KEY = 'petlink_user_cep'
+
+const CITY_COORDINATES: Record<string, Coordinates> = {
+  salvador: { latitude: -12.9699, longitude: -38.5067 },
+  recife: { latitude: -8.0476, longitude: -34.8770 },
+  fortaleza: { latitude: -3.7319, longitude: -38.5267 },
+  joaopessoa: { latitude: -7.1195, longitude: -34.8450 },
+  aracaju: { latitude: -10.9472, longitude: -37.0766 },
+  maceio: { latitude: -9.6498, longitude: -35.7089 },
+  natal: { latitude: -5.7945, longitude: -35.2110 },
+  belem: { latitude: -1.4558, longitude: -48.4898 },
+  brasilia: { latitude: -15.8267, longitude: -47.9218 },
+  saopaulo: { latitude: -23.5505, longitude: -46.6333 },
+  riodejaneiro: { latitude: -22.9068, longitude: -43.1729 },
+  'belo horizonte': { latitude: -19.9167, longitude: -43.9345 },
+  portoalegre: { latitude: -30.0346, longitude: -51.2177 },
+  curitiba: { latitude: -25.4296, longitude: -49.2713 },
+  campinas: { latitude: -22.9056, longitude: -47.0608 },
+}
+
+const PRESTADOR_COORDINATES: Record<string, Coordinates> = {
+  'salvador:cajazeiras': { latitude: -12.9556, longitude: -38.5300 },
+  'salvador:pituba': { latitude: -12.9822, longitude: -38.4730 },
+  'salvador:barra': { latitude: -13.0051, longitude: -38.3471 },
+  'salvador': { latitude: -12.9699, longitude: -38.5067 },
+}
+
+const geocodeCache = new Map<string, Coordinates | null>()
+
+const geocodeAddress = async (query: string): Promise<Coordinates | null> => {
+  const cacheKey = query.trim().toLowerCase()
+  if (geocodeCache.has(cacheKey)) {
+    return geocodeCache.get(cacheKey) ?? null
+  }
+
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&addressdetails=1&countrycodes=br&accept-language=pt-BR&q=${encodeURIComponent(query)}`,
+      { headers: { 'Accept-Language': 'pt-BR' } }
+    )
+
+    if (!response.ok) {
+      throw new Error('Geocodificação indisponível')
+    }
+
+    const data = await response.json() as Array<{ lat?: string; lon?: string }>
+    const firstResult = data[0]
+
+    if (!firstResult?.lat || !firstResult?.lon) {
+      geocodeCache.set(cacheKey, null)
+      return null
+    }
+
+    const coords = {
+      latitude: Number(Number(firstResult.lat).toFixed(6)),
+      longitude: Number(Number(firstResult.lon).toFixed(6)),
+    }
+
+    geocodeCache.set(cacheKey, coords)
+    return coords
+  } catch {
+    geocodeCache.set(cacheKey, null)
+    return null
+  }
+}
+
+export const getStoredCoordinates = (): Coordinates | null => {
+  if (typeof window === 'undefined') return null
+
+  const raw = window.localStorage.getItem(LOCATION_STORAGE_KEY)
+  if (!raw) return null
+
+  try {
+    const parsed = JSON.parse(raw) as Coordinates
+    if (!parsed || typeof parsed.latitude !== 'number' || typeof parsed.longitude !== 'number') {
+      return null
+    }
+
+    return parsed
+  } catch {
+    return null
+  }
+}
+
+export const saveCoordinates = (coords: Coordinates): void => {
+  if (typeof window === 'undefined') return
+  window.localStorage.setItem(LOCATION_STORAGE_KEY, JSON.stringify(coords))
+}
+
+export const clearStoredCoordinates = (): void => {
+  if (typeof window === 'undefined') return
+  window.localStorage.removeItem(LOCATION_STORAGE_KEY)
+}
+
+export const getStoredCep = (): string | null => {
+  if (typeof window === 'undefined') return null
+  return window.localStorage.getItem(CEP_STORAGE_KEY)
+}
+
+export const saveCep = (cep: string): void => {
+  if (typeof window === 'undefined') return
+  window.localStorage.setItem(CEP_STORAGE_KEY, cep)
+}
+
+export const clearStoredCep = (): void => {
+  if (typeof window === 'undefined') return
+  window.localStorage.removeItem(CEP_STORAGE_KEY)
+}
+
 export const calculateDistanceKm = (from: Coordinates, to: Coordinates): number => {
   const earthRadiusKm = 6371
   const dLat = (to.latitude - from.latitude) * (Math.PI / 180)
@@ -16,58 +126,76 @@ export const calculateDistanceKm = (from: Coordinates, to: Coordinates): number 
     Math.cos(from.latitude * (Math.PI / 180)) * Math.cos(to.latitude * (Math.PI / 180)) * Math.sin(dLon / 2) ** 2
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  return Number((earthRadiusKm * c).toFixed(1))
+  return Number((earthRadiusKm * c).toFixed(2))
 }
 
-/**
- * Obtém a localização do usuário via Geolocation API
- * @param options - Opções da Geolocation API
- * @returns Promise com coordenadas ou erro
- */
-export const getCoordinates = (
-  options: PositionOptions = {
-    timeout: 10000,
-    enableHighAccuracy: true,
+export const getCoordinatesFromCep = async (cep: string): Promise<Coordinates> => {
+  const normalizedCep = cep.replace(/\D/g, '')
+
+  if (normalizedCep.length !== 8) {
+    throw new Error('Informe um CEP com 8 dígitos para calcular a distância.')
   }
-): Promise<Coordinates> => {
-  return new Promise((resolve, reject) => {
-    if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
-      reject(new Error('Geolocalização não é suportada neste navegador'))
-      return
+
+  try {
+    const response = await fetch(`https://viacep.com.br/ws/${normalizedCep}/json/`)
+    const data = await response.json() as { erro?: boolean; localidade?: string; uf?: string; bairro?: string; logradouro?: string }
+
+    if (!response.ok || data.erro) {
+      throw new Error('CEP não encontrado. Tente outro CEP.')
     }
 
-    if (typeof window !== 'undefined' && !window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      reject(new Error('Geolocalização requer HTTPS ou localhost.'))
-      return
+    const addressParts = [data.logradouro, data.bairro, data.localidade, data.uf].filter(Boolean) as string[]
+    const queries = [
+      addressParts.join(', '),
+      [data.logradouro, data.bairro, data.localidade].filter(Boolean).join(', '),
+      [data.bairro, data.localidade, data.uf].filter(Boolean).join(', '),
+      [data.localidade, data.uf].filter(Boolean).join(', '),
+      normalizedCep,
+    ]
+
+    for (const query of queries) {
+      const geocoded = await geocodeAddress(query)
+      if (geocoded) {
+        return geocoded
+      }
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords
-        resolve({ latitude, longitude })
-      },
-      (error) => {
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            reject(
-              new Error(
-                'Permissão de localização negada. Você pode continuar o cadastro, mas não será possível buscar prestadores próximos.'
-              )
-            )
-            break
-          case error.POSITION_UNAVAILABLE:
-            reject(new Error('Localização indisponível. Tente novamente.'))
-            break
-          case error.TIMEOUT:
-            reject(new Error('Timeout ao obter localização. Tente novamente.'))
-            break
-          default:
-            reject(new Error('Erro desconhecido ao obter localização'))
-        }
-      },
-      options
-    )
-  })
+    const cityKey = `${(data.localidade ?? '').toLowerCase()}`
+    const cityWithStateKey = `${(data.uf ?? '').toLowerCase()}:${cityKey}`
+    const fallback = CITY_COORDINATES[cityKey] ?? CITY_COORDINATES[cityWithStateKey] ?? CITY_COORDINATES.salvador
+
+    if (!fallback) {
+      throw new Error('Não foi possível localizar esse CEP para calcular a distância.')
+    }
+
+    return fallback
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
+
+    throw new Error('Erro ao buscar o CEP informado.')
+  }
+}
+
+export const getCoordinatesFromPrestador = (prestador: { cidade?: string; bairro?: string }): Coordinates | null => {
+  const cityKey = (prestador.cidade ?? '').toLowerCase()
+  const bairroKey = (prestador.bairro ?? '').toLowerCase()
+  const directKey = `${cityKey}:${bairroKey}`
+
+  if (PRESTADOR_COORDINATES[directKey]) {
+    return PRESTADOR_COORDINATES[directKey]
+  }
+
+  if (PRESTADOR_COORDINATES[cityKey]) {
+    return PRESTADOR_COORDINATES[cityKey]
+  }
+
+  if (CITY_COORDINATES[cityKey]) {
+    return CITY_COORDINATES[cityKey]
+  }
+
+  return null
 }
 
 /**
@@ -77,7 +205,7 @@ export const getCoordinates = (
  * @returns boolean - true se válidas
  */
 export const validateCoordinates = (lat?: number, lon?: number): boolean => {
-  if (lat === undefined || lon === undefined) return true // Opcional
+  if (lat === undefined || lon === undefined) return true
   return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180
 }
 

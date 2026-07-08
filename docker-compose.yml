@@ -1,4 +1,20 @@
 services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: petlink
+      POSTGRES_USER: petlink
+      POSTGRES_PASSWORD: petlink
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U petlink -d petlink"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   backend:
     build:
       context: .
@@ -7,6 +23,14 @@ services:
       - '8080:8080'
     env_file:
       - .env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/petlink?sslmode=disable
+      SPRING_DATASOURCE_USERNAME: petlink
+      SPRING_DATASOURCE_PASSWORD: petlink
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
   frontend:
@@ -16,3 +40,6 @@ services:
     ports:
       - '3000:80'
     restart: unless-stopped
+
+volumes:
+  postgres_data:

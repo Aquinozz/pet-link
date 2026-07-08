@@ -1,8 +1,6 @@
 package pet_link.config;
 
 import lombok.RequiredArgsConstructor;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import pet_link.enums.PrestadorType;
@@ -16,6 +14,9 @@ import pet_link.repositories.PrestadorRepository;
 import pet_link.repositories.RolesRepository;
 import pet_link.repositories.UserRepository;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @RequiredArgsConstructor
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -25,11 +26,9 @@ public class DataInitializer implements CommandLineRunner {
     private final PetRepository petRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     private final PrestadorRepository prestadorRepository;
-    private final GeometryFactory geometryFactory;
 
     @Override
     public void run(String... args) {
-
         for (UserRole roleEnum : UserRole.values()) {
             if (rolesRepository.findByNome(roleEnum.name()).isEmpty()) {
                 RolesEntity novaRole = new RolesEntity();
@@ -38,23 +37,20 @@ public class DataInitializer implements CommandLineRunner {
             }
         }
 
-        RolesEntity roleTutor = rolesRepository
-                .findByNome(UserRole.ROLE_TUTOR.name())
+        RolesEntity roleTutor = rolesRepository.findByNome(UserRole.ROLE_TUTOR.name())
                 .orElseThrow(() -> new RuntimeException("ROLE_TUTOR não encontrada"));
-
-        RolesEntity roleProfissional = rolesRepository
-                .findByNome(UserRole.ROLE_PROFISSIONAL.name())
+        RolesEntity roleProfissional = rolesRepository.findByNome(UserRole.ROLE_PROFISSIONAL.name())
                 .orElseThrow(() -> new RuntimeException("ROLE_PROFISSIONAL não encontrada"));
 
-        if (userRepository.findByEmail("bianca@email.com").isEmpty()) {
-            Users tutor = new Users();
-            tutor.setNome("Bianca");
-            tutor.setEmail("bianca@email.com");
-            tutor.setSenha(passwordEncoder.encode("123456"));
-            tutor.getRoles().add(roleTutor);
-            tutor.setLocalizacao(geometryFactory.createPoint(new Coordinate(-38.4116, -12.9015)));
-            tutor = userRepository.save(tutor);
+        Users tutor = userRepository.findByEmail("bianca@email.com").orElseGet(Users::new);
+        tutor.setNome("Bianca Souza");
+        tutor.setEmail("bianca@email.com");
+        tutor.setSenha(passwordEncoder.encode("123456"));
+        tutor.setRoles(new HashSet<>(Set.of(roleTutor)));
+        tutor.setCep("40280000");
+        tutor = userRepository.save(tutor);
 
+        if (petRepository.findAll().stream().noneMatch(p -> p.getTutor() != null && p.getTutor().getEmail().equals("bianca@email.com"))) {
             PetModel pet = new PetModel();
             pet.setNome("Rex");
             pet.setEspecie("Cachorro");
@@ -64,73 +60,93 @@ public class DataInitializer implements CommandLineRunner {
             petRepository.save(pet);
         }
 
-        if (userRepository.findByEmail("clinica@petfeliz.com").isEmpty()) {
-            Users usuarioPrestador = new Users();
-            usuarioPrestador.setNome("Clínica Pet Feliz");
-            usuarioPrestador.setEmail("clinica@petfeliz.com");
-            usuarioPrestador.setSenha(passwordEncoder.encode("123456"));
-            usuarioPrestador.getRoles().add(roleProfissional);
-            usuarioPrestador.setLocalizacao(geometryFactory.createPoint(new Coordinate(-38.4172, -12.9056)));
-            usuarioPrestador = userRepository.save(usuarioPrestador);
+        criarOuAtualizarPrestador(
+                "clinica@petfeliz.com",
+                "Clínica Pet Feliz",
+                roleProfissional,
+                PrestadorType.CLINICA_VETERINARIA,
+                "Atendimento veterinário completo com equipe especializada",
+                "Salvador",
+                "Cajazeiras",
+                "Consulta, Vacinação, Cirurgia, Banho e Tosa",
+                4.8,
+                "71 98459-613",
+                "Seg a Sex: 08h às 18h | Sáb: 08h às 13h",
+                -38.4172,
+                -12.9056
+        );
 
-            PrestadorModel prestador = new PrestadorModel();
-            prestador.setNome("Clínica Pet Feliz");
-            prestador.setType(PrestadorType.CLINICA_VETERINARIA);
-            prestador.setDescricao("Atendimento veterinário completo com equipe especializada");
-            prestador.setCidade("Salvador");
-            prestador.setBairro("Cajazeiras");
-            prestador.setServicos("Consulta, Vacinação, Cirurgia, Banho e Tosa");
-            prestador.setAvaliacaoMedia(0.0);
-            prestador.setTelefone("71 98459613");
-            prestador.setHorarioFuncionamento("Seg a Sex: 08h às 18h | Sáb: 08h às 13h");
-            prestador.setUser(usuarioPrestador);
-            prestadorRepository.save(prestador);
-        }
+        criarOuAtualizarPrestador(
+                "crechepetfeliz@email.com",
+                "Creche Pet Feliz",
+                roleProfissional,
+                PrestadorType.CRECHE_PET,
+                "Cuidamos do seu pet com amor enquanto você trabalha",
+                "Salvador",
+                "Pituba",
+                "Hospedagem diária, Passeio, Alimentação especial, Banho e Tosa",
+                4.7,
+                "71 98765-4321",
+                "Seg a Sex: 07h às 19h | Sáb: 08h às 17h",
+                -38.4552,
+                -12.9984
+        );
 
-        if (userRepository.findByEmail("crechepetfeliz@email.com").isEmpty()) {
-            Users usuarioCreche = new Users();
-            usuarioCreche.setNome("Creche Pet Feliz");
-            usuarioCreche.setEmail("crechepetfeliz@email.com");
-            usuarioCreche.setSenha(passwordEncoder.encode("123456"));
-            usuarioCreche.getRoles().add(roleProfissional);
-            usuarioCreche.setLocalizacao(geometryFactory.createPoint(new Coordinate(-38.4552, -12.9984)));
-            usuarioCreche = userRepository.save(usuarioCreche);
-
-            PrestadorModel creche = new PrestadorModel();
-            creche.setNome("Creche Pet Feliz");
-            creche.setType(PrestadorType.CRECHE_PET);
-            creche.setDescricao("Cuidamos do seu pet com amor enquanto você trabalha");
-            creche.setCidade("Salvador");
-            creche.setBairro("Pituba");
-            creche.setServicos("Hospedagem diária, Passeio, Alimentação especial, Banho e Tosa");
-            creche.setAvaliacaoMedia(0.0);
-            creche.setTelefone("71 98765-4321");
-            creche.setHorarioFuncionamento("Seg a Sex: 07h às 19h | Sáb: 08h às 17h");
-            creche.setUser(usuarioCreche);
-            prestadorRepository.save(creche);
-        }
-
-        if (userRepository.findByEmail("petshoptopdog@email.com").isEmpty()) {
-            Users usuarioPetshop = new Users();
-            usuarioPetshop.setNome("Pet Shop Top Dog");
-            usuarioPetshop.setEmail("petshoptopdog@email.com");
-            usuarioPetshop.setSenha(passwordEncoder.encode("123456"));
-            usuarioPetshop.getRoles().add(roleProfissional);
-            usuarioPetshop.setLocalizacao(geometryFactory.createPoint(new Coordinate(-38.5306, -13.0031)));
-            usuarioPetshop = userRepository.save(usuarioPetshop);
-
-            PrestadorModel petshop = new PrestadorModel();
-            petshop.setNome("Pet Shop Top Dog");
-            petshop.setType(PrestadorType.PETSHOP);
-            petshop.setDescricao("Tudo que seu pet precisa em um só lugar");
-            petshop.setCidade("Salvador");
-            petshop.setBairro("Barra");
-            petshop.setServicos("Banho e Tosa, Acessórios, Ração Premium, Farmácia Pet, Transporte");
-            petshop.setAvaliacaoMedia(0.0);
-            petshop.setTelefone("71 93333-2222");
-            petshop.setHorarioFuncionamento("Seg a Sáb: 09h às 20h | Dom: 10h às 16h");
-            petshop.setUser(usuarioPetshop);
-            prestadorRepository.save(petshop);
-        }
+        criarOuAtualizarPrestador(
+                "petshoptopdog@email.com",
+                "Pet Shop Top Dog",
+                roleProfissional,
+                PrestadorType.PETSHOP,
+                "Tudo que seu pet precisa em um só lugar",
+                "Salvador",
+                "Barra",
+                "Banho e Tosa, Acessórios, Ração Premium, Farmácia Pet, Transporte",
+                4.9,
+                "71 93333-2222",
+                "Seg a Sáb: 09h às 20h | Dom: 10h às 16h",
+                -38.5306,
+                -13.0031
+        );
     }
+
+    private void criarOuAtualizarPrestador(
+            String email,
+            String nome,
+            RolesEntity roleProfissional,
+            PrestadorType tipo,
+            String descricao,
+            String cidade,
+            String bairro,
+            String servicos,
+            double avaliacaoMedia,
+            String telefone,
+            String horario,
+            double longitude,
+            double latitude
+    ) {
+        Users usuario = userRepository.findByEmail(email).orElseGet(Users::new);
+        usuario.setNome(nome);
+        usuario.setEmail(email);
+        usuario.setSenha(passwordEncoder.encode("123456"));
+        usuario.setCep("40280000");
+        usuario.setRoles(new HashSet<>(Set.of(roleProfissional)));
+        usuario = userRepository.save(usuario);
+
+        PrestadorModel prestador = prestadorRepository.findAll().stream()
+                .filter(item -> item.getUser() != null && email.equals(item.getUser().getEmail()))
+                .findFirst()
+                .orElseGet(PrestadorModel::new);
+        prestador.setNome(nome);
+        prestador.setType(tipo);
+        prestador.setDescricao(descricao);
+        prestador.setCidade(cidade);
+        prestador.setBairro(bairro);
+        prestador.setServicos(servicos);
+        prestador.setAvaliacaoMedia(avaliacaoMedia);
+        prestador.setTelefone(telefone);
+        prestador.setHorarioFuncionamento(horario);
+        prestador.setUser(usuario);
+        prestadorRepository.save(prestador);
+    }
+
 }

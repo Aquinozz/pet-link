@@ -14,6 +14,7 @@ export interface MeResponse {
   bairro?: string
   type?: string
   horarioFuncionamento?: string
+  cep?: string
 }
 
 export const authService = {

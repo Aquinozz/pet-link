@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authService } from '../../api/authService'
 import type { RegisterRequestDto } from '../../types'
-import { getCoordinates, getLocationErrorMessage, type Coordinates } from '../../utils/geolocationUtils'
+import { getCoordinatesFromCep, getLocationErrorMessage, getStoredCep, saveCep, saveCoordinates, type Coordinates } from '../../utils/geolocationUtils'
 
 export default function CadastroPage() {
   const navigate = useNavigate()
@@ -11,19 +11,14 @@ export default function CadastroPage() {
   const [loading, setLoading] = useState(false)
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null)
   const [locationMessage, setLocationMessage] = useState('')
+  const [cep, setCep] = useState('')
 
   useEffect(() => {
-    const tryGetLocation = async () => {
-      try {
-        const nextCoordinates = await getCoordinates()
-        setCoordinates(nextCoordinates)
-        setLocationMessage('Localização capturada automaticamente.')
-      } catch (geoError) {
-        setLocationMessage(getLocationErrorMessage(geoError))
-      }
+    const storedCep = getStoredCep()
+    if (storedCep) {
+      setCep(storedCep)
+      setLocationMessage('CEP salvo encontrado. Você pode continuar o cadastro com ele.')
     }
-
-    void tryGetLocation()
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,19 +27,24 @@ export default function CadastroPage() {
     setLoading(true)
 
     try {
-      const payload: RegisterRequestDto = { ...form }
+      const payload: RegisterRequestDto = { ...form, cep }
 
       try {
         let nextCoordinates = coordinates
 
         if (!nextCoordinates) {
-          setLocationMessage('Solicitando permissão de localização...')
-          nextCoordinates = await getCoordinates()
+          const cepLimpo = cep.replace(/\D/g, '')
+          if (cepLimpo.length !== 8) {
+            setLocationMessage('Informe um CEP com 8 dígitos para calcular a distância.')
+          } else {
+            setLocationMessage('Buscando o CEP informado...')
+            nextCoordinates = await getCoordinatesFromCep(cepLimpo)
+            saveCoordinates(nextCoordinates)
+            saveCep(cepLimpo)
+            setCoordinates(nextCoordinates)
+          }
         }
 
-        setCoordinates(nextCoordinates)
-        payload.latitude = nextCoordinates.latitude
-        payload.longitude = nextCoordinates.longitude
       } catch (geoError) {
         setLocationMessage(getLocationErrorMessage(geoError))
       }
@@ -93,6 +93,19 @@ export default function CadastroPage() {
                 />
               </div>
             ))}
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+                CEP para distância aproximada
+              </label>
+              <input
+                type="text"
+                value={cep}
+                onChange={e => setCep(e.target.value)}
+                placeholder="01000-000"
+                style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, color: '#111827', outline: 'none', boxSizing: 'border-box' }}
+              />
+            </div>
 
             {locationMessage && (
               <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#166534' }}>

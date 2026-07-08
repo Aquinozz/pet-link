@@ -35,6 +35,9 @@ function RedirectByRole() {
 
     authService.me().then(me => {
       const role = me.role ?? user?.role
+      if (me.cep) {
+        localStorage.setItem('petlink_user_cep', me.cep)
+      }
       if (me.id) {
         if (role === 'ROLE_TUTOR') setTutorId(me.id)
         if (role === 'ROLE_PROFISSIONAL' && me.prestadorModelId) setPrestadorId(me.prestadorModelId)

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
 import { jwtDecode } from 'jwt-decode'
 import type { AuthUser, UserRole } from '../types'
+import { clearStoredCoordinates, saveCep } from '../utils/geolocationUtils'
 
 interface JwtPayload {
   sub: string
@@ -16,7 +17,7 @@ export interface AuthContextData {
   isAuthenticated: boolean
   tutorId: number | null
   prestadorId: number | null
-  signIn: (token: string) => void
+  signIn: (token: string, cep?: string) => void
   signOut: () => void
   setTutorId: (id: number) => void
   setPrestadorId: (id: number) => void
@@ -50,8 +51,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return id ? Number(id) : null
   })
 
-  const signIn = (newToken: string) => {
+  const signIn = (newToken: string, cep?: string) => {
     localStorage.setItem('petlink_token', newToken)
+    if (cep) {
+      saveCep(cep)
+    }
     setToken(newToken)
     setUser(parseToken(newToken))
   }
@@ -70,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('petlink_token')
     localStorage.removeItem('petlink_tutor_id')
     localStorage.removeItem('petlink_prestador_id')
+    clearStoredCoordinates()
     setToken(null)
     setUser(null)
     setTutorIdState(null)

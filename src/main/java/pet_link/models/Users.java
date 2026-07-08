@@ -32,7 +32,10 @@ public class Users implements UserDetails {
     @Column(nullable = false)
     private String senha;
 
-    @Column(columnDefinition = "geometry(Point, 4326)")
+    @Column(length = 8)
+    private String cep;
+
+    @Transient
     private Point localizacao;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)

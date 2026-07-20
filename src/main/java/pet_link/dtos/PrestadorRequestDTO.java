@@ -35,4 +35,8 @@ public class PrestadorRequestDTO {
 
     @NotBlank
     private String bairro;
+
+    private Double latitude;
+
+    private Double longitude;
 }

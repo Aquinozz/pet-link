@@ -22,6 +22,9 @@ public class PrestadorResponseDTO {
     private String bairro;
     private PrestadorType type;
     private String horarioFuncionamento;
+    private Double latitude;
+    private Double longitude;
+    private Double distanciaKm;
 
     public PrestadorResponseDTO(Users prestador) {
         if (prestador != null) {
@@ -38,6 +41,8 @@ public class PrestadorResponseDTO {
                 this.bairro = prestador.getPrestador().getBairro();
                 this.type = prestador.getPrestador().getType();
                 this.horarioFuncionamento = prestador.getPrestador().getHorarioFuncionamento();
+                this.latitude = prestador.getPrestador().getLatitude();
+                this.longitude = prestador.getPrestador().getLongitude();
             } else {
                 this.avaliacaoMedia = 0.0;
             }

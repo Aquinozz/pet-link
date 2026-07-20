@@ -27,4 +27,6 @@ public interface PrestadorRepository extends JpaRepository<PrestadorModel, Long>
             String bairro,
             PrestadorType type
     );
+
+    List<PrestadorModel> findByLatitudeIsNull();
 }

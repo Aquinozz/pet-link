@@ -10,4 +10,6 @@ public class AtualizarPrestadorDto {
     private String bairro;
     private String servicos;
     private String horarioFuncionamento;
+    private Double latitude;
+    private Double longitude;
 }

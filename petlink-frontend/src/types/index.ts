@@ -58,6 +58,9 @@ export interface PrestadorResponseDto {
   bairro: string
   type: string
   horarioFuncionamento?: string
+  latitude?: number
+  longitude?: number
+  distanciaKm?: number
 }
 
 export interface AgendamentoRequestDto {

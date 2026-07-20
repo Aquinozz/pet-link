@@ -16,7 +16,9 @@ import pet_link.repositories.PrestadorRepository;
 import pet_link.repositories.RolesRepository;
 import pet_link.repositories.UserRepository;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +27,7 @@ public class PrestadorService {
     private final PrestadorRepository prestadorRepository;
     private final UserRepository userRepository;
     private final RolesRepository rolesRepository;
+    private final GeocodingService geocodingService;
 
     @Transactional
     public PrestadorResponseDTO criar(PrestadorRequestDTO dto) {
@@ -54,6 +57,9 @@ public class PrestadorService {
         prestador.setTelefone(dto.getTelefone());
         prestador.setAvaliacaoMedia(0.0);
         prestador.setUser(usuarioSalvo);
+
+        geocodePrestador(prestador, dto.getCidade(), dto.getBairro(), dto.getLatitude(), dto.getLongitude());
+
         prestadorRepository.save(prestador);
 
         return new PrestadorResponseDTO(usuarioSalvo);
@@ -98,7 +104,76 @@ public class PrestadorService {
         if (dto.getServicos() != null) prestador.setServicos(dto.getServicos());
         if (dto.getHorarioFuncionamento() != null) prestador.setHorarioFuncionamento(dto.getHorarioFuncionamento());
 
+        String cidade = dto.getCidade() != null ? dto.getCidade() : prestador.getCidade();
+        String bairro = dto.getBairro() != null ? dto.getBairro() : prestador.getBairro();
+        geocodePrestador(prestador, cidade, bairro, dto.getLatitude(), dto.getLongitude());
+
         prestadorRepository.save(prestador);
         return new PrestadorResponseDTO(usuario);
+    }
+
+    public List<PrestadorResponseDTO> listarProximos(double lat, double lng, double raioKm) {
+        return userRepository.findAll().stream()
+                .filter(user -> user.getRoles().stream()
+                        .anyMatch(role -> role.getAuthority().equals("ROLE_PROFISSIONAL")))
+                .filter(user -> user.getPrestador() != null
+                        && user.getPrestador().getLatitude() != null
+                        && user.getPrestador().getLongitude() != null)
+                .map(user -> {
+                    double distancia = calcularDistancia(
+                            lat, lng,
+                            user.getPrestador().getLatitude(),
+                            user.getPrestador().getLongitude()
+                    );
+                    PrestadorResponseDTO dto = new PrestadorResponseDTO(user);
+                    dto.setDistanciaKm(Math.round(distancia * 10.0) / 10.0);
+                    return dto;
+                })
+                .filter(dto -> dto.getDistanciaKm() <= raioKm)
+                .sorted(Comparator.comparingDouble(PrestadorResponseDTO::getDistanciaKm))
+                .toList();
+    }
+
+    @Transactional
+    public int backfillCoords() {
+        List<PrestadorModel> semCoords = prestadorRepository.findByLatitudeIsNull();
+        int atualizados = 0;
+
+        for (PrestadorModel p : semCoords) {
+            Optional<double[]> coords = geocodingService.geocode(p.getCidade(), p.getBairro());
+            if (coords.isPresent()) {
+                p.setLatitude(coords.get()[0]);
+                p.setLongitude(coords.get()[1]);
+                prestadorRepository.save(p);
+                atualizados++;
+            }
+        }
+
+        return atualizados;
+    }
+
+    private void geocodePrestador(PrestadorModel prestador, String cidade, String bairro,
+                                   Double latitude, Double longitude) {
+        if (latitude != null && longitude != null) {
+            prestador.setLatitude(latitude);
+            prestador.setLongitude(longitude);
+        } else {
+            Optional<double[]> coords = geocodingService.geocode(cidade, bairro);
+            coords.ifPresent(c -> {
+                prestador.setLatitude(c[0]);
+                prestador.setLongitude(c[1]);
+            });
+        }
+    }
+
+    private double calcularDistancia(double lat1, double lon1, double lat2, double lon2) {
+        final double R = 6371;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
     }
 }

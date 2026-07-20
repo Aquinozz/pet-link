@@ -25,9 +25,46 @@ export default function Prestadores() {
   const [bairroFiltro, setBairroFiltro] = useState('')
   const [filtrosAplicados, setFiltrosAplicados] = useState({ busca: '', servico: '', cidade: '', bairro: '' })
 
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const [raio, setRaio] = useState(50)
+  const [usarLocalizacao, setUsarLocalizacao] = useState(false)
+  const [locationLoading, setLocationLoading] = useState(false)
+  const [locationError, setLocationError] = useState('')
+
   useEffect(() => {
     prestadorService.listar().then(setPrestadores).catch(() => {}).finally(() => setLoading(false))
   }, [])
+
+  const handleUsarLocalizacao = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocalização não disponível neste navegador')
+      return
+    }
+    setLocationLoading(true)
+    setLocationError('')
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+        setUsarLocalizacao(true)
+        setLocationLoading(false)
+      },
+      () => {
+        setLocationError('Não foi possível obter sua localização')
+        setLocationLoading(false)
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    )
+  }
+
+  useEffect(() => {
+    if (usarLocalizacao && userLocation) {
+      setLoading(true)
+      prestadorService.listarProximos(userLocation.lat, userLocation.lng, raio)
+        .then(setPrestadores)
+        .catch(() => {})
+        .finally(() => setLoading(false))
+    }
+  }, [usarLocalizacao, userLocation, raio])
 
   const todosServicos = Array.from(new Set(
     prestadores.flatMap(p => p.servicos ? p.servicos.split(',').map(s => s.trim()) : [])
@@ -62,7 +99,7 @@ export default function Prestadores() {
         <p style={{ color: '#6b7280', fontSize: 14 }}>{prestadores.length} profissional(is) disponível(is)</p>
       </div>
 
-      <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
         <input value={busca} onChange={e => setBusca(e.target.value)}
           placeholder="Buscar por nome..."
           style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, minWidth: 220 }} />
@@ -81,6 +118,33 @@ export default function Prestadores() {
           style={{ padding: '10px 18px', backgroundColor: '#22C55E', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', minWidth: 160 }}>
           Aplicar filtros
         </button>
+      </div>
+
+      <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+        <button type="button" onClick={handleUsarLocalizacao} disabled={locationLoading}
+          style={{ padding: '10px 18px', backgroundColor: locationLoading ? '#9ca3af' : '#3b82f6', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>
+          {locationLoading ? 'Obtendo localização...' : usarLocalizacao ? '📍 Localização ativada' : '📍 Usar minha localização'}
+        </button>
+        {usarLocalizacao && (
+          <>
+            <label style={{ fontSize: 14, color: '#374151', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>Raio:</span>
+              <select value={raio} onChange={e => setRaio(Number(e.target.value))}
+                style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14 }}>
+                <option value={5}>5 km</option>
+                <option value={10}>10 km</option>
+                <option value={25}>25 km</option>
+                <option value={50}>50 km</option>
+                <option value={100}>100 km</option>
+              </select>
+            </label>
+            <button type="button" onClick={() => { setUsarLocalizacao(false); setUserLocation(null); prestadorService.listar().then(setPrestadores) }}
+              style={{ padding: '8px 14px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              Limpar
+            </button>
+          </>
+        )}
+        {locationError && <span style={{ fontSize: 13, color: '#ef4444' }}>{locationError}</span>}
       </div>
 
       {loading ? <p style={{ color: '#6b7280' }}>Carregando...</p> : (
@@ -117,6 +181,12 @@ export default function Prestadores() {
               {(p.cidade || p.bairro) && (
                 <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 10 }}>
                   📍 {[p.bairro, p.cidade].filter(Boolean).join(', ')}
+                  {p.distanciaKm != null && <span style={{ color: '#22C55E', fontWeight: 600, marginLeft: 8 }}>{p.distanciaKm} km</span>}
+                </p>
+              )}
+              {!p.cidade && !p.bairro && p.distanciaKm != null && (
+                <p style={{ fontSize: 12, color: '#22C55E', fontWeight: 600, marginBottom: 10 }}>
+                  📍 {p.distanciaKm} km de distância
                 </p>
               )}
 

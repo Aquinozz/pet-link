@@ -34,6 +34,10 @@ public class PrestadorModel {
     @Column
     private String horarioFuncionamento;
 
+    private Double latitude;
+
+    private Double longitude;
+
     @OneToOne
     @JoinColumn(name = "user_id", unique = true)
     private Users user;

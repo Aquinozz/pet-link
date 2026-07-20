@@ -21,6 +21,7 @@ import pet_link.dtos.PrestadorResponseDTO;
 import pet_link.services.PrestadorService;
 
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "Prestadores", description = "Endpoints relacionados ao gerenciamento de profissionais e clínicas")
 @RestController
@@ -60,6 +61,32 @@ public class PrestadorController {
     @ApiResponse(responseCode = "200", description = "Lista de prestadores recuperada com sucesso")
     public ResponseEntity<List<PrestadorResponseDTO>> listarTodos() {
         return ResponseEntity.ok(service.listarTodosProfissionais());
+    }
+
+    @GetMapping("/proximos")
+    @Operation(summary = "Listar prestadores próximos",
+            description = "Retorna prestadores ordenados por distância dentro de um raio em km")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de prestadores próximos"),
+            @ApiResponse(responseCode = "400", description = "Parâmetros inválidos")
+    })
+    public ResponseEntity<List<PrestadorResponseDTO>> listarProximos(
+            @RequestParam double lat,
+            @RequestParam double lng,
+            @RequestParam(defaultValue = "50") double raio) {
+        return ResponseEntity.ok(service.listarProximos(lat, lng, raio));
+    }
+
+    @PostMapping("/backfill-coords")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Backfill coordenadas de prestadores sem latitude/longitude",
+            description = "Varre todos os prestadores com latitude nula e geocodifica cidade+bairro via Nominatim")
+    public ResponseEntity<Map<String, Object>> backfillCoords() {
+        int atualizados = service.backfillCoords();
+        return ResponseEntity.ok(Map.of(
+                "atualizados", atualizados,
+                "mensagem", atualizados + " prestador(es) atualizado(s) com coordenadas"
+        ));
     }
 
     @PatchMapping("/meu-perfil")

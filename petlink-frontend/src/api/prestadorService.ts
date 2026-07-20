@@ -14,4 +14,6 @@ export const prestadorService = {
   buscarPorId: async (id: number): Promise<PrestadorResponseDto> => (await api.get(`/prestadores/${id}`)).data,
   atualizarPerfil: async (data: AtualizarPerfilDto): Promise<PrestadorResponseDto> =>
     (await api.patch('/prestadores/meu-perfil', data)).data,
+  listarProximos: async (lat: number, lng: number, raio: number = 50): Promise<PrestadorResponseDto[]> =>
+    (await api.get(`/prestadores/proximos?lat=${lat}&lng=${lng}&raio=${raio}`)).data,
 }

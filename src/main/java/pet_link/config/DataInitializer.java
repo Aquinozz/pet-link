@@ -81,6 +81,8 @@ public class DataInitializer implements CommandLineRunner {
             prestador.setTelefone("71 98459613");
             prestador.setHorarioFuncionamento("Seg a Sex: 08h às 18h | Sáb: 08h às 13h");
             prestador.setUser(usuarioPrestador);
+            prestador.setLatitude(-12.9027);
+            prestador.setLongitude(-38.4411);
             prestadorRepository.save(prestador);
         }
 
@@ -104,6 +106,8 @@ public class DataInitializer implements CommandLineRunner {
             creche.setTelefone("71 98765-4321");
             creche.setHorarioFuncionamento("Seg a Sex: 07h às 19h | Sáb: 08h às 17h");
             creche.setUser(usuarioCreche);
+            creche.setLatitude(-13.0039);
+            creche.setLongitude(-38.4507);
             prestadorRepository.save(creche);
         }
 
@@ -127,6 +131,8 @@ public class DataInitializer implements CommandLineRunner {
             petshop.setTelefone("71 93333-2222");
             petshop.setHorarioFuncionamento("Seg a Sáb: 09h às 20h | Dom: 10h às 16h");
             petshop.setUser(usuarioPetshop);
+            petshop.setLatitude(-13.0086);
+            petshop.setLongitude(-38.5322);
             prestadorRepository.save(petshop);
         }
     }

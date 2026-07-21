@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import pet_link.dtos.PetRequestDTO;
 import pet_link.dtos.PetResponseDTO;
 import pet_link.services.PetService;
@@ -56,6 +57,14 @@ public class PetController {
             @Parameter(description = "ID do pet que deseja buscar", example = "1")
             @PathVariable Long id) {
         return ResponseEntity.ok(service.buscarPorId(id));
+    }
+
+    @PostMapping("/{id}/upload-foto")
+    @Operation(summary = "Upload da foto do pet")
+    public ResponseEntity<PetResponseDTO> uploadFoto(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(service.uploadFoto(id, file));
     }
 
     @DeleteMapping("/{id}")

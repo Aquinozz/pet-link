@@ -17,6 +17,14 @@ export const petService = {
     return response.data
   },
 
+  uploadFoto: async (petId: number, file: File): Promise<PetResponseDto> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return (await api.post(`/pets/${petId}/upload-foto`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })).data
+  },
+
   remover: async (id: number): Promise<void> => {
     await api.delete(`/pets/${id}`)
   },

@@ -3,15 +3,22 @@ package pet_link.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import pet_link.dtos.PetRequestDTO;
 import pet_link.dtos.PetResponseDTO;
 import pet_link.dtos.TutorResponseDTO;
+import pet_link.exceptions.BadRequestException;
 import pet_link.exceptions.ResourceNotFoundException;
 import pet_link.models.PetModel;
 import pet_link.models.Users;
 import pet_link.repositories.PetRepository;
 import pet_link.repositories.UserRepository;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 @Service
@@ -58,6 +65,7 @@ public class PetService {
                     res.setEspecie(pet.getEspecie());
                     res.setNome(pet.getNome());
                     res.setIdade(pet.getIdade());
+                    res.setFotoUrl(pet.getFotoUrl());
                     if (pet.getTutor() != null) {
                         res.setTutor(new TutorResponseDTO(pet.getTutor()));
                     }
@@ -76,12 +84,50 @@ public class PetService {
         response.setEspecie(pet.getEspecie());
         response.setNome(pet.getNome());
         response.setIdade(pet.getIdade());
+        response.setFotoUrl(pet.getFotoUrl());
 
         if (pet.getTutor() != null) {
             response.setTutor(new TutorResponseDTO(pet.getTutor()));
         }
 
         return response;
+    }
+
+    @Transactional
+    public PetResponseDTO uploadFoto(Long petId, MultipartFile file) {
+        PetModel pet = repository.findById(petId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pet com ID " + petId + " não encontrado."));
+
+        try {
+            String ext = "";
+            String originalName = file.getOriginalFilename();
+            if (originalName != null && originalName.contains(".")) {
+                ext = originalName.substring(originalName.lastIndexOf("."));
+            }
+            String filename = pet.getId() + ext;
+            Path uploadDir = Paths.get("uploads", "pets");
+            Files.createDirectories(uploadDir);
+            Path filePath = uploadDir.resolve(filename);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            String fotoUrl = "/uploads/pets/" + filename;
+            pet.setFotoUrl(fotoUrl);
+            repository.save(pet);
+
+            PetResponseDTO response = new PetResponseDTO();
+            response.setId(pet.getId());
+            response.setNome(pet.getNome());
+            response.setEspecie(pet.getEspecie());
+            response.setRaca(pet.getRaca());
+            response.setIdade(pet.getIdade());
+            response.setFotoUrl(pet.getFotoUrl());
+            if (pet.getTutor() != null) {
+                response.setTutor(new TutorResponseDTO(pet.getTutor()));
+            }
+            return response;
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao salvar arquivo de foto.", e);
+        }
     }
 
     @Transactional

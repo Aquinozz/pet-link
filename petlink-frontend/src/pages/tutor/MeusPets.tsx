@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
+import { API_URL } from '../../api/axiosInstance'
 import { petService } from '../../api/petService'
 import { useAuth } from '../../contexts/AuthContext'
 import type { PetResponseDto } from '../../types'
@@ -17,6 +18,8 @@ export default function MeusPets() {
   const [form, setForm] = useState({ nome: '', especie: '', raca: '', idade: '' })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [uploadingPetId, setUploadingPetId] = useState<number | null>(null)
+  const fileInputs = useRef<Record<number, HTMLInputElement>>({})
 
   const load = async () => {
     try {
@@ -25,6 +28,18 @@ export default function MeusPets() {
     } catch {
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleFotoUpload = async (petId: number, file: File) => {
+    setUploadingPetId(petId)
+    try {
+      const result = await petService.uploadFoto(petId, file)
+      setPets(prev => prev.map(p => p.id === petId ? { ...p, fotoUrl: result.fotoUrl } : p))
+    } catch {
+    } finally {
+      setUploadingPetId(null)
+      if (fileInputs.current[petId]) fileInputs.current[petId].value = ''
     }
   }
 
@@ -116,7 +131,22 @@ export default function MeusPets() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
           {pets.map(pet => (
             <div key={pet.id} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20, border: '1px solid #F4F7F6' }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>{emojiEspecie(pet.especie)}</div>
+              <div style={{ position: 'relative', width: '100%', height: 120, marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {pet.fotoUrl ? (
+                  <img src={`${API_URL}${pet.fotoUrl}`} alt={pet.nome}
+                    style={{ width: '100%', height: 120, borderRadius: 12, objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div style={{ fontSize: 48 }}>{emojiEspecie(pet.especie)}</div>
+                )}
+                <button onClick={() => fileInputs.current[pet.id]?.click()} disabled={uploadingPetId === pet.id}
+                  style={{ position: 'absolute', bottom: 4, right: 4, width: 32, height: 32, borderRadius: '50%', backgroundColor: '#22C55E', color: '#fff', border: 'none', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {uploadingPetId === pet.id ? '...' : '📷'}
+                </button>
+                <input ref={el => { if (el) fileInputs.current[pet.id] = el }} type="file" accept="image/png,image/jpeg,image/jpg"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleFotoUpload(pet.id, f) }}
+                  style={{ display: 'none' }} />
+              </div>
               <p style={{ fontSize: 18, fontWeight: 700, color: '#111827', marginBottom: 4 }}>{pet.nome}</p>
               <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 2 }}>{pet.especie} • {pet.raca}</p>
               <p style={{ fontSize: 13, color: '#6b7280' }}>{pet.idade} ano(s)</p>

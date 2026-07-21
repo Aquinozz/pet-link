@@ -34,6 +34,7 @@ export interface PetResponseDto {
   especie: string
   raca: string
   idade: number
+  fotoUrl?: string
   tutor: TutorResponseDto
 }
 

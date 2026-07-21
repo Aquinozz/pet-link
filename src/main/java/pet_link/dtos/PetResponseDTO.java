@@ -15,6 +15,7 @@ public class PetResponseDTO {
     private String especie;
     private String raca;
     private Integer idade;
+    private String fotoUrl;
     private TutorResponseDTO tutor;
 
     public PetResponseDTO(PetModel pet) {
@@ -24,6 +25,7 @@ public class PetResponseDTO {
             this.especie = pet.getEspecie();
             this.raca = pet.getRaca();
             this.idade = pet.getIdade();
+            this.fotoUrl = pet.getFotoUrl();
             if (pet.getTutor() != null) {
                 this.tutor = new TutorResponseDTO(pet.getTutor());
             }

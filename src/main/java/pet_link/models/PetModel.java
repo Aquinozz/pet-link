@@ -23,6 +23,8 @@ public class PetModel {
 
     private Integer idade;
 
+    private String fotoUrl;
+
     @ManyToOne
     @JoinColumn(name = "tutor_id")
     private Users tutor;

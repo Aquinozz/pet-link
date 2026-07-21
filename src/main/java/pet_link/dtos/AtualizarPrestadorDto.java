@@ -12,4 +12,5 @@ public class AtualizarPrestadorDto {
     private String horarioFuncionamento;
     private Double latitude;
     private Double longitude;
+    private String fotoUrl;
 }

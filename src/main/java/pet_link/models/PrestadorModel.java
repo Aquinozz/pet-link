@@ -38,6 +38,8 @@ public class PrestadorModel {
 
     private Double longitude;
 
+    private String fotoUrl;
+
     @OneToOne
     @JoinColumn(name = "user_id", unique = true)
     private Users user;

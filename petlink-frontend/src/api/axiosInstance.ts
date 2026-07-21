@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
 const api = axios.create({
   baseURL: API_URL,
@@ -9,7 +9,6 @@ const api = axios.create({
   },
 })
 
-// Interceptor de REQUEST: anexa o JWT em toda requisição
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('petlink_token')

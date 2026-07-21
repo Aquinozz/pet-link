@@ -16,4 +16,11 @@ export const prestadorService = {
     (await api.patch('/prestadores/meu-perfil', data)).data,
   listarProximos: async (lat: number, lng: number, raio: number = 50): Promise<PrestadorResponseDto[]> =>
     (await api.get(`/prestadores/proximos?lat=${lat}&lng=${lng}&raio=${raio}`)).data,
+  uploadFoto: async (file: File): Promise<PrestadorResponseDto> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return (await api.post('/prestadores/upload-foto', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })).data
+  },
 }

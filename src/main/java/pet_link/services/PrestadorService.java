@@ -16,6 +16,13 @@ import pet_link.repositories.PrestadorRepository;
 import pet_link.repositories.RolesRepository;
 import pet_link.repositories.UserRepository;
 
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -110,6 +117,38 @@ public class PrestadorService {
 
         prestadorRepository.save(prestador);
         return new PrestadorResponseDTO(usuario);
+    }
+
+    @Transactional
+    public PrestadorResponseDTO uploadFoto(String email, MultipartFile file) {
+        Users usuario = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+
+        PrestadorModel prestador = usuario.getPrestador();
+        if (prestador == null) {
+            throw new BadRequestException("Usuário não possui perfil de prestador.");
+        }
+
+        try {
+            String ext = "";
+            String originalName = file.getOriginalFilename();
+            if (originalName != null && originalName.contains(".")) {
+                ext = originalName.substring(originalName.lastIndexOf("."));
+            }
+            String filename = prestador.getId() + ext;
+            Path uploadDir = Paths.get("uploads", "prestadores");
+            Files.createDirectories(uploadDir);
+            Path filePath = uploadDir.resolve(filename);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            String fotoUrl = "/uploads/prestadores/" + filename;
+            prestador.setFotoUrl(fotoUrl);
+            prestadorRepository.save(prestador);
+
+            return new PrestadorResponseDTO(usuario);
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao salvar arquivo de foto.", e);
+        }
     }
 
     public List<PrestadorResponseDTO> listarProximos(double lat, double lng, double raioKm) {

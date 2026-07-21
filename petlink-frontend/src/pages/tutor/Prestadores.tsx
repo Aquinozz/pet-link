@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import PrestadorProfileModal from '../../components/prestador/PrestadorProfileModal'
+import { API_URL } from '../../api/axiosInstance'
 import { prestadorService } from '../../api/prestadorService'
 import type { PrestadorResponseDto } from '../../types'
 
@@ -154,7 +155,13 @@ export default function Prestadores() {
           {filtrados.map(p => (
                     <div key={p.id} onClick={() => setPrestadorSelecionado(p)} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6', cursor: 'pointer' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
-                        <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: '#EAF8ED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🏥</div>
+                        {p.fotoUrl ? (
+                          <img src={`${API_URL}${p.fotoUrl}`} alt={p.nomePrestador}
+                            style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }}
+                          />
+                        ) : (
+                          <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: '#EAF8ED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🏥</div>
+                        )}
                         <div style={{ flex: 1 }}>
                   <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', marginBottom: 2 }}>{p.nomePrestador}</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

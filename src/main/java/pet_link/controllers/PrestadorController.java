@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import pet_link.dtos.AtualizarPrestadorDto;
 import pet_link.dtos.PrestadorRequestDTO;
 import pet_link.dtos.PrestadorResponseDTO;
@@ -100,5 +101,13 @@ public class PrestadorController {
             @RequestBody AtualizarPrestadorDto dto,
             @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(service.atualizarPerfil(dto, userDetails.getUsername()));
+    }
+
+    @PostMapping("/upload-foto")
+    @Operation(summary = "Upload da foto de perfil do prestador logado")
+    public ResponseEntity<PrestadorResponseDTO> uploadFoto(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(service.uploadFoto(userDetails.getUsername(), file));
     }
 }

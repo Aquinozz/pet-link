@@ -22,6 +22,7 @@ public class MeResponseDto {
     private String bairro;
     private PrestadorType type;
     private String horarioFuncionamento;
+    private String fotoUrl;
 
     public MeResponseDto(Users user) {
         this.id = user.getId();
@@ -38,6 +39,7 @@ public class MeResponseDto {
             this.bairro = user.getPrestador().getBairro();
             this.type = user.getPrestador().getType();
             this.horarioFuncionamento = user.getPrestador().getHorarioFuncionamento();
+            this.fotoUrl = user.getPrestador().getFotoUrl();
         }
     }
 }

@@ -53,6 +53,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
 
                         .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/auth/me").authenticated()
@@ -60,6 +61,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, "/users").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/prestadores/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/prestadores/upload-foto").hasRole("PROFISSIONAL")
                         .requestMatchers(HttpMethod.POST, "/prestadores/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/prestadores/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/prestadores/meu-perfil").hasRole("PROFISSIONAL")

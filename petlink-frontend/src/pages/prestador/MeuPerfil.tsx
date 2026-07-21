@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
+import { API_URL } from '../../api/axiosInstance'
 import { authService } from '../../api/authService'
 import { prestadorService } from '../../api/prestadorService'
 import type { MeResponse } from '../../api/authService'
@@ -10,6 +11,9 @@ export default function MeuPerfil() {
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
   const [novoServico, setNovoServico] = useState('')
+  const [fotoUploading, setFotoUploading] = useState(false)
+  const [fotoSuccess, setFotoSuccess] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
     telefone: '', descricao: '', cidade: '', bairro: '', servicos: '', horarioFuncionamento: '',
   })
@@ -29,6 +33,23 @@ export default function MeuPerfil() {
   }, [])
 
   const servicos = form.servicos ? form.servicos.split(',').map(s => s.trim()).filter(Boolean) : []
+
+  const handleFotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setFotoUploading(true)
+    setFotoSuccess(false)
+    try {
+      const result = await prestadorService.uploadFoto(file)
+      setPerfil(prev => prev ? { ...prev, fotoUrl: result.fotoUrl } : null)
+      setFotoSuccess(true)
+      setTimeout(() => setFotoSuccess(false), 3000)
+    } catch {
+    } finally {
+      setFotoUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   const adicionarServico = () => {
     if (!novoServico.trim()) return
@@ -66,6 +87,30 @@ export default function MeuPerfil() {
         {perfil && (
           <p style={{ fontSize: 13, color: '#9ca3af', marginTop: 4 }}>{perfil.nome} • {perfil.email}</p>
         )}
+      </div>
+
+      <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 24 }}>
+        <div style={{ position: 'relative' }}>
+          {perfil?.fotoUrl ? (
+            <img src={`${API_URL}${perfil.fotoUrl}`} alt="Foto do perfil"
+              style={{ width: 96, height: 96, borderRadius: 16, objectFit: 'cover', border: '1px solid #F4F7F6' }}
+            />
+          ) : (
+            <div style={{ width: 96, height: 96, borderRadius: 16, backgroundColor: '#EAF8ED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }}>🏥</div>
+          )}
+        </div>
+        <div>
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Foto de perfil</h3>
+          <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 12 }}>PNG, JPG ou JPEG. Máx 10MB.</p>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button onClick={() => fileInputRef.current?.click()} disabled={fotoUploading}
+              style={{ padding: '8px 16px', backgroundColor: fotoUploading ? '#9ca3af' : '#22C55E', color: '#fff', borderRadius: 8, border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              {fotoUploading ? 'Enviando...' : '📷 Escolher foto'}
+            </button>
+            {fotoSuccess && <span style={{ fontSize: 13, color: '#16a34a', fontWeight: 600 }}>✓ Foto salva</span>}
+          </div>
+          <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/jpg" onChange={handleFotoUpload} style={{ display: 'none' }} />
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>

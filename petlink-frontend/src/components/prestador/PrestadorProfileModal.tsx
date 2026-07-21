@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { API_URL } from '../../api/axiosInstance'
 import { petService } from '../../api/petService'
 import { agendamentoService } from '../../api/agendamentoService'
 import { reviewService } from '../../api/reviewService'
@@ -142,7 +143,13 @@ export default function PrestadorProfileModal({
 
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
-            <div style={{ width: 56, height: 56, borderRadius: 16, backgroundColor: '#EAF8ED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flexShrink: 0 }}>🏥</div>
+            {prestador.fotoUrl ? (
+              <img src={`${API_URL}${prestador.fotoUrl}`} alt={prestador.nomePrestador}
+                style={{ width: 56, height: 56, borderRadius: 16, objectFit: 'cover', flexShrink: 0 }}
+              />
+            ) : (
+              <div style={{ width: 56, height: 56, borderRadius: 16, backgroundColor: '#EAF8ED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flexShrink: 0 }}>🏥</div>
+            )}
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                 <h2 style={{ fontSize: 20, fontWeight: 800, color: '#111827', margin: 0 }}>{prestador.nomePrestador}</h2>

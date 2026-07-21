@@ -6,8 +6,6 @@ const menuTutor = [
   { path: '/tutor/dashboard', label: 'Dashboard', icon: '📋' },
   { path: '/tutor/pets', label: 'Meus Pets', icon: '🐾' },
   { path: '/tutor/prestadores', label: 'Prestadores', icon: '🔍' },
-  { path: '/tutor/agendamentos', label: 'Agendamentos', icon: '📅' },
-  { path: '/tutor/avaliacoes', label: 'Avaliações', icon: '⭐' },
 ]
 
 const menuPrestador = [

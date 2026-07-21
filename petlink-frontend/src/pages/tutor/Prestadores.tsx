@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
+import PrestadorProfileModal from '../../components/prestador/PrestadorProfileModal'
 import { prestadorService } from '../../api/prestadorService'
 import type { PrestadorResponseDto } from '../../types'
 
@@ -25,6 +26,7 @@ export default function Prestadores() {
   const [bairroFiltro, setBairroFiltro] = useState('')
   const [filtrosAplicados, setFiltrosAplicados] = useState({ busca: '', servico: '', cidade: '', bairro: '' })
 
+  const [prestadorSelecionado, setPrestadorSelecionado] = useState<PrestadorResponseDto | null>(null)
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [raio, setRaio] = useState(50)
   const [usarLocalizacao, setUsarLocalizacao] = useState(false)
@@ -150,7 +152,7 @@ export default function Prestadores() {
       {loading ? <p style={{ color: '#6b7280' }}>Carregando...</p> : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
           {filtrados.map(p => (
-                    <div key={p.id} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6' }}>
+                    <div key={p.id} onClick={() => setPrestadorSelecionado(p)} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6', cursor: 'pointer' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
                         <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: '#EAF8ED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🏥</div>
                         <div style={{ flex: 1 }}>
@@ -197,6 +199,7 @@ export default function Prestadores() {
 
               {p.telefone && (
                 <a href={whatsappLink(p.telefone)} target="_blank" rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
                   style={{ display: 'block', padding: '10px 0', backgroundColor: '#22c55e', color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none', textAlign: 'center' }}>
                   💬 Falar no WhatsApp
                 </a>
@@ -207,6 +210,15 @@ export default function Prestadores() {
             <p style={{ color: '#6b7280', gridColumn: '1/-1' }}>Nenhum prestador encontrado.</p>
           )}
         </div>
+      )}
+      {prestadorSelecionado && (
+        <PrestadorProfileModal
+          prestador={prestadorSelecionado}
+          onClose={() => setPrestadorSelecionado(null)}
+          onSuccess={() => {
+            prestadorService.listar().then(setPrestadores).catch(() => {})
+          }}
+        />
       )}
     </DashboardLayout>
   )

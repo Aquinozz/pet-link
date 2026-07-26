@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { petService } from '../../api/petService'
 import { agendamentoService } from '../../api/agendamentoService'
 import { prestadorService } from '../../api/prestadorService'
+import { Hand } from 'lucide-react'
 
 export default function DashboardTutor() {
   const { user } = useAuth()
@@ -33,7 +34,7 @@ export default function DashboardTutor() {
     <DashboardLayout>
       <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, color: '#111827', marginBottom: 4 }}>
-          Olá, {user?.email?.split('@')[0]} 👋
+          Olá, {user?.email?.split('@')[0]} <Hand size={24} />
         </h1>
         <p style={{ color: '#6b7280', fontSize: 15 }}>Bem-vindo ao PetLink. Aqui está um resumo da sua conta.</p>
       </div>

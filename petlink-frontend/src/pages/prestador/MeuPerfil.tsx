@@ -4,6 +4,7 @@ import { API_URL } from '../../api/axiosInstance'
 import { authService } from '../../api/authService'
 import { prestadorService } from '../../api/prestadorService'
 import type { MeResponse } from '../../api/authService'
+import { Building, Camera, Check } from 'lucide-react'
 
 export default function MeuPerfil() {
   const [perfil, setPerfil] = useState<MeResponse | null>(null)
@@ -96,7 +97,7 @@ export default function MeuPerfil() {
               style={{ width: 96, height: 96, borderRadius: 16, objectFit: 'cover', border: '1px solid #F4F7F6' }}
             />
           ) : (
-            <div style={{ width: 96, height: 96, borderRadius: 16, backgroundColor: '#EAF8ED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }}>🏥</div>
+            <div style={{ width: 96, height: 96, borderRadius: 16, backgroundColor: '#EAF8ED', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Building size={40} /></div>
           )}
         </div>
         <div>
@@ -104,10 +105,10 @@ export default function MeuPerfil() {
           <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 12 }}>PNG, JPG ou JPEG. Máx 10MB.</p>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <button onClick={() => fileInputRef.current?.click()} disabled={fotoUploading}
-              style={{ padding: '8px 16px', backgroundColor: fotoUploading ? '#9ca3af' : '#22C55E', color: '#fff', borderRadius: 8, border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-              {fotoUploading ? 'Enviando...' : '📷 Escolher foto'}
+              style={{ padding: '8px 16px', backgroundColor: fotoUploading ? '#9ca3af' : '#22C55E', color: '#fff', borderRadius: 8, border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+              {fotoUploading ? 'Enviando...' : <><Camera size={14} /> Escolher foto</>}
             </button>
-            {fotoSuccess && <span style={{ fontSize: 13, color: '#16a34a', fontWeight: 600 }}>✓ Foto salva</span>}
+            {fotoSuccess && <span style={{ fontSize: 13, color: '#16a34a', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}><Check size={14} /> Foto salva</span>}
           </div>
           <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/jpg" onChange={handleFotoUpload} style={{ display: 'none' }} />
         </div>
@@ -144,8 +145,8 @@ export default function MeuPerfil() {
               />
             </div>
             {success && (
-              <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#16a34a' }}>
-                ✓ Perfil atualizado com sucesso!
+              <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#16a34a', display: 'flex', alignItems: 'center', gap: 6 }}>
+<Check size={14} /> Perfil atualizado com sucesso!
               </div>
             )}
             <button type="submit" disabled={saving} style={{ padding: '10px 24px', backgroundColor: '#22C55E', color: '#fff', borderRadius: 8, border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>

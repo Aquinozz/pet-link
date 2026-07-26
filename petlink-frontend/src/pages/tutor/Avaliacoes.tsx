@@ -4,6 +4,7 @@ import { reviewService } from '../../api/reviewService'
 import { prestadorService } from '../../api/prestadorService'
 import { useAuth } from '../../contexts/AuthContext'
 import type { ReviewResponseDto, PrestadorResponseDto } from '../../types'
+import { Star } from 'lucide-react'
 
 export default function Avaliacoes() {
   const { tutorId } = useAuth()
@@ -123,8 +124,8 @@ export default function Avaliacoes() {
               <div style={{ display: 'flex', gap: 8 }}>
                 {[1,2,3,4,5].map(n => (
                   <button key={n} type="button" onClick={() => setForm(f => ({ ...f, nota: n }))}
-                    style={{ width: 40, height: 40, borderRadius: 8, border: form.nota >= n ? 'none' : '1px solid #d1d5db', backgroundColor: form.nota >= n ? '#facc15' : '#f9fafb', fontSize: 20, cursor: 'pointer' }}>
-                    ★
+                    style={{ width: 40, height: 40, borderRadius: 8, border: form.nota >= n ? 'none' : '1px solid #d1d5db', backgroundColor: form.nota >= n ? '#facc15' : '#f9fafb', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Star size={20} fill={form.nota >= n ? '#fff' : '#d1d5db'} color={form.nota >= n ? '#fff' : '#d1d5db'} />
                   </button>
                 ))}
               </div>
@@ -148,7 +149,7 @@ export default function Avaliacoes() {
 
       {loading ? <p style={{ color: '#6b7280' }}>Carregando...</p> : reviews.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 0', backgroundColor: '#fff', borderRadius: 16, border: '1px solid #F4F7F6' }}>
-          <p style={{ fontSize: 48, marginBottom: 12 }}>⭐</p>
+          <div style={{ marginBottom: 12 }}><Star size={48} fill="#facc15" color="#facc15" /></div>
           <p style={{ fontSize: 16, fontWeight: 600, color: '#374151' }}>Nenhuma avaliação ainda</p>
         </div>
       ) : (
@@ -157,7 +158,7 @@ export default function Avaliacoes() {
             <div key={r.id} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20, border: '1px solid #F4F7F6' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                 <p style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>{r.prestadorNome}</p>
-                <div>{Array.from({ length: r.nota }, (_, i) => <span key={i} style={{ color: '#facc15' }}>★</span>)}</div>
+                <div style={{ display: 'flex', gap: 2 }}>{Array.from({ length: r.nota }, (_, i) => <Star key={i} size={14} fill="#facc15" color="#facc15" />)}</div>
               </div>
               <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 4 }}>{r.comentario}</p>
               <p style={{ fontSize: 11, color: '#9ca3af' }}>{r.prestadorCidade} • {r.prestadorBairro}</p>

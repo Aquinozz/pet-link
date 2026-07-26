@@ -1,16 +1,17 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { BrandLogo } from '../BrandLogo'
+import { LayoutDashboard, PawPrint, Search, Settings } from 'lucide-react'
 
 const menuTutor = [
-  { path: '/tutor/dashboard', label: 'Dashboard', icon: '📋' },
-  { path: '/tutor/pets', label: 'Meus Pets', icon: '🐾' },
-  { path: '/tutor/prestadores', label: 'Prestadores', icon: '🔍' },
+  { path: '/tutor/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
+  { path: '/tutor/pets', label: 'Meus Pets', icon: <PawPrint size={18} /> },
+  { path: '/tutor/prestadores', label: 'Prestadores', icon: <Search size={18} /> },
 ]
 
 const menuPrestador = [
-  { path: '/prestador/dashboard', label: 'Dashboard', icon: '📋' },
-  { path: '/prestador/perfil', label: 'Meu Perfil', icon: '⚙️' },
+  { path: '/prestador/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
+  { path: '/prestador/perfil', label: 'Meu Perfil', icon: <Settings size={18} /> },
 ]
 
 export default function Sidebar() {
@@ -47,7 +48,7 @@ export default function Sidebar() {
               color: active ? '#0D3B34' : '#374151',
               backgroundColor: active ? '#EAF8ED' : 'transparent',
             }}>
-              <span>{item.icon}</span>{item.label}
+              {item.icon}{item.label}
             </Link>
           )
         })}

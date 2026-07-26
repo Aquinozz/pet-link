@@ -4,11 +4,19 @@ import { API_URL } from '../../api/axiosInstance'
 import { petService } from '../../api/petService'
 import { useAuth } from '../../contexts/AuthContext'
 import type { PetResponseDto } from '../../types'
+import { Dog, Cat, Rabbit, Bird, PawPrint, Camera } from 'lucide-react'
 
 const especies = ['Cachorro', 'Gato', 'Coelho', 'Pássaro', 'Peixe', 'Outro']
 
-const emojiEspecie = (e: string) =>
-  ({ Cachorro: '🐕', Gato: '🐈', Coelho: '🐇', Pássaro: '🦜' }[e] ?? '🐾')
+const especieIcon = (e: string) => {
+  const icons: Record<string, React.ReactNode> = {
+    Cachorro: <Dog size={48} />,
+    Gato: <Cat size={48} />,
+    Coelho: <Rabbit size={48} />,
+    Pássaro: <Bird size={48} />,
+  }
+  return icons[e] ?? <PawPrint size={48} />
+}
 
 export default function MeusPets() {
   const { user, tutorId } = useAuth()
@@ -123,7 +131,7 @@ export default function MeusPets() {
         <p style={{ color: '#6b7280' }}>Carregando...</p>
       ) : pets.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 0', backgroundColor: '#fff', borderRadius: 16, border: '1px solid #F4F7F6' }}>
-          <p style={{ fontSize: 48, marginBottom: 12 }}>🐾</p>
+          <div style={{ marginBottom: 12 }}><PawPrint size={48} /></div>
           <p style={{ fontSize: 16, fontWeight: 600, color: '#374151' }}>Nenhum pet cadastrado ainda</p>
           <p style={{ fontSize: 14, color: '#9ca3af' }}>Clique em "Novo pet" para começar</p>
         </div>
@@ -137,11 +145,11 @@ export default function MeusPets() {
                     style={{ width: '100%', height: 120, borderRadius: 12, objectFit: 'cover' }}
                   />
                 ) : (
-                  <div style={{ fontSize: 48 }}>{emojiEspecie(pet.especie)}</div>
+                  <div>{especieIcon(pet.especie)}</div>
                 )}
                 <button onClick={() => fileInputs.current[pet.id]?.click()} disabled={uploadingPetId === pet.id}
                   style={{ position: 'absolute', bottom: 4, right: 4, width: 32, height: 32, borderRadius: '50%', backgroundColor: '#22C55E', color: '#fff', border: 'none', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {uploadingPetId === pet.id ? '...' : '📷'}
+                  {uploadingPetId === pet.id ? '...' : <Camera size={14} />}
                 </button>
                 <input ref={el => { if (el) fileInputs.current[pet.id] = el }} type="file" accept="image/png,image/jpeg,image/jpg"
                   onChange={e => { const f = e.target.files?.[0]; if (f) handleFotoUpload(pet.id, f) }}

@@ -4,6 +4,7 @@ import PrestadorProfileModal from '../../components/prestador/PrestadorProfileMo
 import { API_URL } from '../../api/axiosInstance'
 import { prestadorService } from '../../api/prestadorService'
 import type { PrestadorResponseDto } from '../../types'
+import { Star, MapPin, Building, Clock, Mail, MessageCircle } from 'lucide-react'
 
 const whatsappLink = (tel: string) =>
   `https://api.whatsapp.com/send?phone=55${tel.replace(/\D/g, '')}&text=${encodeURIComponent('Olá! Vi seu perfil no PetLink e gostaria de agendar um serviço.')}`
@@ -91,9 +92,10 @@ export default function Prestadores() {
   }
 
   const stars = (n: number) =>
-    Array.from({ length: 5 }, (_, i) => (
-      <span key={i} style={{ color: i < Math.round(n) ? '#facc15' : '#F4F7F6', fontSize: 14 }}>★</span>
-    ))
+    Array.from({ length: 5 }, (_, i) => {
+      const active = i < Math.round(n)
+      return <Star key={i} size={14} fill={active ? '#facc15' : '#F4F7F6'} color={active ? '#facc15' : '#F4F7F6'} />
+    })
 
   return (
     <DashboardLayout>
@@ -126,7 +128,7 @@ export default function Prestadores() {
       <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
         <button type="button" onClick={handleUsarLocalizacao} disabled={locationLoading}
           style={{ padding: '10px 18px', backgroundColor: locationLoading ? '#9ca3af' : '#3b82f6', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>
-          {locationLoading ? 'Obtendo localização...' : usarLocalizacao ? '📍 Localização ativada' : '📍 Usar minha localização'}
+          {locationLoading ? 'Obtendo localização...' : usarLocalizacao ? <><MapPin size={14} /> Localização ativada</> : <><MapPin size={14} /> Usar minha localização</>}
         </button>
         {usarLocalizacao && (
           <>
@@ -160,7 +162,7 @@ export default function Prestadores() {
                             style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }}
                           />
                         ) : (
-                          <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: '#EAF8ED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🏥</div>
+                          <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: '#EAF8ED', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Building size={22} /></div>
                         )}
                         <div style={{ flex: 1 }}>
                   <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', marginBottom: 2 }}>{p.nomePrestador}</p>
@@ -189,26 +191,26 @@ export default function Prestadores() {
 
               {(p.cidade || p.bairro) && (
                 <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 10 }}>
-                  📍 {[p.bairro, p.cidade].filter(Boolean).join(', ')}
+                  <MapPin size={12} /> {[p.bairro, p.cidade].filter(Boolean).join(', ')}
                   {p.distanciaKm != null && <span style={{ color: '#22C55E', fontWeight: 600, marginLeft: 8 }}>{p.distanciaKm} km</span>}
                 </p>
               )}
               {!p.cidade && !p.bairro && p.distanciaKm != null && (
                 <p style={{ fontSize: 12, color: '#22C55E', fontWeight: 600, marginBottom: 10 }}>
-                  📍 {p.distanciaKm} km de distância
+                  <MapPin size={12} /> {p.distanciaKm} km de distância
                 </p>
               )}
 
               {p.horarioFuncionamento && (
-                <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 10 }}>🕐 {p.horarioFuncionamento}</p>
+                <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 10 }}><Clock size={12} /> {p.horarioFuncionamento}</p>
               )}
-              <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 12 }}>📧 {p.email}</p>
+              <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 12 }}><Mail size={12} /> {p.email}</p>
 
               {p.telefone && (
                 <a href={whatsappLink(p.telefone)} target="_blank" rel="noopener noreferrer"
                   onClick={e => e.stopPropagation()}
-                  style={{ display: 'block', padding: '10px 0', backgroundColor: '#22c55e', color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none', textAlign: 'center' }}>
-                  💬 Falar no WhatsApp
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 0', backgroundColor: '#22c55e', color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none', textAlign: 'center' }}>
+                  <MessageCircle size={14} /> Falar no WhatsApp
                 </a>
               )}
             </div>

@@ -5,6 +5,7 @@ import { agendamentoService } from '../../api/agendamentoService'
 import { reviewService } from '../../api/reviewService'
 import { useAuth } from '../../contexts/AuthContext'
 import type { PrestadorResponseDto, PetResponseDto } from '../../types'
+import { Star, MapPin, Clock, Mail, Phone, MessageCircle, Calendar, X, Building } from 'lucide-react'
 
 const tipoLabel: Record<string, string> = {
   CLINICA_VETERINARIA: 'Clínica Veterinária',
@@ -20,9 +21,10 @@ const whatsappLink = (tel: string) =>
   `https://api.whatsapp.com/send?phone=55${tel.replace(/\D/g, '')}&text=${encodeURIComponent('Olá! Vi seu perfil no PetLink e gostaria de agendar um serviço.')}`
 
 const stars = (n: number) =>
-  Array.from({ length: 5 }, (_, i) => (
-    <span key={i} style={{ color: i < Math.round(n) ? '#facc15' : '#F4F7F6', fontSize: 18 }}>★</span>
-  ))
+  Array.from({ length: 5 }, (_, i) => {
+    const active = i < Math.round(n)
+    return <Star key={i} size={18} fill={active ? '#facc15' : '#F4F7F6'} color={active ? '#facc15' : '#F4F7F6'} />
+  })
 
 const overlayStyle: React.CSSProperties = {
   position: 'fixed',
@@ -137,8 +139,8 @@ export default function PrestadorProfileModal({
     <div style={overlayStyle} onClick={onClose}>
       <div style={modalStyle} onClick={e => e.stopPropagation()}>
         <button onClick={onClose}
-          style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#9ca3af', lineHeight: 1 }}>
-          ✕
+          style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32 }}>
+          <X size={20} />
         </button>
 
         <div style={{ marginBottom: 20 }}>
@@ -148,7 +150,7 @@ export default function PrestadorProfileModal({
                 style={{ width: 56, height: 56, borderRadius: 16, objectFit: 'cover', flexShrink: 0 }}
               />
             ) : (
-              <div style={{ width: 56, height: 56, borderRadius: 16, backgroundColor: '#EAF8ED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flexShrink: 0 }}>🏥</div>
+              <div style={{ width: 56, height: 56, borderRadius: 16, backgroundColor: '#EAF8ED', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Building size={26} /></div>
             )}
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -183,20 +185,20 @@ export default function PrestadorProfileModal({
 
         <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           {(prestador.cidade || prestador.bairro) && (
-            <span>📍 {[prestador.bairro, prestador.cidade].filter(Boolean).join(', ')}</span>
+            <span><MapPin size={12} /> {[prestador.bairro, prestador.cidade].filter(Boolean).join(', ')}</span>
           )}
-          {prestador.horarioFuncionamento && <span>🕐 {prestador.horarioFuncionamento}</span>}
+          {prestador.horarioFuncionamento && <span><Clock size={12} /> {prestador.horarioFuncionamento}</span>}
         </div>
         <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 16 }}>
-          <span>📧 {prestador.email}</span>
-          {prestador.telefone && <span style={{ marginLeft: 16 }}>📞 {prestador.telefone}</span>}
+          <span><Mail size={12} /> {prestador.email}</span>
+          {prestador.telefone && <span style={{ marginLeft: 16 }}><Phone size={12} /> {prestador.telefone}</span>}
         </div>
 
         {prestador.telefone && (
           <a href={whatsappLink(prestador.telefone)} target="_blank" rel="noopener noreferrer"
             onClick={e => e.stopPropagation()}
-            style={{ display: 'block', padding: '10px 0', backgroundColor: '#22c55e', color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none', textAlign: 'center', marginBottom: 20 }}>
-            💬 Falar no WhatsApp
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 0', backgroundColor: '#22c55e', color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none', textAlign: 'center', marginBottom: 20 }}>
+            <MessageCircle size={14} /> Falar no WhatsApp
           </a>
         )}
 
@@ -209,9 +211,9 @@ export default function PrestadorProfileModal({
                 fontWeight: activeTab === tab ? 700 : 500,
                 color: activeTab === tab ? '#22C55E' : '#6b7280',
                 fontSize: 14, cursor: 'pointer',
-                marginBottom: -2,
+                marginBottom: -2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
               }}>
-              {tab === 'agendar' ? '📅 Agendar Serviço' : '⭐ Avaliar'}
+              {tab === 'agendar' ? <><Calendar size={16} /> Agendar Serviço</> : <><Star size={16} /> Avaliar</>}
             </button>
           ))}
         </div>
@@ -268,8 +270,8 @@ export default function PrestadorProfileModal({
               <div style={{ display: 'flex', gap: 8 }}>
                 {[1, 2, 3, 4, 5].map(n => (
                   <button key={n} type="button" onClick={() => setAvForm(f => ({ ...f, nota: n }))}
-                    style={{ width: 44, height: 44, borderRadius: 8, border: avForm.nota >= n ? 'none' : '1px solid #d1d5db', backgroundColor: avForm.nota >= n ? '#facc15' : '#f9fafb', fontSize: 22, cursor: 'pointer' }}>
-                    ★
+                    style={{ width: 44, height: 44, borderRadius: 8, border: avForm.nota >= n ? 'none' : '1px solid #d1d5db', backgroundColor: avForm.nota >= n ? '#facc15' : '#f9fafb', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Star size={22} fill={avForm.nota >= n ? '#fff' : '#d1d5db'} color={avForm.nota >= n ? '#fff' : '#d1d5db'} />
                   </button>
                 ))}
               </div>

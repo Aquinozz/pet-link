@@ -5,6 +5,7 @@ import { petService } from '../../api/petService'
 import { prestadorService } from '../../api/prestadorService'
 import { useAuth } from '../../contexts/AuthContext'
 import type { AgendamentoResponseDto, PetResponseDto, PrestadorResponseDto } from '../../types'
+import { Calendar, PawPrint, Building } from 'lucide-react'
 
 const statusStyle: Record<string, { bg: string; color: string }> = {
   AGENDADO: { bg: '#EAF8ED', color: '#0D3B34' },
@@ -181,7 +182,7 @@ export default function Agendamentos() {
 
       {loading ? <p style={{ color: '#6b7280' }}>Carregando...</p> : agendamentos.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 0', backgroundColor: '#fff', borderRadius: 16, border: '1px solid #F4F7F6' }}>
-          <p style={{ fontSize: 48, marginBottom: 12 }}>📅</p>
+          <div style={{ marginBottom: 12 }}><Calendar size={48} /></div>
           <p style={{ fontSize: 16, fontWeight: 600, color: '#374151' }}>Nenhum agendamento ainda</p>
         </div>
       ) : (
@@ -196,7 +197,7 @@ export default function Agendamentos() {
                     <span style={{ fontSize: 11, fontWeight: 600, backgroundColor: st.bg, color: st.color, padding: '2px 8px', borderRadius: 6 }}>{a.status}</span>
                   </div>
                   <p style={{ fontSize: 13, color: '#6b7280' }}>
-                    🐾 {a.pet?.nome} • 🏥 {a.servico ?? 'Serviço não informado'} • 📅 {formatData(a.dataHora)}
+                    <PawPrint size={13} /> {a.pet?.nome} • <Building size={13} /> {a.servico ?? 'Serviço não informado'} • <Calendar size={13} /> {formatData(a.dataHora)}
                   </p>
                 </div>
               </div>

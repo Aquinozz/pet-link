@@ -4,6 +4,7 @@ import { agendamentoService } from '../../api/agendamentoService'
 import { reviewService } from '../../api/reviewService'
 import { useAuth } from '../../contexts/AuthContext'
 import type { AgendamentoResponseDto, ReviewResponseDto } from '../../types'
+import { Hand, Calendar, PawPrint, Check, X, Star } from 'lucide-react'
 
 const statusStyle: Record<string, { bg: string; color: string; label: string }> = {
   AGENDADO: { bg: '#EAF8ED', color: '#0D3B34', label: 'Agendado' },
@@ -50,7 +51,7 @@ export default function DashboardPrestador() {
     <DashboardLayout>
       <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, color: '#111827', marginBottom: 4 }}>
-          Olá, {user?.email?.split('@')[0]} 👋
+          Olá, {user?.email?.split('@')[0]} <Hand size={24} />
         </h1>
         <p style={{ color: '#6b7280', fontSize: 15 }}>Aqui está o resumo dos seus atendimentos.</p>
       </div>
@@ -72,7 +73,7 @@ export default function DashboardPrestador() {
         <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 20 }}>Minha agenda</h2>
         {loading ? <p style={{ color: '#6b7280' }}>Carregando...</p> : agendamentos.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 0' }}>
-            <p style={{ fontSize: 40, marginBottom: 8 }}>📅</p>
+<div style={{ marginBottom: 8 }}><Calendar size={40} /></div>
             <p style={{ fontSize: 15, color: '#6b7280' }}>Nenhum agendamento recebido ainda.</p>
           </div>
         ) : (
@@ -86,16 +87,16 @@ export default function DashboardPrestador() {
                       <p style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>{a.tutor?.nome}</p>
                       <span style={{ fontSize: 11, fontWeight: 600, backgroundColor: st.bg, color: st.color, padding: '2px 8px', borderRadius: 6 }}>{st.label}</span>
                     </div>
-                    <p style={{ fontSize: 13, color: '#6b7280' }}>🐾 {a.pet?.nome} ({a.pet?.especie}) • 📅 {formatData(a.dataHora)}</p>
+                    <p style={{ fontSize: 13, color: '#6b7280' }}><PawPrint size={13} /> {a.pet?.nome} ({a.pet?.especie}) • <Calendar size={13} /> {formatData(a.dataHora)}</p>
                     {a.status === 'AGENDADO' && (
                       <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                         <button onClick={() => atualizarStatus(a.id, 'CONFIRMADO')}
-                          style={{ padding: '6px 14px', backgroundColor: '#16a34a', color: '#fff', borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-                          ✓ Confirmar
+                          style={{ padding: '6px 14px', backgroundColor: '#16a34a', color: '#fff', borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Check size={14} /> Confirmar
                         </button>
                         <button onClick={() => atualizarStatus(a.id, 'CANCELADO')}
-                          style={{ padding: '6px 14px', backgroundColor: '#fef2f2', color: '#b91c1c', borderRadius: 6, border: '1px solid #fecaca', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-                          ✗ Cancelar
+                          style={{ padding: '6px 14px', backgroundColor: '#fef2f2', color: '#b91c1c', borderRadius: 6, border: '1px solid #fecaca', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <X size={14} /> Cancelar
                         </button>
                       </div>
                     )}
@@ -115,7 +116,7 @@ export default function DashboardPrestador() {
               <div key={r.id} style={{ padding: 16, borderRadius: 12, border: '1px solid #f3f4f6' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                   <p style={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>{r.tutorNome}</p>
-                  <div>{Array.from({ length: r.nota }, (_, i) => <span key={i} style={{ color: '#facc15' }}>★</span>)}</div>
+                  <div style={{ display: 'flex', gap: 2 }}>{Array.from({ length: r.nota }, (_, i) => <Star key={i} size={14} fill="#facc15" color="#facc15" />)}</div>
                 </div>
                 {r.comentario && <p style={{ fontSize: 13, color: '#6b7280' }}>{r.comentario}</p>}
               </div>

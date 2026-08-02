@@ -1,0 +1,11 @@
+.git
+.gitignore
+.env
+.env.example
+.idea
+target
+.github
+petlink-frontend
+docker-compose.yml
+*.md
+HELP.md

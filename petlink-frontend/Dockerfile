@@ -9,7 +9,7 @@ COPY index.html ./
 COPY public ./public
 COPY src ./src
 
-RUN npm install
+RUN npm ci
 RUN npm run build
 
 FROM nginx:alpine

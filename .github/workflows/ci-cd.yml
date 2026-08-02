@@ -1,0 +1,121 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  SPRING_APPLICATION_NAME: pet_link
+  SERVER_PORT: 8080
+  SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+  SPRING_JPA_HIBERNATE_DDL_AUTO: update
+  SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+  SPRING_JPA_SHOW_SQL: 'false'
+  SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: 10MB
+  SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: 10MB
+  SPRING_JACKSON_TIME_ZONE: America/Sao_Paulo
+  JWT_EXPIRATION: '900000'
+  JWT_SECRET: 'ci-only-secret-nao-usar-em-producao-9f3a1c8e2b7d4f6a0c5e8d1b'
+
+jobs:
+  backend:
+    name: Backend (Maven + Testes)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: petlink_test
+          POSTGRES_USER: petlink
+          POSTGRES_PASSWORD: petlink
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/petlink_test
+      SPRING_DATASOURCE_USERNAME: petlink
+      SPRING_DATASOURCE_PASSWORD: petlink
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Test com Maven
+        run: ./mvnw -B verify
+
+  frontend:
+    name: Frontend (Lint + Build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: petlink-frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: petlink-frontend/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+  docker:
+    name: Build e push das imagens Docker
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build e push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}-backend:latest
+            ghcr.io/${{ github.repository }}-backend:${{ github.sha }}
+
+      - name: Build e push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./petlink-frontend
+          file: petlink-frontend/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}-frontend:latest
+            ghcr.io/${{ github.repository }}-frontend:${{ github.sha }}

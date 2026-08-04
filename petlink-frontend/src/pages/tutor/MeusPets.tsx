@@ -4,7 +4,7 @@ import { API_URL } from '../../api/axiosInstance'
 import { petService } from '../../api/petService'
 import { useAuth } from '../../contexts/AuthContext'
 import type { PetResponseDto } from '../../types'
-import { Dog, Cat, Rabbit, Bird, PawPrint, Camera } from 'lucide-react'
+import { Dog, Cat, Rabbit, Bird, PawPrint, Camera, Trash2 } from 'lucide-react'
 
 const especies = ['Cachorro', 'Gato', 'Coelho', 'Pássaro', 'Peixe', 'Outro']
 
@@ -27,6 +27,7 @@ export default function MeusPets() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [uploadingPetId, setUploadingPetId] = useState<number | null>(null)
+  const [removendoPetId, setRemovendoPetId] = useState<number | null>(null)
   const fileInputs = useRef<Record<number, HTMLInputElement>>({})
 
   const load = async () => {
@@ -67,6 +68,19 @@ export default function MeusPets() {
       setError('Erro ao cadastrar pet.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleRemover = async (pet: PetResponseDto) => {
+    if (!window.confirm(`Remover o pet "${pet.nome}"?`)) return
+    setRemovendoPetId(pet.id)
+    try {
+      await petService.remover(pet.id)
+      setPets(prev => prev.filter(p => p.id !== pet.id))
+    } catch {
+      alert('Erro ao remover o pet. Tente novamente.')
+    } finally {
+      setRemovendoPetId(null)
     }
   }
 
@@ -150,6 +164,10 @@ export default function MeusPets() {
                 <button onClick={() => fileInputs.current[pet.id]?.click()} disabled={uploadingPetId === pet.id}
                   style={{ position: 'absolute', bottom: 4, right: 4, width: 32, height: 32, borderRadius: '50%', backgroundColor: '#22C55E', color: '#fff', border: 'none', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {uploadingPetId === pet.id ? '...' : <Camera size={14} />}
+                </button>
+                <button onClick={() => handleRemover(pet)} disabled={removendoPetId === pet.id}
+                  style={{ position: 'absolute', top: 4, right: 4, width: 32, height: 32, borderRadius: '50%', backgroundColor: '#EF4444', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {removendoPetId === pet.id ? '...' : <Trash2 size={14} />}
                 </button>
                 <input ref={el => { if (el) fileInputs.current[pet.id] = el }} type="file" accept="image/png,image/jpeg,image/jpg"
                   onChange={e => { const f = e.target.files?.[0]; if (f) handleFotoUpload(pet.id, f) }}

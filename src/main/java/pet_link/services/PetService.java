@@ -1,6 +1,7 @@
 package pet_link.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,6 +28,9 @@ public class PetService {
 
     private final PetRepository repository;
     private final UserRepository userRepository;
+
+    @Value("${app.upload-dir:./uploads}")
+    private String uploadDir;
 
     @Transactional
     public PetResponseDTO criar(PetRequestDTO dto) {
@@ -105,9 +109,9 @@ public class PetService {
                 ext = originalName.substring(originalName.lastIndexOf("."));
             }
             String filename = pet.getId() + ext;
-            Path uploadDir = Paths.get("uploads", "pets");
-            Files.createDirectories(uploadDir);
-            Path filePath = uploadDir.resolve(filename);
+            Path dir = Paths.get(uploadDir).resolve("pets");
+            Files.createDirectories(dir);
+            Path filePath = dir.resolve(filename);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
             String fotoUrl = "/uploads/pets/" + filename;

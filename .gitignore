@@ -34,3 +34,6 @@ build/
 
 # Environment file containing local sensitive values
 .env
+
+# Arquivos de upload
+uploads/

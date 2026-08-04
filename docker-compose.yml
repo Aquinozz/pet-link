@@ -7,6 +7,10 @@ services:
       - '8080:8080'
     env_file:
       - .env
+    environment:
+      - UPLOAD_DIR=/app/uploads
+    volumes:
+      - ./uploads:/app/uploads
     restart: unless-stopped
 
   frontend:

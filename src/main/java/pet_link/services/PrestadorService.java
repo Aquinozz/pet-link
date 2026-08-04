@@ -1,6 +1,7 @@
 package pet_link.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pet_link.dtos.AtualizarPrestadorDto;
@@ -35,6 +36,9 @@ public class PrestadorService {
     private final UserRepository userRepository;
     private final RolesRepository rolesRepository;
     private final GeocodingService geocodingService;
+
+    @Value("${app.upload-dir:./uploads}")
+    private String uploadDir;
 
     @Transactional
     public PrestadorResponseDTO criar(PrestadorRequestDTO dto) {
@@ -136,9 +140,9 @@ public class PrestadorService {
                 ext = originalName.substring(originalName.lastIndexOf("."));
             }
             String filename = prestador.getId() + ext;
-            Path uploadDir = Paths.get("uploads", "prestadores");
-            Files.createDirectories(uploadDir);
-            Path filePath = uploadDir.resolve(filename);
+            Path dir = Paths.get(uploadDir).resolve("prestadores");
+            Files.createDirectories(dir);
+            Path filePath = dir.resolve(filename);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
             String fotoUrl = "/uploads/prestadores/" + filename;

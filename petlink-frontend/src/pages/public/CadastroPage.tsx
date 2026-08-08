@@ -1,8 +1,15 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { User, Mail, Lock } from 'lucide-react'
 import { authService } from '../../api/authService'
+import { BrandLogo } from '../../components/BrandLogo'
+import { Button } from '../../components/ui/Button'
+import { AuthField } from '../../components/auth/AuthField'
+import { AuthBrandPanel } from '../../components/auth/AuthBrandPanel'
+import { useMediaQuery } from '../../hooks/useMediaQuery'
+import { colors, radius } from '../../theme/tokens'
 
-export default function CadastroPage() {
+function CadastroForm() {
   const navigate = useNavigate()
   const [form, setForm] = useState({ nome: '', email: '', senha: '' })
   const [error, setError] = useState('')
@@ -22,63 +29,92 @@ export default function CadastroPage() {
     }
   }
 
-  const labels: Record<string, string> = {
-    nome: 'Nome completo',
-    email: 'Email',
-    senha: 'Senha',
+  return (
+    <div style={{ width: '100%', maxWidth: 400 }}>
+      <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: colors.brand[600], marginBottom: 12 }}>
+        Crie sua conta
+      </p>
+      <h1 style={{ fontSize: 26, fontWeight: 800, color: colors.gray[900], lineHeight: 1.2, marginBottom: 6 }}>
+        Comece em menos de um minuto
+      </h1>
+      <p style={{ fontSize: 14, color: colors.gray[500], lineHeight: 1.6, marginBottom: 28 }}>
+        Cadastre-se para encontrar profissionais e gerenciar seus pets.
+      </p>
+
+      <form onSubmit={handleSubmit}>
+        <AuthField
+          icon={<User size={17} />}
+          type="text"
+          placeholder="Seu nome"
+          value={form.nome}
+          onChange={v => setForm(f => ({ ...f, nome: v }))}
+          autoComplete="name"
+        />
+        <AuthField
+          icon={<Mail size={17} />}
+          type="email"
+          placeholder="seu@email.com"
+          value={form.email}
+          onChange={v => setForm(f => ({ ...f, email: v }))}
+          autoComplete="email"
+        />
+        <AuthField
+          icon={<Lock size={17} />}
+          type="password"
+          placeholder="Crie uma senha"
+          value={form.senha}
+          onChange={v => setForm(f => ({ ...f, senha: v }))}
+          autoComplete="new-password"
+        />
+
+        {error && (
+          <div style={{ backgroundColor: colors.danger[50], border: `1px solid ${colors.danger[100]}`, borderRadius: radius.md, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: colors.danger[600] }}>
+            {error}
+          </div>
+        )}
+
+        <Button type="submit" size="lg" loading={loading} style={{ width: '100%', height: 46 }}>
+          {loading ? 'Cadastrando...' : 'Criar conta'}
+        </Button>
+      </form>
+
+      <p style={{ textAlign: 'center', fontSize: 14, color: colors.gray[500], marginTop: 24 }}>
+        Já tem conta?{' '}
+        <Link to="/login" style={{ color: colors.brand[600], fontWeight: 600, textDecoration: 'none' }}>Entrar</Link>
+      </p>
+
+      <p style={{ textAlign: 'center', fontSize: 12, color: colors.gray[400], marginTop: 20, lineHeight: 1.6 }}>
+        Ao criar a conta, você concorda com os termos de uso do PetLink.
+      </p>
+    </div>
+  )
+}
+
+export default function CadastroPage() {
+  const isMobile = useMediaQuery('(max-width: 1023px)')
+
+  if (isMobile) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: colors.white, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ backgroundColor: colors.brand[900], padding: '20px 20px 22px' }}>
+          <Link to="/" style={{ textDecoration: 'none', display: 'inline-block' }}>
+            <BrandLogo size={28} colorText={colors.white} />
+          </Link>
+          <p style={{ color: colors.brand[200], fontSize: 13, marginTop: 8 }}>Encontre quem cuida do seu pet</p>
+        </div>
+        <div style={{ flex: 1, padding: '36px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <CadastroForm />
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#F4F7F6', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ width: '100%', maxWidth: 420 }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <Link to="/" style={{ textDecoration: 'none' }}>
-            <span style={{ fontSize: 28, fontWeight: 800, color: '#111827' }}>
-              Pet<span style={{ color: '#22C55E' }}>Link</span>
-            </span>
-          </Link>
-          <p style={{ color: '#6b7280', marginTop: 8, fontSize: 15 }}>Crie sua conta gratuita</p>
-        </div>
-
-        <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 32, border: '1px solid #F4F7F6', boxShadow: '0 1px 8px rgba(0,0,0,0.06)' }}>
-          <form onSubmit={handleSubmit}>
-            {(['nome', 'email', 'senha'] as const).map((field) => (
-              <div key={field} style={{ marginBottom: 16 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
-                  {labels[field]}
-                </label>
-                <input
-                  type={field === 'senha' ? 'password' : field === 'email' ? 'email' : 'text'}
-                  required
-                  value={form[field]}
-                  onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))}
-                  placeholder={field === 'nome' ? 'Seu nome' : field === 'email' ? 'seu@email.com' : '••••••'}
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, color: '#111827', outline: 'none', boxSizing: 'border-box' }}
-                />
-              </div>
-            ))}
-
-            {error && (
-              <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#b91c1c' }}>
-                {error}
-              </div>
-            )}
-
-            <button type="submit" disabled={loading} style={{
-              width: '100%', padding: 12, borderRadius: 10, border: 'none',
-              backgroundColor: loading ? '#A7E07E' : '#22C55E', color: '#fff',
-              fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', marginTop: 8,
-            }}>
-              {loading ? 'Cadastrando...' : 'Criar conta'}
-            </button>
-          </form>
-        </div>
-
-        <p style={{ textAlign: 'center', marginTop: 20, fontSize: 14, color: '#6b7280' }}>
-          Já tem conta?{' '}
-          <Link to="/login" style={{ color: '#22C55E', fontWeight: 600, textDecoration: 'none' }}>Entrar</Link>
-        </p>
-      </div>
+    <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: colors.white }}>
+      <AuthBrandPanel />
+      <section style={{ flex: '1 1 0', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 40px' }}>
+        <CadastroForm />
+      </section>
     </div>
   )
 }

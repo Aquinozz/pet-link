@@ -1,10 +1,16 @@
 import { useEffect, useState, useRef } from 'react'
+import { Building, Camera, Check, Plus, X } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { API_URL } from '../../api/axiosInstance'
 import { authService } from '../../api/authService'
 import { prestadorService } from '../../api/prestadorService'
 import type { MeResponse } from '../../api/authService'
-import { Building, Camera, Check } from 'lucide-react'
+import { PageHeader } from '../../components/ui/PageHeader'
+import { Card } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
+import { Input, Textarea } from '../../components/ui/Input'
+import { Skeleton } from '../../components/ui/Skeleton'
+import { colors, radius } from '../../theme/tokens'
 
 export default function MeuPerfil() {
   const [perfil, setPerfil] = useState<MeResponse | null>(null)
@@ -78,120 +84,113 @@ export default function MeuPerfil() {
     }
   }
 
-  if (loading) return <DashboardLayout><p style={{ color: '#6b7280' }}>Carregando...</p></DashboardLayout>
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 24 }}>
+          <Skeleton width={96} height={96} style={{ borderRadius: radius.lg }} />
+          <div style={{ flex: 1 }}>
+            <Skeleton width={200} height={18} style={{ marginBottom: 10 }} />
+            <Skeleton width={140} height={13} />
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+          <Card padding={24}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} height={40} />)}
+            </div>
+          </Card>
+          <Card padding={24}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} height={40} />)}
+            </div>
+          </Card>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   return (
     <DashboardLayout>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: '#111827' }}>Meu Perfil</h1>
-        <p style={{ color: '#6b7280', fontSize: 14 }}>Gerencie suas informações e serviços oferecidos</p>
-        {perfil && (
-          <p style={{ fontSize: 13, color: '#9ca3af', marginTop: 4 }}>{perfil.nome} • {perfil.email}</p>
-        )}
-      </div>
+      <PageHeader
+        title="Meu Perfil"
+        subtitle="Gerencie suas informações e serviços oferecidos"
+        actions={perfil ? <span style={{ fontSize: 13, color: colors.gray[400] }}>{perfil.nome} • {perfil.email}</span> : undefined}
+      />
 
-      <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 24 }}>
+      <Card padding={24} style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
         <div style={{ position: 'relative' }}>
           {perfil?.fotoUrl ? (
             <img src={`${API_URL}${perfil.fotoUrl}`} alt="Foto do perfil"
-              style={{ width: 96, height: 96, borderRadius: 16, objectFit: 'cover', border: '1px solid #F4F7F6' }}
+              style={{ width: 96, height: 96, borderRadius: radius.lg, objectFit: 'cover', border: `1px solid ${colors.border}` }}
             />
           ) : (
-            <div style={{ width: 96, height: 96, borderRadius: 16, backgroundColor: '#EAF8ED', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Building size={40} /></div>
+            <div style={{ width: 96, height: 96, borderRadius: radius.lg, backgroundColor: colors.brand[100], display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Building size={40} color={colors.brand[600]} />
+            </div>
           )}
         </div>
         <div>
-          <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Foto de perfil</h3>
-          <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 12 }}>PNG, JPG ou JPEG. Máx 10MB.</p>
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: colors.gray[900], margin: '0 0 4px' }}>Foto de perfil</h3>
+          <p style={{ fontSize: 12, color: colors.gray[400], marginBottom: 12 }}>PNG, JPG ou JPEG. Máx 10MB.</p>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button onClick={() => fileInputRef.current?.click()} disabled={fotoUploading}
-              style={{ padding: '8px 16px', backgroundColor: fotoUploading ? '#9ca3af' : '#22C55E', color: '#fff', borderRadius: 8, border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Button variant={fotoUploading ? 'secondary' : 'primary'} size="sm" onClick={() => fileInputRef.current?.click()} disabled={fotoUploading}>
               {fotoUploading ? 'Enviando...' : <><Camera size={14} /> Escolher foto</>}
-            </button>
-            {fotoSuccess && <span style={{ fontSize: 13, color: '#16a34a', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}><Check size={14} /> Foto salva</span>}
+            </Button>
+            {fotoSuccess && <span style={{ fontSize: 13, color: colors.success[600], fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}><Check size={14} /> Foto salva</span>}
           </div>
           <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/jpg" onChange={handleFotoUpload} style={{ display: 'none' }} />
         </div>
-      </div>
+      </Card>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-        <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6' }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 20 }}>Informações do perfil</h2>
+        <Card padding={24}>
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: colors.gray[900], marginBottom: 20 }}>Informações do perfil</h2>
           <form onSubmit={handleSave}>
-            {[
-              { field: 'telefone', label: 'Telefone', placeholder: '71 99999-9999' },
-              { field: 'cidade', label: 'Cidade', placeholder: 'Salvador' },
-              { field: 'bairro', label: 'Bairro', placeholder: 'Cajazeiras' },
-              { field: 'horarioFuncionamento', label: 'Horário de funcionamento', placeholder: 'Ex: Seg a Sex: 08h às 18h | Sáb: 08h às 13h' },
-            ].map(({ field, label, placeholder }) => (
-              <div key={field} style={{ marginBottom: 16 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>{label}</label>
-                <input
-                  value={form[field as keyof typeof form]}
-                  onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))}
-                  placeholder={placeholder}
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, boxSizing: 'border-box' }}
-                />
-              </div>
-            ))}
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Descrição</label>
-              <textarea
-                value={form.descricao}
-                onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
-                placeholder="Descreva seu estabelecimento..."
-                rows={3}
-                style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, resize: 'vertical', boxSizing: 'border-box' }}
-              />
-            </div>
+            <Input label="Telefone" value={form.telefone} onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))} placeholder="71 99999-9999" />
+            <Input label="Cidade" value={form.cidade} onChange={e => setForm(f => ({ ...f, cidade: e.target.value }))} placeholder="Salvador" />
+            <Input label="Bairro" value={form.bairro} onChange={e => setForm(f => ({ ...f, bairro: e.target.value }))} placeholder="Cajazeiras" />
+            <Input label="Horário de funcionamento" value={form.horarioFuncionamento} onChange={e => setForm(f => ({ ...f, horarioFuncionamento: e.target.value }))} placeholder="Ex: Seg a Sex: 08h às 18h | Sáb: 08h às 13h" />
+            <Textarea label="Descrição" value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} placeholder="Descreva seu estabelecimento..." rows={3} />
             {success && (
-              <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#16a34a', display: 'flex', alignItems: 'center', gap: 6 }}>
-<Check size={14} /> Perfil atualizado com sucesso!
+              <div style={{ backgroundColor: colors.success[50], border: `1px solid ${colors.success[100]}`, borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: colors.success[600], display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Check size={14} /> Perfil atualizado com sucesso!
               </div>
             )}
-            <button type="submit" disabled={saving} style={{ padding: '10px 24px', backgroundColor: '#22C55E', color: '#fff', borderRadius: 8, border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-              {saving ? 'Salvando...' : 'Salvar alterações'}
-            </button>
+            <Button type="submit" loading={saving}>{saving ? 'Salvando...' : 'Salvar alterações'}</Button>
           </form>
-        </div>
+        </Card>
 
-        <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6' }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 20 }}>Meus serviços</h2>
-          <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>
+        <Card padding={24}>
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: colors.gray[900], marginBottom: 20 }}>Meus serviços</h2>
+          <p style={{ fontSize: 13, color: colors.gray[500], marginBottom: 16 }}>
             Adicione ou remova os serviços que você oferece. Os tutores poderão filtrar por esses serviços.
           </p>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20, minHeight: 40 }}>
             {servicos.length === 0 ? (
-              <p style={{ fontSize: 13, color: '#9ca3af' }}>Nenhum serviço cadastrado ainda.</p>
+              <p style={{ fontSize: 13, color: colors.gray[400] }}>Nenhum serviço cadastrado ainda.</p>
             ) : servicos.map(s => (
-              <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 6, backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 20, padding: '4px 12px' }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#16a34a' }}>{s}</span>
-                <button onClick={() => removerServico(s)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#16a34a', fontSize: 16, lineHeight: 1, padding: 0 }}>
-                  ×
+              <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 6, backgroundColor: colors.brand[50], border: `1px solid ${colors.border}`, borderRadius: 20, padding: '4px 12px' }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: colors.brand[800] }}>{s}</span>
+                <button onClick={() => removerServico(s)} aria-label={`Remover ${s}`}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: colors.gray[400], display: 'flex', padding: 2 }}>
+                  <X size={13} />
                 </button>
               </div>
             ))}
           </div>
 
           <div style={{ display: 'flex', gap: 8 }}>
-            <input
-              value={novoServico}
-              onChange={e => setNovoServico(e.target.value)}
+            <Input value={novoServico} onChange={e => setNovoServico(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), adicionarServico())}
-              placeholder="Ex: Vacinação, Banho e Tosa..."
-              style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14 }}
-            />
-            <button onClick={adicionarServico}
-              style={{ padding: '10px 16px', backgroundColor: '#22C55E', color: '#fff', borderRadius: 8, border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-              + Adicionar
-            </button>
+              placeholder="Ex: Vacinação, Banho e Tosa..." style={{ flex: 1, marginBottom: 0 }} />
+            <Button variant="secondary" onClick={adicionarServico}><Plus size={15} /> Adicionar</Button>
           </div>
-          <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 8 }}>
+          <p style={{ fontSize: 11, color: colors.gray[400], marginTop: 8 }}>
             Pressione Enter ou clique em Adicionar. Salve o perfil para confirmar.
           </p>
-        </div>
+        </Card>
       </div>
     </DashboardLayout>
   )

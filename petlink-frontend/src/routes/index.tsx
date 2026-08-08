@@ -8,6 +8,8 @@ import CadastroPage from '../pages/public/CadastroPage'
 import DashboardTutor from '../pages/tutor/DashboardTutor'
 import MeusPets from '../pages/tutor/MeusPets'
 import Prestadores from '../pages/tutor/Prestadores'
+import Agendamentos from '../pages/tutor/Agendamentos'
+import Avaliacoes from '../pages/tutor/Avaliacoes'
 
 import DashboardPrestador from '../pages/prestador/DashboardPrestador'
 import MeuPerfil from '../pages/prestador/MeuPerfil'
@@ -63,6 +65,8 @@ export function AppRoutes() {
         <Route path="/tutor/dashboard" element={<RoleRoute roles={['ROLE_TUTOR']}><DashboardTutor /></RoleRoute>} />
         <Route path="/tutor/pets" element={<RoleRoute roles={['ROLE_TUTOR']}><MeusPets /></RoleRoute>} />
         <Route path="/tutor/prestadores" element={<RoleRoute roles={['ROLE_TUTOR']}><Prestadores /></RoleRoute>} />
+        <Route path="/tutor/agendamentos" element={<RoleRoute roles={['ROLE_TUTOR']}><Agendamentos /></RoleRoute>} />
+        <Route path="/tutor/avaliacoes" element={<RoleRoute roles={['ROLE_TUTOR']}><Avaliacoes /></RoleRoute>} />
 
         <Route path="/prestador/dashboard" element={<RoleRoute roles={['ROLE_PROFISSIONAL']}><DashboardPrestador /></RoleRoute>} />
         <Route path="/prestador/perfil" element={<RoleRoute roles={['ROLE_PROFISSIONAL']}><MeuPerfil /></RoleRoute>} />

@@ -1,10 +1,18 @@
 import { useEffect, useState } from 'react'
+import { Star } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { reviewService } from '../../api/reviewService'
 import { prestadorService } from '../../api/prestadorService'
 import { useAuth } from '../../contexts/AuthContext'
 import type { ReviewResponseDto, PrestadorResponseDto } from '../../types'
-import { Star } from 'lucide-react'
+import { PageHeader } from '../../components/ui/PageHeader'
+import { Card } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
+import { Input, Textarea } from '../../components/ui/Input'
+import { StarRating, StarRatingInput } from '../../components/ui/StarRating'
+import { EmptyState } from '../../components/ui/EmptyState'
+import { Skeleton } from '../../components/ui/Skeleton'
+import { colors, radius } from '../../theme/tokens'
 
 export default function Avaliacoes() {
   const { tutorId } = useAuth()
@@ -69,99 +77,86 @@ export default function Avaliacoes() {
 
   return (
     <DashboardLayout>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-        <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#111827' }}>Avaliações</h1>
-          <p style={{ color: '#6b7280', fontSize: 14 }}>Avalie os prestadores que atenderam seu pet</p>
-        </div>
-        <button onClick={() => setShowForm(!showForm)} style={{ padding: '10px 20px', backgroundColor: '#22C55E', color: '#fff', borderRadius: 8, border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-          {showForm ? 'Cancelar' : '+ Nova avaliação'}
-        </button>
-      </div>
+      <PageHeader
+        title="Avaliações"
+        subtitle="Avalie os prestadores que atenderam seu pet"
+        actions={
+          <Button variant={showForm ? 'secondary' : 'primary'} onClick={() => setShowForm(!showForm)}>
+            {showForm ? 'Cancelar' : '+ Nova avaliação'}
+          </Button>
+        }
+      />
 
       {showForm && (
-        <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6', marginBottom: 24 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 20 }}>Avaliar prestador</h2>
-          <form onSubmit={handleSave}>
-            <div style={{ marginBottom: 16, maxWidth: 500 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Prestador</label>
-              <input value={prestadorSearch} onChange={e => handlePrestadorSearch(e.target.value)}
-                placeholder="Digite nome, cidade, bairro ou serviço..."
-                style={{ width: '100%', maxWidth: 500, padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, boxSizing: 'border-box' }}
-              />
-              {showPrestadorSuggestions && (
-                <div style={{ marginTop: 8, maxWidth: 500, backgroundColor: '#fff', border: '1px solid #d1d5db', borderRadius: 12, boxShadow: '0 10px 30px rgba(15, 23, 42, 0.05)' }}>
-                  {prestadorSuggestions.length > 0 ? prestadorSuggestions.map(p => (
-                    <button key={p.id} type="button" onClick={() => selectPrestador(p.id, p.nomePrestador)}
-                      style={{ width: '100%', textAlign: 'left', padding: '10px 14px', border: 'none', borderBottom: '1px solid #f3f4f6', background: 'transparent', cursor: 'pointer' }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: '#111827' }}>{p.nomePrestador}</div>
-                      <div style={{ fontSize: 12, color: '#6b7280' }}>{[p.bairro, p.cidade].filter(Boolean).join(', ')} · {p.servicos?.split(',').slice(0, 2).map(s => s.trim()).join(', ')}</div>
-                    </button>
-                  )) : (
-                    <div style={{ padding: '10px 14px', fontSize: 13, color: '#6b7280' }}>Nenhum prestador encontrado.</div>
-                  )}
-                </div>
-              )}
-              <input type="hidden" value={form.prestadorId} />
-              {selectedPrestador && (
-                <div style={{ marginTop: 12, padding: '12px 14px', borderRadius: 12, backgroundColor: '#F4F7F6', border: '1px solid #e2e8f0' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 12 }}>
-                    <div>
-                      <p style={{ fontSize: 14, fontWeight: 700, color: '#111827', marginBottom: 4 }}>{selectedPrestador.nomePrestador}</p>
-                      <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>{[selectedPrestador.bairro, selectedPrestador.cidade].filter(Boolean).join(', ')}</p>
-                      <p style={{ fontSize: 12, color: '#16a34a' }}>{selectedPrestador.servicos}</p>
-                    </div>
-                    <button type="button" onClick={() => { setForm(f => ({ ...f, prestadorId: '' })); setPrestadorSearch('') }}
-                      style={{ padding: '6px 12px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 12 }}>
-                      Alterar
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 8 }}>Nota</label>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {[1,2,3,4,5].map(n => (
-                  <button key={n} type="button" onClick={() => setForm(f => ({ ...f, nota: n }))}
-                    style={{ width: 40, height: 40, borderRadius: 8, border: form.nota >= n ? 'none' : '1px solid #d1d5db', backgroundColor: form.nota >= n ? '#facc15' : '#f9fafb', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Star size={20} fill={form.nota >= n ? '#fff' : '#d1d5db'} color={form.nota >= n ? '#fff' : '#d1d5db'} />
+        <Card padding={24} style={{ marginBottom: 24 }}>
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: colors.gray[900], marginBottom: 20 }}>Avaliar prestador</h2>
+          <form onSubmit={handleSave} style={{ maxWidth: 500 }}>
+            <Input label="Prestador" value={prestadorSearch} onChange={e => handlePrestadorSearch(e.target.value)}
+              placeholder="Digite nome, cidade, bairro ou serviço..." />
+            {showPrestadorSuggestions && (
+              <div style={{ marginTop: -8, marginBottom: 16, backgroundColor: colors.white, border: `1px solid ${colors.border}`, borderRadius: radius.lg, boxShadow: '0 10px 30px rgba(15, 23, 42, 0.06)' }}>
+                {prestadorSuggestions.length > 0 ? prestadorSuggestions.map(p => (
+                  <button key={p.id} type="button" onClick={() => selectPrestador(p.id, p.nomePrestador)}
+                    style={{ width: '100%', textAlign: 'left', padding: '10px 14px', border: 'none', borderBottom: `1px solid ${colors.border}`, background: 'transparent', cursor: 'pointer', fontFamily: 'inherit' }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: colors.gray[900] }}>{p.nomePrestador}</div>
+                    <div style={{ fontSize: 12, color: colors.gray[500] }}>{[p.bairro, p.cidade].filter(Boolean).join(', ')} · {p.servicos?.split(',').slice(0, 2).map(s => s.trim()).join(', ')}</div>
                   </button>
-                ))}
+                )) : (
+                  <div style={{ padding: '10px 14px', fontSize: 13, color: colors.gray[500] }}>Nenhum prestador encontrado.</div>
+                )}
               </div>
-            </div>
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Comentário</label>
-              <textarea value={form.comentario} onChange={e => setForm(f => ({ ...f, comentario: e.target.value }))}
-                placeholder="Como foi o atendimento?" rows={3}
-                style={{ width: '100%', maxWidth: 480, padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, resize: 'vertical', boxSizing: 'border-box' }}
-              />
-            </div>
-            {error && (
-              <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#b91c1c' }}>{error}</div>
             )}
-            <button type="submit" disabled={saving} style={{ padding: '10px 24px', backgroundColor: '#22C55E', color: '#fff', borderRadius: 8, border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-              {saving ? 'Enviando...' : 'Enviar avaliação'}
-            </button>
+            <input type="hidden" value={form.prestadorId} />
+            {selectedPrestador && (
+              <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: radius.lg, backgroundColor: colors.bg, border: `1px solid ${colors.border}` }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 12 }}>
+                  <div>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: colors.gray[900], marginBottom: 4 }}>{selectedPrestador.nomePrestador}</p>
+                    <p style={{ fontSize: 12, color: colors.gray[500], marginBottom: 4 }}>{[selectedPrestador.bairro, selectedPrestador.cidade].filter(Boolean).join(', ')}</p>
+                    <p style={{ fontSize: 12, color: colors.brand[600] }}>{selectedPrestador.servicos}</p>
+                  </div>
+                  <Button size="sm" variant="secondary" onClick={() => { setForm(f => ({ ...f, prestadorId: '' })); setPrestadorSearch('') }}>Alterar</Button>
+                </div>
+              </div>
+            )}
+            <div style={{ marginBottom: 8 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: colors.gray[700], marginBottom: 8 }}>Nota</label>
+              <StarRatingInput value={form.nota} onChange={n => setForm(f => ({ ...f, nota: n }))} />
+            </div>
+            <Textarea label="Comentário" value={form.comentario} onChange={e => setForm(f => ({ ...f, comentario: e.target.value }))}
+              placeholder="Como foi o atendimento?" rows={3} />
+            {error && (
+              <div style={{ backgroundColor: colors.danger[50], border: `1px solid ${colors.danger[100]}`, borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: colors.danger[600] }}>{error}</div>
+            )}
+            <Button type="submit" loading={saving}>{saving ? 'Enviando...' : 'Enviar avaliação'}</Button>
           </form>
-        </div>
+        </Card>
       )}
 
-      {loading ? <p style={{ color: '#6b7280' }}>Carregando...</p> : reviews.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px 0', backgroundColor: '#fff', borderRadius: 16, border: '1px solid #F4F7F6' }}>
-          <div style={{ marginBottom: 12 }}><Star size={48} fill="#facc15" color="#facc15" /></div>
-          <p style={{ fontSize: 16, fontWeight: 600, color: '#374151' }}>Nenhuma avaliação ainda</p>
-        </div>
+      {loading ? (
+        <Card padding={24}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} height={52} />)}
+          </div>
+        </Card>
+      ) : reviews.length === 0 ? (
+        <EmptyState
+          icon={<Star size={28} fill={colors.accent} color={colors.accent} />}
+          title="Nenhuma avaliação ainda"
+          description="Avalie um prestador para compartilhar sua experiência com outros tutores."
+        >
+          <Button onClick={() => setShowForm(true)}>+ Nova avaliação</Button>
+        </EmptyState>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {reviews.map(r => (
-            <div key={r.id} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20, border: '1px solid #F4F7F6' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <p style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>{r.prestadorNome}</p>
-                <div style={{ display: 'flex', gap: 2 }}>{Array.from({ length: r.nota }, (_, i) => <Star key={i} size={14} fill="#facc15" color="#facc15" />)}</div>
+        <div>
+          {reviews.map((r, i) => (
+            <div key={r.id} style={{ padding: '18px 4px', borderBottom: i < reviews.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, flexWrap: 'wrap', gap: 8 }}>
+                <p style={{ fontSize: 15, fontWeight: 700, color: colors.gray[900], margin: 0 }}>{r.prestadorNome}</p>
+                <StarRating value={r.nota} />
               </div>
-              <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 4 }}>{r.comentario}</p>
-              <p style={{ fontSize: 11, color: '#9ca3af' }}>{r.prestadorCidade} • {r.prestadorBairro}</p>
+              {r.comentario && <p style={{ fontSize: 14, color: colors.gray[500], margin: '0 0 6px', lineHeight: 1.6 }}>{r.comentario}</p>}
+              <p style={{ fontSize: 12, color: colors.gray[400], margin: 0 }}>{r.prestadorCidade}{r.prestadorBairro ? ` • ${r.prestadorBairro}` : ''}</p>
             </div>
           ))}
         </div>

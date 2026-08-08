@@ -1,20 +1,24 @@
 import { useEffect, useState } from 'react'
+import { Calendar, Check, PawPrint, X } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { agendamentoService } from '../../api/agendamentoService'
 import { reviewService } from '../../api/reviewService'
 import { useAuth } from '../../contexts/AuthContext'
 import type { AgendamentoResponseDto, ReviewResponseDto } from '../../types'
-import { Hand, Calendar, PawPrint, Check, X, Star } from 'lucide-react'
-
-const statusStyle: Record<string, { bg: string; color: string; label: string }> = {
-  AGENDADO: { bg: '#EAF8ED', color: '#0D3B34', label: 'Agendado' },
-  CONFIRMADO: { bg: '#f0fdf4', color: '#16a34a', label: 'Confirmado' },
-  FINALIZADO: { bg: '#f3f4f6', color: '#374151', label: 'Finalizado' },
-  CANCELADO: { bg: '#fef2f2', color: '#b91c1c', label: 'Cancelado' },
-}
+import { PageHeader } from '../../components/ui/PageHeader'
+import { Card } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
+import { SectionHeader } from '../../components/ui/SectionHeader'
+import { StatusBadge } from '../../components/ui/StatusBadge'
+import { StarRating } from '../../components/ui/StarRating'
+import { EmptyState } from '../../components/ui/EmptyState'
+import { Skeleton } from '../../components/ui/Skeleton'
+import { colors } from '../../theme/tokens'
+import { useMediaQuery } from '../../hooks/useMediaQuery'
 
 export default function DashboardPrestador() {
   const { user, prestadorId } = useAuth()
+  const isMobile = useMediaQuery('(max-width: 1023px)')
   const [agendamentos, setAgendamentos] = useState<AgendamentoResponseDto[]>([])
   const [reviews, setReviews] = useState<ReviewResponseDto[]>([])
   const [loading, setLoading] = useState(true)
@@ -47,83 +51,92 @@ export default function DashboardPrestador() {
     try { return new Date(dt).toLocaleString('pt-BR') } catch { return dt }
   }
 
+  const resumo = [
+    { label: 'Total agendamentos', value: agendamentos.length },
+    { label: 'Aguardando confirmação', value: agendamentos.filter(a => a.status === 'AGENDADO').length },
+    { label: 'Avaliação média', value: mediaAvaliacao },
+  ]
+
   return (
     <DashboardLayout>
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: '#111827', marginBottom: 4 }}>
-          Olá, {user?.email?.split('@')[0]} <Hand size={24} />
-        </h1>
-        <p style={{ color: '#6b7280', fontSize: 15 }}>Aqui está o resumo dos seus atendimentos.</p>
-      </div>
+      <PageHeader
+        title={<>Olá, {user?.email?.split('@')[0]} <PawPrint size={22} color={colors.brand[600]} style={{ verticalAlign: 'middle' }} /></>}
+        subtitle="Aqui está o resumo dos seus atendimentos."
+      />
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 32 }}>
-        {[
-          { label: 'Total agendamentos', value: agendamentos.length, cor: '#22C55E' },
-          { label: 'Aguardando', value: agendamentos.filter(a => a.status === 'AGENDADO').length, cor: '#d97706' },
-          { label: 'Avaliação média', value: mediaAvaliacao, cor: '#16a34a' },
-        ].map(card => (
-          <div key={card.label} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6' }}>
-            <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 8 }}>{card.label}</p>
-            <p style={{ fontSize: 36, fontWeight: 800, color: card.cor }}>{card.value}</p>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6' }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 20 }}>Minha agenda</h2>
-        {loading ? <p style={{ color: '#6b7280' }}>Carregando...</p> : agendamentos.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px 0' }}>
-<div style={{ marginBottom: 8 }}><Calendar size={40} /></div>
-            <p style={{ fontSize: 15, color: '#6b7280' }}>Nenhum agendamento recebido ainda.</p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {agendamentos.map(a => {
-              const st = statusStyle[a.status] ?? { bg: '#f3f4f6', color: '#374151', label: a.status }
-              return (
-                <div key={a.id} style={{ padding: 16, borderRadius: 12, border: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <p style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>{a.tutor?.nome}</p>
-                      <span style={{ fontSize: 11, fontWeight: 600, backgroundColor: st.bg, color: st.color, padding: '2px 8px', borderRadius: 6 }}>{st.label}</span>
-                    </div>
-                    <p style={{ fontSize: 13, color: '#6b7280' }}><PawPrint size={13} /> {a.pet?.nome} ({a.pet?.especie}) • <Calendar size={13} /> {formatData(a.dataHora)}</p>
-                    {a.status === 'AGENDADO' && (
-                      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                        <button onClick={() => atualizarStatus(a.id, 'CONFIRMADO')}
-                          style={{ padding: '6px 14px', backgroundColor: '#16a34a', color: '#fff', borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <Check size={14} /> Confirmar
-                        </button>
-                        <button onClick={() => atualizarStatus(a.id, 'CANCELADO')}
-                          style={{ padding: '6px 14px', backgroundColor: '#fef2f2', color: '#b91c1c', borderRadius: 6, border: '1px solid #fecaca', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <X size={14} /> Cancelar
-                        </button>
-                      </div>
-                    )}
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.6fr 1fr', gap: 24, alignItems: 'start' }}>
+        <Card padding={24}>
+          <SectionHeader title="Minha agenda" />
+          {loading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} height={56} />)}
+            </div>
+          ) : agendamentos.length === 0 ? (
+            <EmptyState
+              icon={<Calendar size={26} />}
+              title="Nenhum agendamento recebido ainda"
+              description="Quando um tutor agendar um serviço com você, ele aparecerá aqui."
+            />
+          ) : (
+            <div>
+              {agendamentos.map((a, i) => (
+                <div key={a.id} style={{ padding: '16px 0', borderBottom: i < agendamentos.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <p style={{ fontSize: 15, fontWeight: 700, color: colors.gray[900] }}>{a.tutor?.nome}</p>
+                    <StatusBadge status={a.status} />
                   </div>
+                  <p style={{ fontSize: 13, color: colors.gray[500], margin: 0 }}>
+                    <PawPrint size={13} /> {a.pet?.nome} ({a.pet?.especie}) • <Calendar size={13} /> {formatData(a.dataHora)}
+                  </p>
+                  {a.status === 'AGENDADO' && (
+                    <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                      <Button size="sm" onClick={() => atualizarStatus(a.id, 'CONFIRMADO')}><Check size={14} /> Confirmar</Button>
+                      <Button size="sm" variant="secondary" onClick={() => atualizarStatus(a.id, 'CANCELADO')}><X size={14} /> Cancelar</Button>
+                    </div>
+                  )}
                 </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </Card>
 
-      {reviews.length > 0 && (
-            <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6', marginTop: 20 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 16 }}>Avaliações recebidas</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {reviews.map(r => (
-              <div key={r.id} style={{ padding: 16, borderRadius: 12, border: '1px solid #f3f4f6' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>{r.tutorNome}</p>
-                  <div style={{ display: 'flex', gap: 2 }}>{Array.from({ length: r.nota }, (_, i) => <Star key={i} size={14} fill="#facc15" color="#facc15" />)}</div>
-                </div>
-                {r.comentario && <p style={{ fontSize: 13, color: '#6b7280' }}>{r.comentario}</p>}
+        <div>
+          <Card padding={24} style={{ marginBottom: 24 }}>
+            <SectionHeader title="Resumo" />
+            {loading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} height={32} />)}
               </div>
-            ))}
-          </div>
+            ) : (
+              <div>
+                {resumo.map((r, i) => (
+                  <div key={r.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 0', borderBottom: i < resumo.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
+                    <span style={{ fontSize: 14, color: colors.gray[500] }}>{r.label}</span>
+                    <span style={{ fontSize: 18, fontWeight: 800, color: colors.brand[700] }}>{r.value}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          {reviews.length > 0 && (
+            <Card padding={24}>
+              <SectionHeader title="Avaliações recebidas" />
+              <div>
+                {reviews.slice(0, 4).map((r, i) => (
+                  <div key={r.id} style={{ padding: '13px 0', borderBottom: i < Math.min(reviews.length, 4) - 1 ? `1px solid ${colors.border}` : 'none' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: colors.gray[700], margin: 0 }}>{r.tutorNome}</p>
+                      <StarRating value={r.nota} size={13} />
+                    </div>
+                    {r.comentario && <p style={{ fontSize: 13, color: colors.gray[500], margin: 0 }}>{r.comentario}</p>}
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
         </div>
-      )}
+      </div>
     </DashboardLayout>
   )
 }

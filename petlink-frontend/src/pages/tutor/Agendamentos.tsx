@@ -1,18 +1,19 @@
 import { useEffect, useState } from 'react'
+import { Calendar, PawPrint, Building } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { agendamentoService } from '../../api/agendamentoService'
 import { petService } from '../../api/petService'
 import { prestadorService } from '../../api/prestadorService'
 import { useAuth } from '../../contexts/AuthContext'
 import type { AgendamentoResponseDto, PetResponseDto, PrestadorResponseDto } from '../../types'
-import { Calendar, PawPrint, Building } from 'lucide-react'
-
-const statusStyle: Record<string, { bg: string; color: string }> = {
-  AGENDADO: { bg: '#EAF8ED', color: '#0D3B34' },
-  CONFIRMADO: { bg: '#f0fdf4', color: '#16a34a' },
-  FINALIZADO: { bg: '#f3f4f6', color: '#374151' },
-  CANCELADO: { bg: '#fef2f2', color: '#b91c1c' },
-}
+import { PageHeader } from '../../components/ui/PageHeader'
+import { Card } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
+import { Input, Select } from '../../components/ui/Input'
+import { StatusBadge } from '../../components/ui/StatusBadge'
+import { EmptyState } from '../../components/ui/EmptyState'
+import { Skeleton } from '../../components/ui/Skeleton'
+import { colors, radius } from '../../theme/tokens'
 
 export default function Agendamentos() {
   const { user, tutorId } = useAuth()
@@ -101,108 +102,94 @@ export default function Agendamentos() {
 
   return (
     <DashboardLayout>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-        <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#111827' }}>Agendamentos</h1>
-          <p style={{ color: '#6b7280', fontSize: 14 }}>{agendamentos.length} agendamento(s)</p>
-        </div>
-        <button onClick={() => setShowForm(!showForm)} style={{ padding: '10px 20px', backgroundColor: '#22C55E', color: '#fff', borderRadius: 8, border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-          {showForm ? 'Cancelar' : '+ Novo agendamento'}
-        </button>
-      </div>
+      <PageHeader
+        title="Agendamentos"
+        subtitle={`${agendamentos.length} agendamento(s)`}
+        actions={
+          <Button variant={showForm ? 'secondary' : 'primary'} onClick={() => setShowForm(!showForm)}>
+            {showForm ? 'Cancelar' : '+ Novo agendamento'}
+          </Button>
+        }
+      />
 
       {showForm && (
-        <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6', marginBottom: 24 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 20 }}>Novo agendamento</h2>
-          <form onSubmit={handleSave} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <Card padding={24} style={{ marginBottom: 24 }}>
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: colors.gray[900], marginBottom: 20 }}>Novo agendamento</h2>
+          <form onSubmit={handleSave} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+            <Select label="Pet" value={form.petId} onChange={e => setForm(f => ({ ...f, petId: e.target.value }))} required>
+              <option value="">Selecione o pet</option>
+              {pets.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
+            </Select>
             <div>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Pet</label>
-              <select value={form.petId} onChange={e => setForm(f => ({ ...f, petId: e.target.value }))} required
-                style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, boxSizing: 'border-box' }}>
-                <option value="">Selecione o pet</option>
-                {pets.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Prestador</label>
-              <input value={prestadorSearch} onChange={e => handlePrestadorSearch(e.target.value)}
-                placeholder="Digite nome, cidade, bairro ou serviço..."
-                style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, boxSizing: 'border-box' }}
-              />
+              <Input label="Prestador" value={prestadorSearch} onChange={e => handlePrestadorSearch(e.target.value)}
+                placeholder="Digite nome, cidade, bairro ou serviço..." />
               {showPrestadorSuggestions && (
-                <div style={{ marginTop: 8, backgroundColor: '#fff', border: '1px solid #d1d5db', borderRadius: 12, maxHeight: 280, overflowY: 'auto', boxShadow: '0 10px 30px rgba(15, 23, 42, 0.05)' }}>
+                <div style={{ marginTop: -8, marginBottom: 16, backgroundColor: colors.white, border: `1px solid ${colors.border}`, borderRadius: radius.lg, maxHeight: 280, overflowY: 'auto', boxShadow: '0 10px 30px rgba(15, 23, 42, 0.06)' }}>
                   {prestadorSuggestions.length > 0 ? prestadorSuggestions.map(p => (
                     <button key={p.id} type="button" onClick={() => selectPrestador(p.id, p.nomePrestador)}
-                      style={{ width: '100%', textAlign: 'left', padding: '12px 14px', border: 'none', borderBottom: '1px solid #f3f4f6', background: 'transparent', cursor: 'pointer' }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: '#111827' }}>{p.nomePrestador}</div>
-                      <div style={{ fontSize: 12, color: '#6b7280' }}>{[p.bairro, p.cidade].filter(Boolean).join(', ')}</div>
-                      <div style={{ fontSize: 12, color: '#16a34a', marginTop: 4 }}>{p.servicos?.split(',').slice(0, 2).map(s => s.trim()).join(', ')}</div>
+                      style={{ width: '100%', textAlign: 'left', padding: '12px 14px', border: 'none', borderBottom: `1px solid ${colors.border}`, background: 'transparent', cursor: 'pointer', fontFamily: 'inherit' }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: colors.gray[900] }}>{p.nomePrestador}</div>
+                      <div style={{ fontSize: 12, color: colors.gray[500] }}>{[p.bairro, p.cidade].filter(Boolean).join(', ')}</div>
+                      <div style={{ fontSize: 12, color: colors.brand[600], marginTop: 4 }}>{p.servicos?.split(',').slice(0, 2).map(s => s.trim()).join(', ')}</div>
                     </button>
                   )) : (
-                    <div style={{ padding: '10px 14px', fontSize: 13, color: '#6b7280' }}>Nenhum prestador encontrado.</div>
+                    <div style={{ padding: '10px 14px', fontSize: 13, color: colors.gray[500] }}>Nenhum prestador encontrado.</div>
                   )}
                 </div>
               )}
               <input type="hidden" value={form.prestadorId} />
               {selectedPrestador && (
-                  <div style={{ marginTop: 12, padding: '12px 14px', borderRadius: 12, backgroundColor: '#F4F7F6', border: '1px solid #e2e8f0' }}>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: '#111827', marginBottom: 4 }}>{selectedPrestador.nomePrestador}</p>
-                  <p style={{ fontSize: 12, color: '#6b7280' }}>{[selectedPrestador.bairro, selectedPrestador.cidade].filter(Boolean).join(', ')}</p>
-                  <p style={{ fontSize: 12, color: '#16a34a', marginTop: 6 }}>{selectedPrestador.servicos}</p>
+                <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: radius.lg, backgroundColor: colors.bg, border: `1px solid ${colors.border}` }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: colors.gray[900], marginBottom: 4 }}>{selectedPrestador.nomePrestador}</p>
+                  <p style={{ fontSize: 12, color: colors.gray[500] }}>{[selectedPrestador.bairro, selectedPrestador.cidade].filter(Boolean).join(', ')}</p>
+                  <p style={{ fontSize: 12, color: colors.brand[600], marginTop: 6 }}>{selectedPrestador.servicos}</p>
                 </div>
               )}
             </div>
             {servicosPrestador.length > 0 && (
-              <div>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Serviço desejado</label>
-                <select value={form.servico} onChange={e => setForm(f => ({ ...f, servico: e.target.value }))} required
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, boxSizing: 'border-box' }}>
-                  <option value="">Selecione o serviço</option>
-                  {servicosPrestador.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
+              <Select label="Serviço desejado" value={form.servico} onChange={e => setForm(f => ({ ...f, servico: e.target.value }))} required>
+                <option value="">Selecione o serviço</option>
+                {servicosPrestador.map(s => <option key={s} value={s}>{s}</option>)}
+              </Select>
             )}
-            <div style={{ gridColumn: servicosPrestador.length > 0 ? 'auto' : '1/-1' }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Data e hora</label>
-              <input type="datetime-local" value={form.dataHora} onChange={e => setForm(f => ({ ...f, dataHora: e.target.value }))} required
-                style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, boxSizing: 'border-box' }}
-              />
-            </div>
+            <Input label="Data e hora" type="datetime-local" value={form.dataHora} onChange={e => setForm(f => ({ ...f, dataHora: e.target.value }))} required />
             {error && (
-              <div style={{ gridColumn: '1/-1', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#b91c1c' }}>{error}</div>
+              <div style={{ gridColumn: '1/-1', backgroundColor: colors.danger[50], border: `1px solid ${colors.danger[100]}`, borderRadius: 8, padding: '10px 14px', fontSize: 13, color: colors.danger[600] }}>{error}</div>
             )}
-                <div style={{ gridColumn: '1/-1' }}>
-              <button type="submit" disabled={saving} style={{ padding: '10px 24px', backgroundColor: '#22C55E', color: '#fff', borderRadius: 8, border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-                {saving ? 'Agendando...' : 'Confirmar agendamento'}
-              </button>
+            <div style={{ gridColumn: '1/-1' }}>
+              <Button type="submit" loading={saving}>{saving ? 'Agendando...' : 'Confirmar agendamento'}</Button>
             </div>
           </form>
-        </div>
+        </Card>
       )}
 
-      {loading ? <p style={{ color: '#6b7280' }}>Carregando...</p> : agendamentos.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px 0', backgroundColor: '#fff', borderRadius: 16, border: '1px solid #F4F7F6' }}>
-          <div style={{ marginBottom: 12 }}><Calendar size={48} /></div>
-          <p style={{ fontSize: 16, fontWeight: 600, color: '#374151' }}>Nenhum agendamento ainda</p>
-        </div>
+      {loading ? (
+        <Card padding={24}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} height={52} />)}
+          </div>
+        </Card>
+      ) : agendamentos.length === 0 ? (
+        <EmptyState
+          icon={<Calendar size={28} />}
+          title="Nenhum agendamento ainda"
+          description="Crie um novo agendamento para acompanhar aqui."
+        >
+          <Button onClick={() => setShowForm(true)}>+ Novo agendamento</Button>
+        </EmptyState>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {agendamentos.map(a => {
-            const st = statusStyle[a.status] ?? { bg: '#f3f4f6', color: '#374151' }
-            return (
-              <div key={a.id} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20, border: '1px solid #F4F7F6', display: 'flex', alignItems: 'center', gap: 16 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                    <p style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>{a.prestador?.nomePrestador}</p>
-                    <span style={{ fontSize: 11, fontWeight: 600, backgroundColor: st.bg, color: st.color, padding: '2px 8px', borderRadius: 6 }}>{a.status}</span>
-                  </div>
-                  <p style={{ fontSize: 13, color: '#6b7280' }}>
-                    <PawPrint size={13} /> {a.pet?.nome} • <Building size={13} /> {a.servico ?? 'Serviço não informado'} • <Calendar size={13} /> {formatData(a.dataHora)}
-                  </p>
-                </div>
+        <div>
+          {agendamentos.map((a, i) => (
+            <div key={a.id} style={{ padding: '18px 4px', borderBottom: i < agendamentos.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                <p style={{ fontSize: 15, fontWeight: 700, color: colors.gray[900] }}>{a.prestador?.nomePrestador}</p>
+                <StatusBadge status={a.status} />
               </div>
-            )
-          })}
+              <p style={{ fontSize: 13, color: colors.gray[500], margin: 0 }}>
+                <PawPrint size={13} /> {a.pet?.nome} • <Building size={13} /> {a.servico ?? 'Serviço não informado'} • <Calendar size={13} /> {formatData(a.dataHora)}
+              </p>
+            </div>
+          ))}
         </div>
       )}
     </DashboardLayout>

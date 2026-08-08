@@ -1,15 +1,35 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Calendar, PawPrint } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { useAuth } from '../../contexts/AuthContext'
 import { petService } from '../../api/petService'
 import { agendamentoService } from '../../api/agendamentoService'
 import { prestadorService } from '../../api/prestadorService'
-import { Hand } from 'lucide-react'
+import type { PetResponseDto, AgendamentoResponseDto, PrestadorResponseDto } from '../../types'
+import { PageHeader } from '../../components/ui/PageHeader'
+import { Card } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
+import { SectionHeader } from '../../components/ui/SectionHeader'
+import { TextLink } from '../../components/ui/TextLink'
+import { EspecieIcon } from '../../components/ui/EspecieIcon'
+import { Skeleton } from '../../components/ui/Skeleton'
+import { EmptyState } from '../../components/ui/EmptyState'
+import { StatusBadge } from '../../components/ui/StatusBadge'
+import { colors } from '../../theme/tokens'
+import { useMediaQuery } from '../../hooks/useMediaQuery'
+
+const formatData = (dt: string) => {
+  try { return new Date(dt).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) } catch { return dt }
+}
 
 export default function DashboardTutor() {
   const { user } = useAuth()
-  const [counts, setCounts] = useState({ pets: 0, agendamentos: 0, prestadores: 0 })
+  const isMobile = useMediaQuery('(max-width: 1023px)')
+  const [pets, setPets] = useState<PetResponseDto[]>([])
+  const [agendamentos, setAgendamentos] = useState<AgendamentoResponseDto[]>([])
+  const [prestadores, setPrestadores] = useState<PrestadorResponseDto[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const email = user?.email
@@ -17,56 +37,137 @@ export default function DashboardTutor() {
       petService.listar(),
       agendamentoService.listar(),
       prestadorService.listar(),
-    ]).then(([pets, agendamentos, prestadores]) => {
-      const meusPets = pets.filter(p => p.tutor?.email === email)
-      const meusAgs = agendamentos.filter(a => a.tutor?.email === email)
-      setCounts({ pets: meusPets.length, agendamentos: meusAgs.length, prestadores: prestadores.length })
-    }).catch(() => {})
+    ]).then(([petsData, agsData, prsData]) => {
+      setPets(petsData.filter(p => p.tutor?.email === email))
+      setAgendamentos(agsData.filter(a => a.tutor?.email === email))
+      setPrestadores(prsData)
+    }).catch(() => {}).finally(() => setLoading(false))
   }, [])
 
-  const cards = [
-    { label: 'Meus Pets', value: counts.pets, path: '/tutor/pets', cor: '#22C55E', bg: '#EAF8ED' },
-    { label: 'Agendamentos', value: counts.agendamentos, path: '/tutor/agendamentos', cor: '#16a34a', bg: '#f0fdf4' },
-    { label: 'Prestadores', value: counts.prestadores, path: '/tutor/prestadores', cor: '#9333ea', bg: '#faf5ff' },
+  const proximos = [...agendamentos]
+    .sort((a, b) => new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime())
+    .slice(0, 3)
+
+  const resumo = [
+    { label: 'Pets cadastrados', value: pets.length, to: '/tutor/pets' },
+    { label: 'Agendamentos', value: agendamentos.length, to: '/tutor/agendamentos' },
+    { label: 'Prestadores disponíveis', value: prestadores.length, to: '/tutor/prestadores' },
   ]
 
   return (
     <DashboardLayout>
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: '#111827', marginBottom: 4 }}>
-          Olá, {user?.email?.split('@')[0]} <Hand size={24} />
-        </h1>
-        <p style={{ color: '#6b7280', fontSize: 15 }}>Bem-vindo ao PetLink. Aqui está um resumo da sua conta.</p>
-      </div>
+      <PageHeader
+        title={<>Olá, {user?.email?.split('@')[0]} <PawPrint size={22} color={colors.brand[600]} style={{ verticalAlign: 'middle' }} /></>}
+        subtitle="Bem-vindo ao PetLink. Acompanhe seus próximos passos por aqui."
+      />
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 32 }}>
-        {cards.map(card => (
-          <Link key={card.label} to={card.path} style={{ textDecoration: 'none' }}>
-            <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6', cursor: 'pointer' }}
-              onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)')}
-              onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}>
-              <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 8 }}>{card.label}</p>
-              <p style={{ fontSize: 36, fontWeight: 800, color: card.cor }}>{card.value}</p>
-              <div style={{ marginTop: 12, display: 'inline-block', backgroundColor: card.bg, color: card.cor, fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 6 }}>
-                Ver tudo →
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.6fr 1fr', gap: 24, alignItems: 'start' }}>
+        <div>
+          <Card padding={24} style={{ marginBottom: 24 }}>
+            <SectionHeader
+              title="Próximos agendamentos"
+              action={agendamentos.length > 0 ? <TextLink to="/tutor/agendamentos">Ver todos</TextLink> : undefined}
+            />
+            {loading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} height={40} />)}
               </div>
-            </div>
-          </Link>
-        ))}
-      </div>
+            ) : proximos.length === 0 ? (
+              <EmptyState
+                icon={<Calendar size={26} />}
+                title="Nenhum agendamento por aqui"
+                description="Encontre um prestador e agende o próximo cuidado do seu pet."
+              >
+                <Link to="/tutor/prestadores" style={{ textDecoration: 'none' }}>
+                  <Button size="sm">Encontrar prestador</Button>
+                </Link>
+              </EmptyState>
+            ) : (
+              <div>
+                {proximos.map((a, i) => (
+                  <div key={a.id} style={{ padding: '14px 0', borderBottom: i < proximos.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: colors.gray[900] }}>{a.prestador?.nomePrestador}</p>
+                      <StatusBadge status={a.status} />
+                    </div>
+                    <p style={{ fontSize: 13, color: colors.gray[500], margin: 0 }}>
+                      <PawPrint size={13} /> {a.pet?.nome} • <Calendar size={13} /> {formatData(a.dataHora)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
 
-      <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6' }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 16 }}>Ações rápidas</h2>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <Link to="/tutor/pets" style={{ padding: '10px 20px', backgroundColor: '#22C55E', color: '#fff', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
-            + Adicionar pet
-          </Link>
-          <Link to="/tutor/prestadores" style={{ padding: '10px 20px', backgroundColor: '#f3f4f6', color: '#374151', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
-            Encontrar prestador
-          </Link>
-          <Link to="/tutor/agendamentos" style={{ padding: '10px 20px', backgroundColor: '#f3f4f6', color: '#374151', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
-            Ver agendamentos
-          </Link>
+          <div>
+            <SectionHeader title="Ações rápidas" />
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <Link to="/tutor/pets" style={{ textDecoration: 'none' }}>
+                <Button>+ Adicionar pet</Button>
+              </Link>
+              <Link to="/tutor/prestadores" style={{ textDecoration: 'none' }}>
+                <Button variant="secondary">Encontrar prestador</Button>
+              </Link>
+              <Link to="/tutor/agendamentos" style={{ textDecoration: 'none' }}>
+                <Button variant="secondary">Ver agendamentos</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <Card padding={24} style={{ marginBottom: 24 }}>
+            <SectionHeader title="Resumo" />
+            {loading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} height={32} />)}
+              </div>
+            ) : (
+              <div>
+                {resumo.map((r, i) => (
+                  <Link key={r.label} to={r.to} style={{ textDecoration: 'none' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 0', borderBottom: i < resumo.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
+                      <span style={{ fontSize: 14, color: colors.gray[500] }}>{r.label}</span>
+                      <span style={{ fontSize: 18, fontWeight: 800, color: colors.brand[700] }}>{r.value}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          <Card padding={24}>
+            <SectionHeader title="Seus pets" action={pets.length > 0 ? <TextLink to="/tutor/pets">Gerenciar</TextLink> : undefined} />
+            {loading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} height={40} />)}
+              </div>
+            ) : pets.length === 0 ? (
+              <EmptyState
+                icon={<PawPrint size={26} />}
+                title="Cadastre seu primeiro pet"
+                description="Adicione nome, espécie e raça para facilitar os agendamentos."
+              >
+                <Link to="/tutor/pets" style={{ textDecoration: 'none' }}>
+                  <Button size="sm">Adicionar pet</Button>
+                </Link>
+              </EmptyState>
+            ) : (
+              <div>
+                {pets.slice(0, 3).map((p, i) => (
+                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: i < Math.min(pets.length, 3) - 1 ? `1px solid ${colors.border}` : 'none' }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: colors.brand[50], display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.brand[600], flexShrink: 0 }}>
+                      <EspecieIcon especie={p.especie} size={20} />
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: colors.gray[900], margin: 0 }}>{p.nome}</p>
+                      <p style={{ fontSize: 12, color: colors.gray[500], margin: 0 }}>{p.especie}{p.raca ? ` • ${p.raca}` : ''}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
         </div>
       </div>
     </DashboardLayout>

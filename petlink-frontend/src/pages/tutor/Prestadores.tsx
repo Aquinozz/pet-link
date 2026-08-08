@@ -1,10 +1,18 @@
 import { useEffect, useState } from 'react'
+import { MapPin, Clock, Mail, MessageCircle, Building, Navigation } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import PrestadorProfileModal from '../../components/prestador/PrestadorProfileModal'
 import { API_URL } from '../../api/axiosInstance'
 import { prestadorService } from '../../api/prestadorService'
 import type { PrestadorResponseDto } from '../../types'
-import { Star, MapPin, Building, Clock, Mail, MessageCircle } from 'lucide-react'
+import { PageHeader } from '../../components/ui/PageHeader'
+import { Card } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
+import { Input, Select } from '../../components/ui/Input'
+import { Badge } from '../../components/ui/Badge'
+import { StarRating } from '../../components/ui/StarRating'
+import { Skeleton } from '../../components/ui/Skeleton'
+import { colors, radius } from '../../theme/tokens'
 
 const whatsappLink = (tel: string) =>
   `https://api.whatsapp.com/send?phone=55${tel.replace(/\D/g, '')}&text=${encodeURIComponent('Olá! Vi seu perfil no PetLink e gostaria de agendar um serviço.')}`
@@ -91,98 +99,92 @@ export default function Prestadores() {
     })
   }
 
-  const stars = (n: number) =>
-    Array.from({ length: 5 }, (_, i) => {
-      const active = i < Math.round(n)
-      return <Star key={i} size={14} fill={active ? '#facc15' : '#F4F7F6'} color={active ? '#facc15' : '#F4F7F6'} />
-    })
-
   return (
     <DashboardLayout>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: '#111827', marginBottom: 4 }}>Prestadores</h1>
-        <p style={{ color: '#6b7280', fontSize: 14 }}>{prestadores.length} profissional(is) disponível(is)</p>
-      </div>
+      <PageHeader title="Prestadores" subtitle={`${prestadores.length} profissional(is) disponível(is)`} />
 
       <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
-        <input value={busca} onChange={e => setBusca(e.target.value)}
-          placeholder="Buscar por nome..."
-          style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, minWidth: 220 }} />
-        <input value={cidadeFiltro} onChange={e => setCidadeFiltro(e.target.value)}
-          placeholder="Cidade"
-          style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, minWidth: 160 }} />
-        <input value={bairroFiltro} onChange={e => setBairroFiltro(e.target.value)}
-          placeholder="Bairro"
-          style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, minWidth: 160 }} />
-        <select value={servicoFiltro} onChange={e => setServicoFiltro(e.target.value)}
-          style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, minWidth: 200 }}>
+        <Input noMargin value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por nome..." style={{ minWidth: 220, width: 'auto', height: 40 }} />
+        <Input noMargin value={cidadeFiltro} onChange={e => setCidadeFiltro(e.target.value)} placeholder="Cidade" style={{ minWidth: 160, width: 'auto', height: 40 }} />
+        <Input noMargin value={bairroFiltro} onChange={e => setBairroFiltro(e.target.value)} placeholder="Bairro" style={{ minWidth: 160, width: 'auto', height: 40 }} />
+        <Select noMargin value={servicoFiltro} onChange={e => setServicoFiltro(e.target.value)} style={{ minWidth: 200, width: 'auto', height: 40 }}>
           <option value="">Todos os serviços</option>
           {todosServicos.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
-        <button type="button" onClick={handleAplicarFiltros}
-          style={{ padding: '10px 18px', backgroundColor: '#22C55E', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', minWidth: 160 }}>
-          Aplicar filtros
-        </button>
+        </Select>
+        <Button onClick={handleAplicarFiltros} style={{ height: 40 }}>Aplicar filtros</Button>
       </div>
 
       <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
-        <button type="button" onClick={handleUsarLocalizacao} disabled={locationLoading}
-          style={{ padding: '10px 18px', backgroundColor: locationLoading ? '#9ca3af' : '#3b82f6', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>
-          {locationLoading ? 'Obtendo localização...' : usarLocalizacao ? <><MapPin size={14} /> Localização ativada</> : <><MapPin size={14} /> Usar minha localização</>}
-        </button>
+        <Button variant={usarLocalizacao ? 'secondary' : 'primary'} onClick={handleUsarLocalizacao} disabled={locationLoading}>
+          <Navigation size={15} />
+          {locationLoading ? 'Obtendo localização...' : usarLocalizacao ? 'Localização ativada' : 'Usar minha localização'}
+        </Button>
         {usarLocalizacao && (
           <>
-            <label style={{ fontSize: 14, color: '#374151', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <label style={{ fontSize: 14, color: colors.gray[700], display: 'flex', alignItems: 'center', gap: 8 }}>
               <span>Raio:</span>
-              <select value={raio} onChange={e => setRaio(Number(e.target.value))}
-                style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14 }}>
+              <Select value={raio} onChange={e => setRaio(Number(e.target.value))} style={{ width: 110, marginBottom: 0 }}>
                 <option value={5}>5 km</option>
                 <option value={10}>10 km</option>
                 <option value={25}>25 km</option>
                 <option value={50}>50 km</option>
                 <option value={100}>100 km</option>
-              </select>
+              </Select>
             </label>
-            <button type="button" onClick={() => { setUsarLocalizacao(false); setUserLocation(null); prestadorService.listar().then(setPrestadores) }}
-              style={{ padding: '8px 14px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-              Limpar
-            </button>
+            <Button variant="secondary" onClick={() => { setUsarLocalizacao(false); setUserLocation(null); prestadorService.listar().then(setPrestadores) }}>Limpar</Button>
           </>
         )}
-        {locationError && <span style={{ fontSize: 13, color: '#ef4444' }}>{locationError}</span>}
+        {locationError && <span style={{ fontSize: 13, color: colors.danger[600] }}>{locationError}</span>}
       </div>
 
-      {loading ? <p style={{ color: '#6b7280' }}>Carregando...</p> : (
+      {loading ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i} padding={24}>
+              <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
+                <Skeleton width={48} height={48} style={{ borderRadius: radius.lg, flexShrink: 0 }} />
+                <div style={{ flex: 1 }}>
+                  <Skeleton width="70%" height={15} style={{ marginBottom: 8 }} />
+                  <Skeleton width="45%" height={12} />
+                </div>
+              </div>
+              <Skeleton width="100%" height={13} style={{ marginBottom: 8 }} />
+              <Skeleton width="80%" height={13} style={{ marginBottom: 16 }} />
+              <Skeleton height={36} style={{ borderRadius: radius.md }} />
+            </Card>
+          ))}
+        </div>
+      ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
           {filtrados.map(p => (
-                    <div key={p.id} onClick={() => setPrestadorSelecionado(p)} style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #F4F7F6', cursor: 'pointer' }}>
+            <Card key={p.id} hoverable onClick={() => setPrestadorSelecionado(p)} padding={24}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
-                        {p.fotoUrl ? (
-                          <img src={`${API_URL}${p.fotoUrl}`} alt={p.nomePrestador}
-                            style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }}
-                          />
-                        ) : (
-                          <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: '#EAF8ED', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Building size={22} /></div>
-                        )}
-                        <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', marginBottom: 2 }}>{p.nomePrestador}</p>
+                {p.fotoUrl ? (
+                  <img src={`${API_URL}${p.fotoUrl}`} alt={p.nomePrestador}
+                    style={{ width: 48, height: 48, borderRadius: radius.lg, objectFit: 'cover', flexShrink: 0 }}
+                  />
+                ) : (
+                  <div style={{ width: 48, height: 48, borderRadius: radius.lg, backgroundColor: colors.brand[100], display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Building size={22} color={colors.brand[600]} />
+                  </div>
+                )}
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: colors.gray[900], marginBottom: 4 }}>{p.nomePrestador}</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ display: 'flex', gap: 2 }}>{stars(p.avaliacaoMedia ?? 0)}</div>
+                    <StarRating value={p.avaliacaoMedia ?? 0} />
                     {p.type && (
-                      <span style={{ fontSize: 11, backgroundColor: '#EAF8ED', color: '#22C55E', padding: '2px 8px', borderRadius: 6, fontWeight: 600 }}>
-                        {tipoLabel[p.type] ?? p.type}
-                      </span>
+                      <Badge tone="green">{tipoLabel[p.type] ?? p.type}</Badge>
                     )}
                   </div>
                 </div>
               </div>
 
-              {p.descricao && <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 10 }}>{p.descricao}</p>}
+              {p.descricao && <p style={{ fontSize: 13, color: colors.gray[500], marginBottom: 10 }}>{p.descricao}</p>}
 
               {p.servicos && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
                   {p.servicos.split(',').map(s => s.trim()).filter(Boolean).map(s => (
-                    <span key={s} style={{ fontSize: 11, backgroundColor: '#EAF8ED', color: '#0D3B34', padding: '3px 10px', borderRadius: 20, fontWeight: 600, border: '1px solid #A7E07E' }}>
+                    <span key={s} style={{ fontSize: 11, backgroundColor: colors.brand[50], color: colors.brand[800], padding: '3px 10px', borderRadius: 20, fontWeight: 600, border: `1px solid ${colors.border}` }}>
                       {s}
                     </span>
                   ))}
@@ -190,33 +192,33 @@ export default function Prestadores() {
               )}
 
               {(p.cidade || p.bairro) && (
-                <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 10 }}>
+                <p style={{ fontSize: 12, color: colors.gray[400], marginBottom: 10 }}>
                   <MapPin size={12} /> {[p.bairro, p.cidade].filter(Boolean).join(', ')}
-                  {p.distanciaKm != null && <span style={{ color: '#22C55E', fontWeight: 600, marginLeft: 8 }}>{p.distanciaKm} km</span>}
+                  {p.distanciaKm != null && <span style={{ color: colors.brand[600], fontWeight: 600, marginLeft: 8 }}>{p.distanciaKm} km</span>}
                 </p>
               )}
               {!p.cidade && !p.bairro && p.distanciaKm != null && (
-                <p style={{ fontSize: 12, color: '#22C55E', fontWeight: 600, marginBottom: 10 }}>
+                <p style={{ fontSize: 12, color: colors.brand[600], fontWeight: 600, marginBottom: 10 }}>
                   <MapPin size={12} /> {p.distanciaKm} km de distância
                 </p>
               )}
 
               {p.horarioFuncionamento && (
-                <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 10 }}><Clock size={12} /> {p.horarioFuncionamento}</p>
+                <p style={{ fontSize: 12, color: colors.gray[500], marginBottom: 10 }}><Clock size={12} /> {p.horarioFuncionamento}</p>
               )}
-              <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 12 }}><Mail size={12} /> {p.email}</p>
+              <p style={{ fontSize: 12, color: colors.gray[400], marginBottom: 12 }}><Mail size={12} /> {p.email}</p>
 
               {p.telefone && (
                 <a href={whatsappLink(p.telefone)} target="_blank" rel="noopener noreferrer"
                   onClick={e => e.stopPropagation()}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 0', backgroundColor: '#22c55e', color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none', textAlign: 'center' }}>
-                  <MessageCircle size={14} /> Falar no WhatsApp
+                  style={{ textDecoration: 'none', display: 'block' }}>
+                  <Button style={{ width: '100%' }}><MessageCircle size={15} /> Falar no WhatsApp</Button>
                 </a>
               )}
-            </div>
+            </Card>
           ))}
           {filtrados.length === 0 && (
-            <p style={{ color: '#6b7280', gridColumn: '1/-1' }}>Nenhum prestador encontrado.</p>
+            <p style={{ color: colors.gray[500], gridColumn: '1/-1' }}>Nenhum prestador encontrado.</p>
           )}
         </div>
       )}

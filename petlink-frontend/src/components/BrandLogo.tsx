@@ -21,12 +21,12 @@ export function BrandLogo({ size = 28, colorText = '#0D3B34' }: BrandLogoProps) 
         />
         <path
           d="M40 24c0 5-4 9-8 9s-8-4-8-9 4-9 8-9 8 4 8 9Z"
-          fill="#22C55E"
+          fill="#16A34A"
         />
         <path d="M26 24c0 2 1 4 2 4s2-2 2-4-1-4-2-4-2 2-2 4Z" fill="#F4F7F6" />
       </svg>
       <span style={{ fontSize: size * 0.7, fontWeight: 800, color: colorText }}>
-        Pet<span style={{ color: '#22C55E' }}>Link</span>
+        Pet<span style={{ color: '#16A34A' }}>Link</span>
       </span>
     </div>
   )

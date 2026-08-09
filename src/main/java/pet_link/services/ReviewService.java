@@ -6,6 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pet_link.dtos.ReviewRequestDTO;
 import pet_link.dtos.ReviewResponseDTO;
+import pet_link.enums.UserRole;
+import pet_link.exceptions.BadRequestException;
+import pet_link.exceptions.ForbiddenException;
 import pet_link.exceptions.ResourceNotFoundException;
 import pet_link.models.PrestadorModel;
 import pet_link.models.ReviewModel;
@@ -26,44 +29,81 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final PrestadorRepository prestadorRepository;
 
-    public ReviewResponseDTO criar(@Valid ReviewRequestDTO dto) {
+    private Users usuarioAtual(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+    }
+
+    private boolean temRole(Users user, UserRole role) {
+        return user.getRoles().stream().anyMatch(r -> r.getAuthority().equals(role.name()));
+    }
+
+    public ReviewResponseDTO criar(@Valid ReviewRequestDTO dto, String email) {
         log.info("Criando avaliação para prestador {}", dto.getPrestadorId());
 
-        Users tutor = userRepository.findById(dto.getTutorId())
-                .orElseThrow(() -> new ResourceNotFoundException("Tutor com ID " + dto.getTutorId() + " não encontrado."));
+        Users tutor = usuarioAtual(email);
+
+        if (dto.getTutorId() != null && !dto.getTutorId().equals(tutor.getId())) {
+            throw new ForbiddenException("Só é possível avaliar como o seu próprio usuário.");
+        }
 
         Users prestadorUsuario = userRepository.findById(dto.getPrestadorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Profissional com ID " + dto.getPrestadorId() + " não encontrado."));
 
-        if (prestadorUsuario.getPrestador() == null) {
+        if (prestadorUsuario.getId().equals(tutor.getId())) {
+            throw new BadRequestException("Você não pode avaliar a si mesmo.");
+        }
+
+        PrestadorModel prestador = prestadorUsuario.getPrestador();
+        if (prestador == null) {
             throw new ResourceNotFoundException("Prestador vinculado ao usuário com ID " + dto.getPrestadorId() + " não encontrado.");
         }
 
         ReviewModel review = new ReviewModel();
         review.setTutor(tutor);
-        review.setPrestador(prestadorUsuario.getPrestador());
+        review.setPrestador(prestador);
         review.setNota(dto.getNota());
         review.setComentario(dto.getComentario());
         review.setDataCriacao(LocalDateTime.now());
 
         ReviewModel reviewSalva = reviewRepository.save(review);
 
-        atualizarMediaPrestador(prestadorUsuario.getPrestador());
+        atualizarMediaPrestador(prestador);
 
         log.info("Review criada com sucesso. Id={}", reviewSalva.getId());
 
         return new ReviewResponseDTO(reviewSalva);
     }
 
-    public List<ReviewResponseDTO> listarTodos() {
-        return reviewRepository.findAll().stream()
+    public List<ReviewResponseDTO> listarTodos(String email) {
+        Users current = usuarioAtual(email);
+
+        List<ReviewModel> reviews;
+        if (temRole(current, UserRole.ROLE_ADMIN)) {
+            reviews = reviewRepository.findAll();
+        } else if (temRole(current, UserRole.ROLE_PROFISSIONAL)) {
+            reviews = reviewRepository.findByPrestador_User_Id(current.getId());
+        } else if (temRole(current, UserRole.ROLE_TUTOR)) {
+            reviews = reviewRepository.findByTutor_Id(current.getId());
+        } else {
+            throw new ForbiddenException("Usuário sem permissão para listar avaliações.");
+        }
+
+        return reviews.stream()
                 .map(ReviewResponseDTO::new)
                 .toList();
     }
 
-    public void deletar(Long id) {
+    public void deletar(Long id, String email) {
+        Users current = usuarioAtual(email);
+
         ReviewModel review = reviewRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Avaliação com ID " + id + " não encontrada."));
+
+        boolean autor = review.getTutor() != null && review.getTutor().getId().equals(current.getId());
+        if (!autor && !temRole(current, UserRole.ROLE_ADMIN)) {
+            throw new ForbiddenException("Você não tem permissão para remover esta avaliação.");
+        }
 
         PrestadorModel prestador = review.getPrestador();
 

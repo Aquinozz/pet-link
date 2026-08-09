@@ -2,6 +2,7 @@ package pet_link.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pet_link.dtos.AtualizarPrestadorDto;
@@ -36,6 +37,7 @@ public class PrestadorService {
     private final UserRepository userRepository;
     private final RolesRepository rolesRepository;
     private final GeocodingService geocodingService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${app.upload-dir:./uploads}")
     private String uploadDir;
@@ -54,7 +56,7 @@ public class PrestadorService {
         Users usuario = new Users();
         usuario.setNome(dto.getNomePrestador());
         usuario.setEmail(emailGerado);
-        usuario.setSenha("123456");
+        usuario.setSenha(passwordEncoder.encode("123456"));
         usuario.getRoles().add(roleProfissional);
         Users usuarioSalvo = userRepository.save(usuario);
 

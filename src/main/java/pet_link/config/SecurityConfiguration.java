@@ -66,10 +66,10 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.DELETE, "/prestadores/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/prestadores/meu-perfil").hasRole("PROFISSIONAL")
 
-                        .requestMatchers("/pets/**").hasRole("TUTOR")
+                        .requestMatchers("/pets/**").hasAnyRole("TUTOR", "ADMIN")
 
                         .requestMatchers("/appointment/**")
-                        .hasAnyRole("PROFISSIONAL", "TUTOR")
+                        .hasAnyRole("PROFISSIONAL", "TUTOR", "ADMIN")
 
                         .requestMatchers("/reviews/**")
                         .hasAnyRole("TUTOR", "PROFISSIONAL", "ADMIN")

@@ -93,9 +93,7 @@ public class PrestadorService {
     }
 
     public List<PrestadorResponseDTO> listarTodosProfissionais() {
-        return userRepository.findAll().stream()
-                .filter(user -> user.getRoles().stream()
-                        .anyMatch(role -> role.getAuthority().equals(UserRole.ROLE_PROFISSIONAL.name())))
+        return userRepository.findAllByRoleComPrestador(UserRole.ROLE_PROFISSIONAL.name()).stream()
                 .map(PrestadorResponseDTO::new)
                 .toList();
     }
@@ -158,9 +156,7 @@ public class PrestadorService {
     }
 
     public List<PrestadorResponseDTO> listarProximos(double lat, double lng, double raioKm) {
-        return userRepository.findAll().stream()
-                .filter(user -> user.getRoles().stream()
-                        .anyMatch(role -> role.getAuthority().equals("ROLE_PROFISSIONAL")))
+        return userRepository.findAllByRoleComPrestador(UserRole.ROLE_PROFISSIONAL.name()).stream()
                 .filter(user -> user.getPrestador() != null
                         && user.getPrestador().getLatitude() != null
                         && user.getPrestador().getLongitude() != null)

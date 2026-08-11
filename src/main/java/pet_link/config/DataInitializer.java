@@ -1,6 +1,8 @@
 package pet_link.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import pet_link.enums.PrestadorType;
@@ -16,6 +18,7 @@ import pet_link.repositories.UserRepository;
 
 @RequiredArgsConstructor
 @Component
+@Slf4j
 public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
@@ -23,6 +26,12 @@ public class DataInitializer implements CommandLineRunner {
     private final PetRepository petRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     private final PrestadorRepository prestadorRepository;
+
+    @Value("${ADMIN_EMAIL:admin@petlink.com}")
+    private String adminEmail;
+
+    @Value("${ADMIN_PASSWORD:admin123}")
+    private String adminPassword;
 
     @Override
     public void run(String... args) {
@@ -42,6 +51,21 @@ public class DataInitializer implements CommandLineRunner {
         RolesEntity roleProfissional = rolesRepository
                 .findByNome(UserRole.ROLE_PROFISSIONAL.name())
                 .orElseThrow(() -> new RuntimeException("ROLE_PROFISSIONAL não encontrada"));
+
+        RolesEntity roleAdmin = rolesRepository
+                .findByNome(UserRole.ROLE_ADMIN.name())
+                .orElseThrow(() -> new RuntimeException("ROLE_ADMIN não encontrada"));
+
+        // Admin de acesso
+        if (userRepository.findByEmail(adminEmail).isEmpty()) {
+            Users admin = new Users();
+            admin.setNome("Administrador");
+            admin.setEmail(adminEmail);
+            admin.setSenha(passwordEncoder.encode(adminPassword));
+            admin.getRoles().add(roleAdmin);
+            userRepository.save(admin);
+            log.warn("Usuário admin criado com credenciais padrão. Altere a senha no .env.");
+        }
 
         // Tutor de teste
         if (userRepository.findByEmail("bianca@email.com").isEmpty()) {

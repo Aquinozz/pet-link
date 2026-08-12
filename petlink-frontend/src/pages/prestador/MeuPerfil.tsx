@@ -10,6 +10,7 @@ import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Input, Textarea } from '../../components/ui/Input'
 import { Skeleton } from '../../components/ui/Skeleton'
+import ImageCropModal from '../../components/ui/ImageCropModal'
 import { colors, radius } from '../../theme/tokens'
 
 export default function MeuPerfil() {
@@ -20,6 +21,7 @@ export default function MeuPerfil() {
   const [novoServico, setNovoServico] = useState('')
   const [fotoUploading, setFotoUploading] = useState(false)
   const [fotoSuccess, setFotoSuccess] = useState(false)
+  const [cropImage, setCropImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
     telefone: '', descricao: '', cidade: '', bairro: '', servicos: '', horarioFuncionamento: '',
@@ -41,20 +43,25 @@ export default function MeuPerfil() {
 
   const servicos = form.servicos ? form.servicos.split(',').map(s => s.trim()).filter(Boolean) : []
 
-  const handleFotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSelectFoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    setCropImage(URL.createObjectURL(file))
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const handleUploadFoto = async (blob: Blob) => {
     setFotoUploading(true)
     setFotoSuccess(false)
     try {
-      const result = await prestadorService.uploadFoto(file)
+      const result = await prestadorService.uploadFoto(new File([blob], 'foto.jpg', { type: 'image/jpeg' }))
       setPerfil(prev => prev ? { ...prev, fotoUrl: result.fotoUrl } : null)
       setFotoSuccess(true)
       setTimeout(() => setFotoSuccess(false), 3000)
     } catch {
     } finally {
       setFotoUploading(false)
-      if (fileInputRef.current) fileInputRef.current.value = ''
+      setCropImage(null)
     }
   }
 
@@ -139,7 +146,7 @@ export default function MeuPerfil() {
             </Button>
             {fotoSuccess && <span style={{ fontSize: 13, color: colors.success[600], fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}><Check size={14} /> Foto salva</span>}
           </div>
-          <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/jpg" onChange={handleFotoUpload} style={{ display: 'none' }} />
+          <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/jpg" onChange={handleSelectFoto} style={{ display: 'none' }} />
         </div>
       </Card>
 
@@ -192,6 +199,14 @@ export default function MeuPerfil() {
           </p>
         </Card>
       </div>
+
+      {cropImage && (
+        <ImageCropModal
+          imageSrc={cropImage}
+          onCancel={() => setCropImage(null)}
+          onConfirm={handleUploadFoto}
+        />
+      )}
     </DashboardLayout>
   )
 }

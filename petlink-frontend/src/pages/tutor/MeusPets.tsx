@@ -12,6 +12,7 @@ import { Input, Select } from '../../components/ui/Input'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { EspecieIcon } from '../../components/ui/EspecieIcon'
 import { Skeleton } from '../../components/ui/Skeleton'
+import ImageCropModal from '../../components/ui/ImageCropModal'
 import { colors, radius, fontSize } from '../../theme/tokens'
 
 const especies = ['Cachorro', 'Gato', 'Coelho', 'Pássaro', 'Peixe', 'Outro']
@@ -25,6 +26,7 @@ export default function MeusPets() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [uploadingPetId, setUploadingPetId] = useState<number | null>(null)
+  const [cropPet, setCropPet] = useState<{ petId: number; src: string } | null>(null)
   const fileInputs = useRef<Record<number, HTMLInputElement>>({})
 
   const load = async () => {
@@ -37,15 +39,22 @@ export default function MeusPets() {
     }
   }
 
-  const handleFotoUpload = async (petId: number, file: File) => {
+  const handleSelectFoto = (petId: number, file: File) => {
+    setCropPet({ petId, src: URL.createObjectURL(file) })
+    if (fileInputs.current[petId]) fileInputs.current[petId].value = ''
+  }
+
+  const handleUploadFoto = async (blob: Blob) => {
+    if (!cropPet) return
+    const { petId } = cropPet
     setUploadingPetId(petId)
     try {
-      const result = await petService.uploadFoto(petId, file)
+      const result = await petService.uploadFoto(petId, new File([blob], 'foto.jpg', { type: 'image/jpeg' }))
       setPets(prev => prev.map(p => p.id === petId ? { ...p, fotoUrl: result.fotoUrl } : p))
     } catch {
     } finally {
       setUploadingPetId(null)
-      if (fileInputs.current[petId]) fileInputs.current[petId].value = ''
+      setCropPet(null)
     }
   }
 
@@ -154,7 +163,7 @@ export default function MeusPets() {
                 <input
                   ref={el => { if (el) fileInputs.current[pet.id] = el }}
                   type="file" accept="image/png,image/jpeg,image/jpg"
-                  onChange={e => { const f = e.target.files?.[0]; if (f) handleFotoUpload(pet.id, f) }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleSelectFoto(pet.id, f) }}
                   style={{ display: 'none' }}
                 />
               </div>
@@ -164,6 +173,14 @@ export default function MeusPets() {
             </Card>
           ))}
         </div>
+      )}
+
+      {cropPet && (
+        <ImageCropModal
+          imageSrc={cropPet.src}
+          onCancel={() => setCropPet(null)}
+          onConfirm={handleUploadFoto}
+        />
       )}
     </DashboardLayout>
   )

@@ -2,11 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LogOut, ChevronDown } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import { API_URL } from '../../api/axiosInstance'
 import { Avatar } from '../ui/Avatar'
 import { colors, radius, shadow } from '../../theme/tokens'
 
 export default function Topbar() {
-  const { user, signOut } = useAuth()
+  const { user, fotoUrl, signOut } = useAuth()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -57,7 +58,7 @@ export default function Topbar() {
             fontFamily: 'inherit',
           }}
         >
-          <Avatar name={user?.email ?? ''} size={32} />
+          <Avatar name={username} src={fotoUrl ? `${API_URL}${fotoUrl}` : undefined} size={32} />
           <div style={{ textAlign: 'left' }}>
             <p style={{ fontSize: 13, fontWeight: 600, color: colors.gray[900], lineHeight: 1.1 }}>{username}</p>
             <p style={{ fontSize: 11, color: colors.gray[400], lineHeight: 1.2 }}>{user?.role === 'ROLE_PROFISSIONAL' ? 'Prestador' : 'Tutor'}</p>

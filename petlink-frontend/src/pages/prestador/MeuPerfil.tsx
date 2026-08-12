@@ -4,6 +4,7 @@ import DashboardLayout from '../../components/layout/DashboardLayout'
 import { API_URL } from '../../api/axiosInstance'
 import { authService } from '../../api/authService'
 import { prestadorService } from '../../api/prestadorService'
+import { useAuth } from '../../contexts/AuthContext'
 import type { MeResponse } from '../../api/authService'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Card } from '../../components/ui/Card'
@@ -14,6 +15,7 @@ import ImageCropModal from '../../components/ui/ImageCropModal'
 import { colors, radius } from '../../theme/tokens'
 
 export default function MeuPerfil() {
+  const { setFotoUrl } = useAuth()
   const [perfil, setPerfil] = useState<MeResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -56,6 +58,7 @@ export default function MeuPerfil() {
     try {
       const result = await prestadorService.uploadFoto(new File([blob], 'foto.jpg', { type: 'image/jpeg' }))
       setPerfil(prev => prev ? { ...prev, fotoUrl: result.fotoUrl } : null)
+      setFotoUrl(result.fotoUrl ?? null)
       setFotoSuccess(true)
       setTimeout(() => setFotoSuccess(false), 3000)
     } catch {

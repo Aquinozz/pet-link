@@ -22,7 +22,7 @@ function RoleRoute({ children, roles }: { children: React.ReactNode; roles: stri
 }
 
 function RedirectByRole() {
-  const { user, isAuthenticated, setTutorId, setPrestadorId } = useAuth()
+  const { user, isAuthenticated, setTutorId, setPrestadorId, setFotoUrl } = useAuth()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
 
@@ -38,6 +38,7 @@ function RedirectByRole() {
       if (me.id) {
         if (user?.role === 'ROLE_TUTOR') setTutorId(me.id)
         if (user?.role === 'ROLE_PROFISSIONAL' && me.prestadorModelId) setPrestadorId(me.prestadorModelId)
+        setFotoUrl(me.fotoUrl ?? null)
       }
       navigateByRole()
     }).catch(() => {

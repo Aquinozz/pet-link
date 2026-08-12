@@ -16,10 +16,12 @@ export interface AuthContextData {
   isAuthenticated: boolean
   tutorId: number | null
   prestadorId: number | null
+  fotoUrl: string | null
   signIn: (token: string) => void
   signOut: () => void
   setTutorId: (id: number) => void
   setPrestadorId: (id: number) => void
+  setFotoUrl: (url: string | null) => void
 }
 
 function parseToken(token: string): AuthUser | null {
@@ -49,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const id = localStorage.getItem('petlink_prestador_id')
     return id ? Number(id) : null
   })
+  const [fotoUrl, setFotoUrlState] = useState<string | null>(() => localStorage.getItem('petlink_foto_url'))
 
   const signIn = (newToken: string) => {
     localStorage.setItem('petlink_token', newToken)
@@ -66,22 +69,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setPrestadorIdState(id)
   }
 
+  const setFotoUrl = (url: string | null) => {
+    if (url) localStorage.setItem('petlink_foto_url', url)
+    else localStorage.removeItem('petlink_foto_url')
+    setFotoUrlState(url)
+  }
+
   const signOut = () => {
     localStorage.removeItem('petlink_token')
     localStorage.removeItem('petlink_tutor_id')
     localStorage.removeItem('petlink_prestador_id')
+    localStorage.removeItem('petlink_foto_url')
     setToken(null)
     setUser(null)
     setTutorIdState(null)
     setPrestadorIdState(null)
+    setFotoUrlState(null)
   }
 
   return (
     <AuthContext.Provider value={{
       user, token, isAuthenticated: !!token,
-      tutorId, prestadorId,
+      tutorId, prestadorId, fotoUrl,
       signIn, signOut,
-      setTutorId, setPrestadorId,
+      setTutorId, setPrestadorId, setFotoUrl,
     }}>
       {children}
     </AuthContext.Provider>

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { Camera, PawPrint } from 'lucide-react'
+import { Camera, PawPrint, Trash2 } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { API_URL } from '../../api/axiosInstance'
 import { petService } from '../../api/petService'
@@ -26,6 +26,7 @@ export default function MeusPets() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [uploadingPetId, setUploadingPetId] = useState<number | null>(null)
+  const [removendoPetId, setRemovendoPetId] = useState<number | null>(null)
   const [cropPet, setCropPet] = useState<{ petId: number; src: string } | null>(null)
   const fileInputs = useRef<Record<number, HTMLInputElement>>({})
 
@@ -55,6 +56,19 @@ export default function MeusPets() {
     } finally {
       setUploadingPetId(null)
       setCropPet(null)
+    }
+  }
+
+  const handleRemover = async (pet: PetResponseDto) => {
+    if (!window.confirm(`Remover o pet "${pet.nome}"?`)) return
+    setRemovendoPetId(pet.id)
+    try {
+      await petService.remover(pet.id)
+      setPets(prev => prev.filter(p => p.id !== pet.id))
+    } catch {
+      alert('Erro ao remover o pet. Tente novamente.')
+    } finally {
+      setRemovendoPetId(null)
     }
   }
 
@@ -159,6 +173,28 @@ export default function MeusPets() {
                   }}
                 >
                   {uploadingPetId === pet.id ? '…' : <Camera size={14} />}
+                </button>
+                <button
+                  onClick={() => handleRemover(pet)}
+                  disabled={removendoPetId === pet.id}
+                  aria-label={`Remover ${pet.nome}`}
+                  style={{
+                    position: 'absolute',
+                    top: 6,
+                    right: 6,
+                    width: 30,
+                    height: 30,
+                    borderRadius: '50%',
+                    backgroundColor: colors.danger[600],
+                    color: colors.white,
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {removendoPetId === pet.id ? '…' : <Trash2 size={14} />}
                 </button>
                 <input
                   ref={el => { if (el) fileInputs.current[pet.id] = el }}

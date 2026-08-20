@@ -1,28 +1,21 @@
 services:
-  backend:
+  app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.combined
     ports:
-      - '8080:8080'
+      - '80:80'
     env_file:
       - .env
     environment:
+      - SERVER_PORT=8090
       - UPLOAD_DIR=/app/uploads
     volumes:
       - ./uploads:/app/uploads
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost/"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 30s
-
-  frontend:
-    build:
-      context: ./petlink-frontend
-      dockerfile: Dockerfile
-    ports:
-      - '3000:80'
-    restart: unless-stopped
+      start_period: 40s

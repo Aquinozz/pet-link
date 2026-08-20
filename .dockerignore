@@ -5,7 +5,14 @@
 .idea
 target
 .github
-petlink-frontend
 docker-compose.yml
 *.md
 HELP.md
+petlink-frontend/node_modules
+petlink-frontend/dist
+petlink-frontend/Dockerfile
+petlink-frontend/nginx.conf
+petlink-frontend/*.png
+petlink-frontend/auth_prest.html
+petlink-frontend/auth_tutor.html
+petlink-frontend/screenshot_tmp.mjs

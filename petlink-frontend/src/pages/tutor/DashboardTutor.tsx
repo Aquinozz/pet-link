@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Calendar, PawPrint } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
-import { useAuth } from '../../contexts/AuthContext'
+import { useAuth } from '../../contexts/useAuth'
 import { petService } from '../../api/petService'
 import { agendamentoService } from '../../api/agendamentoService'
 import { prestadorService } from '../../api/prestadorService'
@@ -42,7 +42,7 @@ export default function DashboardTutor() {
       setAgendamentos(agsData.filter(a => a.tutor?.email === email))
       setPrestadores(prsData)
     }).catch(() => {}).finally(() => setLoading(false))
-  }, [])
+  }, [user?.email])
 
   const proximos = [...agendamentos]
     .sort((a, b) => new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime())

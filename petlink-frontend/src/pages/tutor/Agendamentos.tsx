@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Calendar, PawPrint, Building } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { agendamentoService } from '../../api/agendamentoService'
 import { petService } from '../../api/petService'
 import { prestadorService } from '../../api/prestadorService'
-import { useAuth } from '../../contexts/AuthContext'
+import { useAuth } from '../../contexts/useAuth'
 import type { AgendamentoResponseDto, PetResponseDto, PrestadorResponseDto } from '../../types'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Card } from '../../components/ui/Card'
@@ -52,7 +52,7 @@ export default function Agendamentos() {
     else setServicosPrestador([])
   }
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       const [ags, ps, prs] = await Promise.all([
         agendamentoService.listar(),
@@ -66,9 +66,9 @@ export default function Agendamentos() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user?.email])
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [load])
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()

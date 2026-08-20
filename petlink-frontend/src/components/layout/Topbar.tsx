@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LogOut, ChevronDown } from 'lucide-react'
-import { useAuth } from '../../contexts/AuthContext'
+import { useAuth } from '../../contexts/useAuth'
 import { API_URL } from '../../api/axiosInstance'
 import { Avatar } from '../ui/Avatar'
 import { colors, radius, shadow } from '../../theme/tokens'

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { useAuth } from '../../contexts/AuthContext'
+import { useAuth } from '../../contexts/useAuth'
 import { BrandLogo } from '../BrandLogo'
 import { Calendar, LayoutDashboard, PawPrint, Search, Settings, Star } from 'lucide-react'
 import { colors, radius } from '../../theme/tokens'

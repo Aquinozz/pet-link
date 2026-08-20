@@ -1,9 +1,9 @@
-import { useEffect, useState, useRef } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 import { Camera, PawPrint, Trash2 } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { API_URL } from '../../api/axiosInstance'
 import { petService } from '../../api/petService'
-import { useAuth } from '../../contexts/AuthContext'
+import { useAuth } from '../../contexts/useAuth'
 import type { PetResponseDto } from '../../types'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Card } from '../../components/ui/Card'
@@ -30,7 +30,7 @@ export default function MeusPets() {
   const [cropPet, setCropPet] = useState<{ petId: number; src: string } | null>(null)
   const fileInputs = useRef<Record<number, HTMLInputElement>>({})
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       const data = await petService.listar()
       setPets(data.filter(p => p.tutor?.email === user?.email))
@@ -38,7 +38,7 @@ export default function MeusPets() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user?.email])
 
   const handleSelectFoto = (petId: number, file: File) => {
     setCropPet({ petId, src: URL.createObjectURL(file) })
@@ -72,7 +72,7 @@ export default function MeusPets() {
     }
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [load])
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()

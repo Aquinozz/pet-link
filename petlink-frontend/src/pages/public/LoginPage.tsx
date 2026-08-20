@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Mail, Lock } from 'lucide-react'
-import { useAuth } from '../../contexts/AuthContext'
+import { useAuth } from '../../contexts/useAuth'
 import { authService } from '../../api/authService'
 import { BrandLogo } from '../../components/BrandLogo'
 import { Button } from '../../components/ui/Button'

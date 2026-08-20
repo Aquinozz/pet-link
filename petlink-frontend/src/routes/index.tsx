@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../contexts/useAuth'
 import { authService } from '../api/authService'
 import LandingPage from '../pages/public/LandingPage'
 import LoginPage from '../pages/public/LoginPage'
@@ -44,7 +44,7 @@ function RedirectByRole() {
     }).catch(() => {
       navigateByRole()
     }).finally(() => setLoading(false))
-  }, [])
+  }, [isAuthenticated, user?.role, setTutorId, setPrestadorId, setFotoUrl, navigate])
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>

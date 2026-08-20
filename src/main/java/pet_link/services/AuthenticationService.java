@@ -13,7 +13,6 @@ import pet_link.repositories.RolesRepository;
 import pet_link.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.BadRequestException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,6 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pet_link.exceptions.BadRequestException;
 
 @Slf4j
 @Service
@@ -84,7 +84,7 @@ public class AuthenticationService {
 
         } catch (BadCredentialsException e) {
             log.warn("Falha no login (credenciais inválidas) para: {}", dto.getEmail());
-            throw new BadRequestException("Credenciais inválidas");
+            throw e;
         } catch (Exception e) {
             log.error("Erro inesperado no login para: {}", dto.getEmail(), e);
             throw e;

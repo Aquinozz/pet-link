@@ -94,7 +94,16 @@ function Navbar() {
   return (
     <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, backgroundColor: colors.white, borderBottom: `1px solid ${colors.border}` }}>
       <div style={{ ...container, padding: '0 20px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link to="/" style={{ textDecoration: 'none' }}>
+        <Link
+          to="/"
+          onClick={e => {
+            if (window.location.pathname === '/') {
+              e.preventDefault()
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }
+          }}
+          style={{ textDecoration: 'none' }}
+        >
           <BrandLogo size={28} />
         </Link>
 

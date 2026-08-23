@@ -63,6 +63,7 @@ export interface PrestadorResponseDto {
   longitude?: number
   distanciaKm?: number
   fotoUrl?: string
+  bannerUrl?: string
 }
 
 export interface AgendamentoRequestDto {

@@ -40,6 +40,8 @@ public class PrestadorModel {
 
     private String fotoUrl;
 
+    private String bannerUrl;
+
     @OneToOne
     @JoinColumn(name = "user_id", unique = true)
     private Users user;

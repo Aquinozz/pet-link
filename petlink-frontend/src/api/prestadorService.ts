@@ -23,4 +23,13 @@ export const prestadorService = {
       headers: { 'Content-Type': 'multipart/form-data' },
     })).data
   },
+  uploadBanner: async (file: File): Promise<PrestadorResponseDto> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return (await api.post('/prestadores/upload-banner', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })).data
+  },
+  removerBanner: async (): Promise<PrestadorResponseDto> =>
+    (await api.delete('/prestadores/banner')).data,
 }

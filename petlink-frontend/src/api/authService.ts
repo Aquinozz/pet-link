@@ -15,6 +15,7 @@ export interface MeResponse {
   type?: string
   horarioFuncionamento?: string
   fotoUrl?: string
+  bannerUrl?: string
 }
 
 export const authService = {

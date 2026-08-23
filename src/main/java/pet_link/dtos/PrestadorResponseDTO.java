@@ -26,6 +26,7 @@ public class PrestadorResponseDTO {
     private Double longitude;
     private Double distanciaKm;
     private String fotoUrl;
+    private String bannerUrl;
 
     public PrestadorResponseDTO(Users prestador) {
         if (prestador != null) {
@@ -45,6 +46,7 @@ public class PrestadorResponseDTO {
                 this.latitude = prestador.getPrestador().getLatitude();
                 this.longitude = prestador.getPrestador().getLongitude();
                 this.fotoUrl = prestador.getPrestador().getFotoUrl();
+                this.bannerUrl = prestador.getPrestador().getBannerUrl();
             } else {
                 this.avaliacaoMedia = 0.0;
             }

@@ -1,6 +1,7 @@
 package pet_link.services;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PrestadorService {
@@ -128,30 +130,79 @@ public class PrestadorService {
         Users usuario = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
 
+        PrestadorModel prestador = validarPrestador(usuario);
+
+        String ext = extensaoDe(file);
+        String filename = "p" + prestador.getId() + "-" + System.currentTimeMillis() + ext;
+        salvarArquivo(file, Paths.get(uploadDir).resolve("prestadores"), filename);
+
+        prestador.setFotoUrl("/uploads/prestadores/" + filename);
+        prestadorRepository.save(prestador);
+
+        return new PrestadorResponseDTO(usuario);
+    }
+
+    @Transactional
+    public PrestadorResponseDTO uploadBanner(String email, MultipartFile file) {
+        Users usuario = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+
+        PrestadorModel prestador = validarPrestador(usuario);
+
+        String ext = extensaoDe(file);
+        String filename = "banner-" + prestador.getId() + "-" + System.currentTimeMillis() + ext;
+        Path dir = Paths.get(uploadDir).resolve("prestadores").resolve("banners");
+        salvarArquivo(file, dir, filename);
+
+        prestador.setBannerUrl("/uploads/prestadores/banners/" + filename);
+        prestadorRepository.save(prestador);
+
+        return new PrestadorResponseDTO(usuario);
+    }
+
+    @Transactional
+    public PrestadorResponseDTO removerBanner(String email) {
+        Users usuario = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+
+        PrestadorModel prestador = validarPrestador(usuario);
+
+        if (prestador.getBannerUrl() != null) {
+            try {
+                String nomeArquivo = Paths.get(prestador.getBannerUrl()).getFileName().toString();
+                Files.deleteIfExists(Paths.get(uploadDir).resolve("prestadores").resolve("banners").resolve(nomeArquivo));
+            } catch (IOException e) {
+                log.warn("Não foi possível remover o arquivo de banner do disco: {}", e.getMessage());
+            }
+            prestador.setBannerUrl(null);
+            prestadorRepository.save(prestador);
+        }
+
+        return new PrestadorResponseDTO(usuario);
+    }
+
+    private PrestadorModel validarPrestador(Users usuario) {
         PrestadorModel prestador = usuario.getPrestador();
         if (prestador == null) {
             throw new BadRequestException("Usuário não possui perfil de prestador.");
         }
+        return prestador;
+    }
 
+    private String extensaoDe(MultipartFile file) {
+        String originalName = file.getOriginalFilename();
+        if (originalName != null && originalName.contains(".")) {
+            return originalName.substring(originalName.lastIndexOf("."));
+        }
+        return "";
+    }
+
+    private void salvarArquivo(MultipartFile file, Path dir, String filename) {
         try {
-            String ext = "";
-            String originalName = file.getOriginalFilename();
-            if (originalName != null && originalName.contains(".")) {
-                ext = originalName.substring(originalName.lastIndexOf("."));
-            }
-            String filename = prestador.getId() + ext;
-            Path dir = Paths.get(uploadDir).resolve("prestadores");
             Files.createDirectories(dir);
-            Path filePath = dir.resolve(filename);
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            String fotoUrl = "/uploads/prestadores/" + filename;
-            prestador.setFotoUrl(fotoUrl);
-            prestadorRepository.save(prestador);
-
-            return new PrestadorResponseDTO(usuario);
+            Files.copy(file.getInputStream(), dir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            throw new RuntimeException("Erro ao salvar arquivo de foto.", e);
+            throw new RuntimeException("Erro ao salvar arquivo.", e);
         }
     }
 

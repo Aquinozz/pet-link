@@ -62,6 +62,8 @@ public class SecurityConfiguration {
 
                         .requestMatchers(HttpMethod.GET, "/prestadores/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/prestadores/upload-foto").hasRole("PROFISSIONAL")
+                        .requestMatchers(HttpMethod.POST, "/prestadores/upload-banner").hasRole("PROFISSIONAL")
+                        .requestMatchers(HttpMethod.DELETE, "/prestadores/banner").hasRole("PROFISSIONAL")
                         .requestMatchers(HttpMethod.POST, "/prestadores/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/prestadores/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/prestadores/meu-perfil").hasRole("PROFISSIONAL")

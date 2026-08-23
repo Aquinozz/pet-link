@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { Building, Camera, Check, Plus, X } from 'lucide-react'
+import { Building, Camera, Check, Plus, X, Image, Trash2 } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { API_URL } from '../../api/axiosInstance'
 import { authService } from '../../api/authService'
@@ -23,8 +23,12 @@ export default function MeuPerfil() {
   const [novoServico, setNovoServico] = useState('')
   const [fotoUploading, setFotoUploading] = useState(false)
   const [fotoSuccess, setFotoSuccess] = useState(false)
+  const [bannerUploading, setBannerUploading] = useState(false)
+  const [bannerSuccess, setBannerSuccess] = useState(false)
   const [cropImage, setCropImage] = useState<string | null>(null)
+  const [cropBanner, setCropBanner] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const bannerInputRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
     telefone: '', descricao: '', cidade: '', bairro: '', servicos: '', horarioFuncionamento: '',
   })
@@ -65,6 +69,32 @@ export default function MeuPerfil() {
     } finally {
       setFotoUploading(false)
       setCropImage(null)
+    }
+  }
+
+  const handleUploadBanner = async (blob: Blob) => {
+    setBannerUploading(true)
+    setBannerSuccess(false)
+    try {
+      const result = await prestadorService.uploadBanner(new File([blob], 'banner.jpg', { type: 'image/jpeg' }))
+      setPerfil(prev => prev ? { ...prev, bannerUrl: result.bannerUrl } : null)
+      setBannerSuccess(true)
+      setTimeout(() => setBannerSuccess(false), 3000)
+    } catch {
+    } finally {
+      setBannerUploading(false)
+      setCropBanner(null)
+    }
+  }
+
+  const handleRemoveBanner = async () => {
+    setBannerUploading(true)
+    try {
+await prestadorService.removerBanner()
+        setPerfil(prev => prev ? { ...prev, bannerUrl: undefined } : null)
+    } catch {
+    } finally {
+      setBannerUploading(false)
     }
   }
 
@@ -153,6 +183,34 @@ export default function MeuPerfil() {
         </div>
       </Card>
 
+      <Card padding={24} style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', minWidth: 240, maxWidth: 400 }}>
+          {perfil?.bannerUrl ? (
+            <img src={`${API_URL}${perfil.bannerUrl}`} alt="Banner do perfil"
+              style={{ width: '100%', aspectRatio: '16 / 5', borderRadius: radius.lg, objectFit: 'cover', border: `1px solid ${colors.border}` }}
+            />
+          ) : (
+            <div style={{ width: '100%', aspectRatio: '16 / 5', borderRadius: radius.lg, background: `linear-gradient(135deg, ${colors.brand[200]} 0%, ${colors.brand[100]} 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px dashed ${colors.brand[400]}` }}>
+              <span style={{ fontSize: 13, color: colors.gray[400] }}>Nenhum banner enviado</span>
+            </div>
+          )}
+        </div>
+        <div>
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: colors.gray[900], margin: '0 0 4px' }}>Banner do perfil</h3>
+          <p style={{ fontSize: 12, color: colors.gray[400], marginBottom: 12 }}>PNG, JPG ou JPEG. Máx 10MB. Proporção 16:5 recomendada.</p>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <Button variant={bannerUploading ? 'secondary' : 'primary'} size="sm" onClick={() => bannerInputRef.current?.click()} disabled={bannerUploading || !!cropBanner}>
+              {bannerUploading ? 'Enviando...' : <><Image size={14} /> Escolher banner</>}
+            </Button>
+            {bannerSuccess && <span style={{ fontSize: 13, color: colors.success[600], fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}><Check size={14} /> Banner salvo</span>}
+            {perfil?.bannerUrl && !bannerUploading && (
+              <Button variant="secondary" size="sm" onClick={handleRemoveBanner}><Trash2 size={14} /> Remover</Button>
+            )}
+          </div>
+          <input ref={bannerInputRef} type="file" accept="image/png,image/jpeg,image/jpg" onChange={e => { const f = e.target.files?.[0]; if (f) setCropBanner(URL.createObjectURL(f)); if (bannerInputRef.current) bannerInputRef.current.value = '' }} style={{ display: 'none' }} />
+        </div>
+      </Card>
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
         <Card padding={24}>
           <h2 style={{ fontSize: 16, fontWeight: 700, color: colors.gray[900], marginBottom: 20 }}>Informações do perfil</h2>
@@ -208,6 +266,13 @@ export default function MeuPerfil() {
           imageSrc={cropImage}
           onCancel={() => setCropImage(null)}
           onConfirm={handleUploadFoto}
+        />
+      )}
+      {cropBanner && (
+        <ImageCropModal
+          imageSrc={cropBanner}
+          onCancel={() => setCropBanner(null)}
+          onConfirm={handleUploadBanner}
         />
       )}
     </DashboardLayout>

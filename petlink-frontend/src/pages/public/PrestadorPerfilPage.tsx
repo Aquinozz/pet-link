@@ -194,10 +194,36 @@ export default function PrestadorPerfilPage() {
       {/* Banner */}
       <div style={{
         position: 'relative',
-        background: `linear-gradient(135deg, ${colors.brand[900]} 0%, ${colors.brand[950]} 100%)`,
         height: 280,
+        backgroundColor: colors.brand[950],
+        overflow: 'hidden',
       }}>
-        <BannerPattern />
+        {prestador.bannerUrl ? (
+          <img
+            src={`${API_URL}${prestador.bannerUrl}`}
+            alt={prestador.nomePrestador}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              display: 'block',
+            }}
+          />
+        ) : (
+          <>
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              background: `linear-gradient(135deg, ${colors.brand[900]} 0%, ${colors.brand[950]} 100%)`,
+            }} />
+            <BannerPattern />
+          </>
+        )}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.55))',
+        }} />
       </div>
 
       <main style={container}>

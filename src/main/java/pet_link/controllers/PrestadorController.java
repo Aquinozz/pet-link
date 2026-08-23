@@ -110,4 +110,19 @@ public class PrestadorController {
             @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(service.uploadFoto(userDetails.getUsername(), file));
     }
+
+    @PostMapping("/upload-banner")
+    @Operation(summary = "Upload do banner do prestador logado")
+    public ResponseEntity<PrestadorResponseDTO> uploadBanner(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(service.uploadBanner(userDetails.getUsername(), file));
+    }
+
+    @DeleteMapping("/banner")
+    @Operation(summary = "Remove o banner do prestador logado")
+    public ResponseEntity<PrestadorResponseDTO> removerBanner(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(service.removerBanner(userDetails.getUsername()));
+    }
 }

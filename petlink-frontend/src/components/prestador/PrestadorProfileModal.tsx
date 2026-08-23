@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react'
-import { X, MapPin, Clock, Mail, Phone, MessageCircle, Calendar, Star, Building } from 'lucide-react'
+import { X, MapPin, Clock, Mail, Phone, MessageCircle, Building } from 'lucide-react'
 import { API_URL } from '../../api/axiosInstance'
 import { petService } from '../../api/petService'
 import { agendamentoService } from '../../api/agendamentoService'
-import { reviewService } from '../../api/reviewService'
 import { useAuth } from '../../contexts/useAuth'
 import type { PrestadorResponseDto, PetResponseDto } from '../../types'
 import { Button } from '../ui/Button'
-import { Select, Input, Textarea } from '../ui/Input'
-import { StarRating, StarRatingInput } from '../ui/StarRating'
+import { Select, Input } from '../ui/Input'
+import { StarRating } from '../ui/StarRating'
 import { colors, radius, shadow } from '../../theme/tokens'
 
 const tipoLabel: Record<string, string> = {
@@ -57,7 +56,6 @@ export default function PrestadorProfileModal({
   onSuccess: () => void
 }) {
   const { tutorId } = useAuth()
-  const [activeTab, setActiveTab] = useState<'agendar' | 'avaliar'>('agendar')
 
   const [pets, setPets] = useState<PetResponseDto[]>([])
   const [loadingPets, setLoadingPets] = useState(true)
@@ -65,11 +63,6 @@ export default function PrestadorProfileModal({
   const [agForm, setAgForm] = useState({ petId: '', dataHora: '', servico: '', domicilio: false, endereco: '' })
   const [savingAg, setSavingAg] = useState(false)
   const [errorAg, setErrorAg] = useState('')
-
-  const [avForm, setAvForm] = useState({ nota: 5, comentario: '' })
-  const [savingAv, setSavingAv] = useState(false)
-  const [errorAv, setErrorAv] = useState('')
-  const [successAv, setSuccessAv] = useState('')
 
   const servicos = prestador.servicos
     ? prestador.servicos.split(',').map(s => s.trim()).filter(Boolean)
@@ -111,29 +104,6 @@ export default function PrestadorProfileModal({
       setErrorAg('Erro ao criar agendamento. Verifique se a data é futura.')
     } finally {
       setSavingAg(false)
-    }
-  }
-
-  const handleAvaliar = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!tutorId) { setErrorAv('Faça login novamente.'); return }
-    setErrorAv('')
-    setSuccessAv('')
-    setSavingAv(true)
-    try {
-      await reviewService.criar({
-        tutorId,
-        prestadorId: prestador.id,
-        nota: avForm.nota,
-        comentario: avForm.comentario,
-      })
-      setSuccessAv('Avaliação enviada com sucesso!')
-      setAvForm({ nota: 5, comentario: '' })
-      setTimeout(() => { onSuccess(); onClose() }, 1500)
-    } catch {
-      setErrorAv('Erro ao enviar avaliação.')
-    } finally {
-      setSavingAv(false)
     }
   }
 
@@ -225,36 +195,7 @@ export default function PrestadorProfileModal({
           </a>
         )}
 
-        <div style={{ display: 'flex', borderBottom: `2px solid ${colors.border}`, marginBottom: 20 }}>
-          {(['agendar', 'avaliar'] as const).map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                flex: 1,
-                padding: '12px 0',
-                background: 'none',
-                border: 'none',
-                borderBottom: activeTab === tab ? `2px solid ${colors.brand[600]}` : '2px solid transparent',
-                fontWeight: activeTab === tab ? 700 : 500,
-                color: activeTab === tab ? colors.brand[600] : colors.gray[500],
-                fontSize: 14,
-                cursor: 'pointer',
-                marginBottom: -2,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-                fontFamily: 'inherit',
-              }}
-            >
-              {tab === 'agendar' ? <><Calendar size={16} /> Agendar Serviço</> : <><Star size={16} /> Avaliar</>}
-            </button>
-          ))}
-        </div>
-
-        {activeTab === 'agendar' && (
-          <form onSubmit={handleAgendar}>
+        <form onSubmit={handleAgendar}>
             {errorAg && (
               <div style={{ backgroundColor: colors.danger[50], border: `1px solid ${colors.danger[100]}`, borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: colors.danger[600] }}>{errorAg}</div>
             )}
@@ -294,31 +235,7 @@ export default function PrestadorProfileModal({
             <Button type="submit" disabled={savingAg || loadingPets} style={{ width: '100%' }}>
               {savingAg ? 'Agendando...' : 'Confirmar agendamento'}
             </Button>
-          </form>
-        )}
-
-        {activeTab === 'avaliar' && (
-          <form onSubmit={handleAvaliar}>
-            {errorAv && (
-              <div style={{ backgroundColor: colors.danger[50], border: `1px solid ${colors.danger[100]}`, borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: colors.danger[600] }}>{errorAv}</div>
-            )}
-            {successAv && (
-              <div style={{ backgroundColor: colors.success[50], border: `1px solid ${colors.success[100]}`, borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: colors.success[600] }}>{successAv}</div>
-            )}
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: colors.gray[700], marginBottom: 8 }}>Nota</label>
-            <StarRatingInput value={avForm.nota} onChange={n => setAvForm(f => ({ ...f, nota: n }))} />
-            <Textarea
-              label="Comentário"
-              value={avForm.comentario}
-              onChange={e => setAvForm(f => ({ ...f, comentario: e.target.value }))}
-              placeholder="Como foi o atendimento?"
-              rows={3}
-            />
-            <Button type="submit" disabled={savingAv} style={{ width: '100%' }}>
-              {savingAv ? 'Enviando...' : 'Enviar avaliação'}
-            </Button>
-          </form>
-        )}
+        </form>
       </div>
     </div>
   )

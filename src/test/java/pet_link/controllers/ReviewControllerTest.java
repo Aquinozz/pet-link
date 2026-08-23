@@ -68,7 +68,7 @@ class ReviewControllerTest {
     void criar_semToken_retorna401() throws Exception {
         mockMvc.perform(post("/reviews")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"tutorId\":1,\"prestadorId\":2,\"nota\":5,\"comentario\":\"otimo\"}"))
+                        .content("{\"tutorId\":1,\"prestadorId\":2,\"agendamentoId\":3,\"nota\":5,\"comentario\":\"otimo\"}"))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -79,7 +79,7 @@ class ReviewControllerTest {
         mockMvc.perform(post("/reviews")
                         .headers(auth("tutor@email.com", "ROLE_TUTOR"))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"tutorId\":1,\"prestadorId\":2,\"nota\":5,\"comentario\":\"otimo\"}"))
+                        .content("{\"tutorId\":1,\"prestadorId\":2,\"agendamentoId\":3,\"nota\":5,\"comentario\":\"otimo\"}"))
                 .andExpect(status().isCreated());
     }
 
@@ -88,7 +88,7 @@ class ReviewControllerTest {
         mockMvc.perform(post("/reviews")
                         .headers(auth("tutor@email.com", "ROLE_TUTOR"))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"tutorId\":1,\"prestadorId\":2,\"nota\":9,\"comentario\":\"otimo\"}"))
+                        .content("{\"tutorId\":1,\"prestadorId\":2,\"agendamentoId\":3,\"nota\":9,\"comentario\":\"otimo\"}"))
                 .andExpect(status().isBadRequest());
     }
 

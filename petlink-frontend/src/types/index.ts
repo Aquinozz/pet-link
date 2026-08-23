@@ -90,6 +90,7 @@ export interface AgendamentoResponseDto {
 export interface ReviewRequestDto {
   tutorId: number
   prestadorId: number
+  agendamentoId: number
   nota: number
   comentario: string
 }
@@ -99,6 +100,7 @@ export interface ReviewResponseDto {
   nota: number
   comentario: string
   dataCriacao: string
+  agendamentoId?: number
   tutorId: number
   tutorNome: string
   prestadorId: number

@@ -8,12 +8,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pet_link.dtos.ReviewRequestDTO;
 import pet_link.dtos.ReviewResponseDTO;
+import pet_link.enums.AppointmentStatus;
 import pet_link.exceptions.BadRequestException;
 import pet_link.exceptions.ForbiddenException;
+import pet_link.exceptions.ResourceNotFoundException;
+import pet_link.models.AppointmentModel;
 import pet_link.models.PrestadorModel;
 import pet_link.models.ReviewModel;
 import pet_link.models.RolesEntity;
 import pet_link.models.Users;
+import pet_link.repositories.AppointmentRepository;
 import pet_link.repositories.PrestadorRepository;
 import pet_link.repositories.ReviewRepository;
 import pet_link.repositories.UserRepository;
@@ -39,6 +43,9 @@ class ReviewServiceTest {
 
     @Mock
     private PrestadorRepository prestadorRepository;
+
+    @Mock
+    private AppointmentRepository appointmentRepository;
 
     @InjectMocks
     private ReviewService service;
@@ -72,9 +79,26 @@ class ReviewServiceTest {
         ReviewRequestDTO dto = new ReviewRequestDTO();
         dto.setTutorId(tutorId);
         dto.setPrestadorId(prestadorId);
+        dto.setAgendamentoId(1L);
         dto.setNota(nota);
         dto.setComentario("Ótimo atendimento");
         return dto;
+    }
+
+    private AppointmentModel agendamento(AppointmentStatus status) {
+        AppointmentModel app = new AppointmentModel();
+        app.setId(1L);
+        app.setTutor(tutor);
+        app.setPrestador(prestador);
+        app.setStatus(status);
+        return app;
+    }
+
+    private void mockConsultaValida(AppointmentModel app) {
+        when(userRepository.findByEmail(tutor.getEmail())).thenReturn(Optional.of(tutor));
+        when(appointmentRepository.findById(app.getId())).thenReturn(Optional.of(app));
+        when(reviewRepository.existsByAgendamento_Id(app.getId())).thenReturn(false);
+        when(userRepository.findById(prestador.getId())).thenReturn(Optional.of(prestador));
     }
 
     @Test
@@ -87,7 +111,11 @@ class ReviewServiceTest {
 
     @Test
     void criar_autoavaliacao_lancaBadRequest() {
+        AppointmentModel app = agendamento(AppointmentStatus.FINALIZADO);
+        app.setPrestador(tutor);
         when(userRepository.findByEmail(tutor.getEmail())).thenReturn(Optional.of(tutor));
+        when(appointmentRepository.findById(app.getId())).thenReturn(Optional.of(app));
+        when(reviewRepository.existsByAgendamento_Id(app.getId())).thenReturn(false);
         when(userRepository.findById(tutor.getId())).thenReturn(Optional.of(tutor));
 
         assertThatThrownBy(() -> service.criar(dto(tutor.getId(), tutor.getId(), 5), tutor.getEmail()))
@@ -95,9 +123,69 @@ class ReviewServiceTest {
     }
 
     @Test
-    void criar_ok() {
+    void criar_quandoConsultaNaoFinalizada_lancaBadRequest() {
+        AppointmentModel app = agendamento(AppointmentStatus.CONFIRMADO);
         when(userRepository.findByEmail(tutor.getEmail())).thenReturn(Optional.of(tutor));
-        when(userRepository.findById(prestador.getId())).thenReturn(Optional.of(prestador));
+        when(appointmentRepository.findById(app.getId())).thenReturn(Optional.of(app));
+
+        assertThatThrownBy(() -> service.criar(dto(tutor.getId(), prestador.getId(), 5), tutor.getEmail()))
+                .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void criar_quandoConsultaDeOutroTutor_lancaForbidden() {
+        Users outro = usuario(99L, "ROLE_TUTOR");
+        AppointmentModel app = agendamento(AppointmentStatus.FINALIZADO);
+        app.setTutor(outro);
+        when(userRepository.findByEmail(tutor.getEmail())).thenReturn(Optional.of(tutor));
+        when(appointmentRepository.findById(app.getId())).thenReturn(Optional.of(app));
+
+        assertThatThrownBy(() -> service.criar(dto(tutor.getId(), prestador.getId(), 5), tutor.getEmail()))
+                .isInstanceOf(ForbiddenException.class);
+    }
+
+    @Test
+    void criar_quandoConsultaJaAvaliada_lancaBadRequest() {
+        AppointmentModel app = agendamento(AppointmentStatus.FINALIZADO);
+        when(userRepository.findByEmail(tutor.getEmail())).thenReturn(Optional.of(tutor));
+        when(appointmentRepository.findById(app.getId())).thenReturn(Optional.of(app));
+        when(reviewRepository.existsByAgendamento_Id(app.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> service.criar(dto(tutor.getId(), prestador.getId(), 5), tutor.getEmail()))
+                .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void criar_quandoConsultaInexistente_lancaNotFound() {
+        when(userRepository.findByEmail(tutor.getEmail())).thenReturn(Optional.of(tutor));
+        when(appointmentRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.criar(dto(tutor.getId(), prestador.getId(), 5), tutor.getEmail()))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void criar_quandoPrestadorDivergenteDaConsulta_lancaBadRequest() {
+        Users outroProfissional = usuario(77L, "ROLE_PROFISSIONAL");
+        PrestadorModel outroPerfil = new PrestadorModel();
+        outroPerfil.setId(20L);
+        outroPerfil.setUser(outroProfissional);
+        outroProfissional.setPrestador(outroPerfil);
+
+        AppointmentModel app = agendamento(AppointmentStatus.FINALIZADO);
+        when(userRepository.findByEmail(tutor.getEmail())).thenReturn(Optional.of(tutor));
+        when(appointmentRepository.findById(app.getId())).thenReturn(Optional.of(app));
+        when(reviewRepository.existsByAgendamento_Id(app.getId())).thenReturn(false);
+        when(userRepository.findById(outroProfissional.getId())).thenReturn(Optional.of(outroProfissional));
+
+        assertThatThrownBy(() -> service.criar(dto(tutor.getId(), outroProfissional.getId(), 5), tutor.getEmail()))
+                .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void criar_ok_vinculaAgendamentoFinalizado() {
+        AppointmentModel app = agendamento(AppointmentStatus.FINALIZADO);
+        mockConsultaValida(app);
         when(reviewRepository.save(any(ReviewModel.class))).thenAnswer(inv -> inv.getArgument(0));
         when(reviewRepository.findByPrestadorId(perfil.getId())).thenReturn(List.of());
         when(prestadorRepository.save(any(PrestadorModel.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -105,6 +193,7 @@ class ReviewServiceTest {
         ReviewResponseDTO result = service.criar(dto(tutor.getId(), prestador.getId(), 5), tutor.getEmail());
 
         assertThat(result).isNotNull();
+        assertThat(result.getAgendamentoId()).isEqualTo(1L);
         verify(reviewRepository).save(any(ReviewModel.class));
     }
 

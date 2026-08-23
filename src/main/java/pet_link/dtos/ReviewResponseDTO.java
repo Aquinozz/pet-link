@@ -10,6 +10,7 @@ public class ReviewResponseDTO {
     private Integer nota;
     private String comentario;
     private LocalDateTime dataCriacao;
+    private Long agendamentoId;
 
     private Long tutorId;
     private String tutorNome;
@@ -24,6 +25,7 @@ public class ReviewResponseDTO {
         this.nota = review.getNota();
         this.comentario = review.getComentario();
         this.dataCriacao = review.getDataCriacao();
+        this.agendamentoId = review.getAgendamento() != null ? review.getAgendamento().getId() : null;
 
         if (review.getTutor() != null) {
             this.tutorId = review.getTutor().getId();

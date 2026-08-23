@@ -24,6 +24,10 @@ public class ReviewModel {
     @JoinColumn(name = "prestador_id", nullable = false)
     private PrestadorModel prestador;
 
+    @ManyToOne
+    @JoinColumn(name = "agendamento_id")
+    private AppointmentModel agendamento;
+
     @Column(nullable = false)
     private Integer nota;
 

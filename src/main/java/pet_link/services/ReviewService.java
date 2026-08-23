@@ -6,13 +6,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pet_link.dtos.ReviewRequestDTO;
 import pet_link.dtos.ReviewResponseDTO;
+import pet_link.enums.AppointmentStatus;
 import pet_link.enums.UserRole;
 import pet_link.exceptions.BadRequestException;
 import pet_link.exceptions.ForbiddenException;
 import pet_link.exceptions.ResourceNotFoundException;
+import pet_link.models.AppointmentModel;
 import pet_link.models.PrestadorModel;
 import pet_link.models.ReviewModel;
 import pet_link.models.Users;
+import pet_link.repositories.AppointmentRepository;
 import pet_link.repositories.PrestadorRepository;
 import pet_link.repositories.ReviewRepository;
 import pet_link.repositories.UserRepository;
@@ -28,6 +31,7 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final PrestadorRepository prestadorRepository;
+    private final AppointmentRepository appointmentRepository;
 
     private Users usuarioAtual(String email) {
         return userRepository.findByEmail(email)
@@ -47,8 +51,27 @@ public class ReviewService {
             throw new ForbiddenException("Só é possível avaliar como o seu próprio usuário.");
         }
 
+        AppointmentModel agendamento = appointmentRepository.findById(dto.getAgendamentoId())
+                .orElseThrow(() -> new ResourceNotFoundException("Agendamento com ID " + dto.getAgendamentoId() + " não encontrado."));
+
+        if (agendamento.getTutor() == null || !agendamento.getTutor().getId().equals(tutor.getId())) {
+            throw new ForbiddenException("Você só pode avaliar consultas da sua própria conta.");
+        }
+
+        if (agendamento.getStatus() != AppointmentStatus.FINALIZADO) {
+            throw new BadRequestException("Só é possível avaliar consultas concluídas. O profissional precisa confirmar que o atendimento foi realizado.");
+        }
+
+        if (reviewRepository.existsByAgendamento_Id(agendamento.getId())) {
+            throw new BadRequestException("Esta consulta já foi avaliada.");
+        }
+
         Users prestadorUsuario = userRepository.findById(dto.getPrestadorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Profissional com ID " + dto.getPrestadorId() + " não encontrado."));
+
+        if (agendamento.getPrestador() == null || !agendamento.getPrestador().getId().equals(prestadorUsuario.getId())) {
+            throw new BadRequestException("O profissional informado não corresponde ao atendimento desta consulta.");
+        }
 
         if (prestadorUsuario.getId().equals(tutor.getId())) {
             throw new BadRequestException("Você não pode avaliar a si mesmo.");
@@ -62,6 +85,7 @@ public class ReviewService {
         ReviewModel review = new ReviewModel();
         review.setTutor(tutor);
         review.setPrestador(prestador);
+        review.setAgendamento(agendamento);
         review.setNota(dto.getNota());
         review.setComentario(dto.getComentario());
         review.setDataCriacao(LocalDateTime.now());

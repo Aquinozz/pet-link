@@ -12,4 +12,6 @@ public interface ReviewRepository extends JpaRepository<ReviewModel, Long> {
     List<ReviewModel> findByTutor_Id(Long tutorId);
 
     List<ReviewModel> findByPrestador_User_Id(Long userId);
+
+    boolean existsByAgendamento_Id(Long agendamentoId);
 }

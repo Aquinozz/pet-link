@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/useAuth'
 import { BrandLogo } from '../BrandLogo'
-import { Calendar, LayoutDashboard, PawPrint, Search, Settings, Star } from 'lucide-react'
+import { Calendar, LayoutDashboard, PawPrint, Search, Settings } from 'lucide-react'
 import { colors, radius } from '../../theme/tokens'
 
 const menuTutor = [
@@ -9,7 +9,6 @@ const menuTutor = [
   { path: '/tutor/pets', label: 'Meus Pets', icon: <PawPrint size={18} strokeWidth={2} /> },
   { path: '/tutor/prestadores', label: 'Prestadores', icon: <Search size={18} strokeWidth={2} /> },
   { path: '/tutor/agendamentos', label: 'Agendamentos', icon: <Calendar size={18} strokeWidth={2} /> },
-  { path: '/tutor/avaliacoes', label: 'Avaliações', icon: <Star size={18} strokeWidth={2} /> },
 ]
 
 const menuPrestador = [

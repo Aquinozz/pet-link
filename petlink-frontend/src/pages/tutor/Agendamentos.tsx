@@ -1,19 +1,29 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Calendar, PawPrint, Building, MapPin } from 'lucide-react'
+import { Calendar, PawPrint, Building, MapPin, Star, Check } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { agendamentoService } from '../../api/agendamentoService'
 import { petService } from '../../api/petService'
 import { prestadorService } from '../../api/prestadorService'
+import { reviewService } from '../../api/reviewService'
 import { useAuth } from '../../contexts/useAuth'
 import type { AgendamentoResponseDto, PetResponseDto, PrestadorResponseDto } from '../../types'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
-import { Input, Select } from '../../components/ui/Input'
+import { Input, Select, Textarea } from '../../components/ui/Input'
 import { StatusBadge } from '../../components/ui/StatusBadge'
+import { StarRatingInput } from '../../components/ui/StarRating'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { colors, radius } from '../../theme/tokens'
+
+type Aba = 'proximos' | 'concluidos' | 'cancelados'
+
+const abasConfig: { key: Aba; label: string }[] = [
+  { key: 'proximos', label: 'Próximos' },
+  { key: 'concluidos', label: 'Concluídos' },
+  { key: 'cancelados', label: 'Cancelados' },
+]
 
 export default function Agendamentos() {
   const { user, tutorId } = useAuth()
@@ -27,6 +37,13 @@ export default function Agendamentos() {
   const [servicosPrestador, setServicosPrestador] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
+  const [aba, setAba] = useState<Aba>('proximos')
+  const [avaliados, setAvaliados] = useState<Set<number>>(new Set())
+  const [avaliandoId, setAvaliandoId] = useState<number | null>(null)
+  const [avForm, setAvForm] = useState({ nota: 5, comentario: '' })
+  const [savingAv, setSavingAv] = useState(false)
+  const [errorAv, setErrorAv] = useState('')
 
   const selectedPrestador = prestadores.find(p => String(p.id) === form.prestadorId)
   const prestadorSuggestions = prestadorSearch ? prestadores.filter(p => {
@@ -54,14 +71,16 @@ export default function Agendamentos() {
 
   const load = useCallback(async () => {
     try {
-      const [ags, ps, prs] = await Promise.all([
+      const [ags, ps, prs, rvs] = await Promise.all([
         agendamentoService.listar(),
         petService.listar(),
         prestadorService.listar(),
+        reviewService.listar(),
       ])
       setAgendamentos(ags.filter(a => a.tutor?.email === user?.email))
       setPets(ps.filter(p => p.tutor?.email === user?.email))
       setPrestadores(prs)
+      setAvaliados(new Set(rvs.map(r => r.agendamentoId).filter((id): id is number => id != null)))
     } catch {
     } finally {
       setLoading(false)
@@ -101,6 +120,40 @@ export default function Agendamentos() {
 
   const formatData = (dt: string) => {
     try { return new Date(dt).toLocaleString('pt-BR') } catch { return dt }
+  }
+
+  const proximos = agendamentos.filter(a => a.status === 'AGENDADO' || a.status === 'CONFIRMADO')
+  const concluidos = agendamentos.filter(a => a.status === 'FINALIZADO')
+  const cancelados = agendamentos.filter(a => a.status === 'CANCELADO')
+  const listaAtual = aba === 'proximos' ? proximos : aba === 'concluidos' ? concluidos : cancelados
+  const contagemPorAba: Record<Aba, number> = { proximos: proximos.length, concluidos: concluidos.length, cancelados: cancelados.length }
+
+  const abrirAvaliacao = (a: AgendamentoResponseDto) => {
+    setAvaliandoId(a.id)
+    setAvForm({ nota: 5, comentario: '' })
+    setErrorAv('')
+  }
+
+  const handleAvaliar = async (a: AgendamentoResponseDto, e: React.FormEvent) => {
+    e.preventDefault()
+    if (!tutorId) { setErrorAv('Faça login novamente.'); return }
+    setErrorAv('')
+    setSavingAv(true)
+    try {
+      await reviewService.criar({
+        tutorId,
+        prestadorId: Number(a.prestador?.id),
+        agendamentoId: a.id,
+        nota: avForm.nota,
+        comentario: avForm.comentario,
+      })
+      setAvaliados(prev => new Set(prev).add(a.id))
+      setAvaliandoId(null)
+    } catch {
+      setErrorAv('Erro ao enviar avaliação. Verifique se o atendimento foi concluído pelo profissional.')
+    } finally {
+      setSavingAv(false)
+    }
   }
 
   return (
@@ -206,25 +259,107 @@ export default function Agendamentos() {
           <Button onClick={() => setShowForm(true)}>+ Novo agendamento</Button>
         </EmptyState>
       ) : (
-        <div>
-          {agendamentos.map((a, i) => (
-            <div key={a.id} style={{ padding: '18px 4px', borderBottom: i < agendamentos.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                <p style={{ fontSize: 15, fontWeight: 700, color: colors.gray[900] }}>{a.prestador?.nomePrestador}</p>
-                <StatusBadge status={a.status} />
+        <>
+          <div style={{ display: 'flex', borderBottom: `2px solid ${colors.border}`, marginBottom: 20 }}>
+            {abasConfig.map(t => (
+              <button
+                key={t.key}
+                onClick={() => { setAba(t.key); setAvaliandoId(null) }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  padding: '12px 18px',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: aba === t.key ? `2px solid ${colors.brand[600]}` : '2px solid transparent',
+                  fontWeight: aba === t.key ? 700 : 500,
+                  color: aba === t.key ? colors.brand[600] : colors.gray[500],
+                  fontSize: 14,
+                  cursor: 'pointer',
+                  marginBottom: -2,
+                  fontFamily: 'inherit',
+                }}
+              >
+                {t.label}
+                <span style={{
+                  fontSize: 11.5, fontWeight: 700,
+                  padding: '1px 8px', borderRadius: 999,
+                  backgroundColor: aba === t.key ? colors.brand[100] : colors.gray[100],
+                  color: aba === t.key ? colors.brand[700] : colors.gray[500],
+                }}>
+                  {contagemPorAba[t.key]}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <Card padding={24}>
+            {listaAtual.length === 0 ? (
+              <EmptyState
+                icon={<Calendar size={26} />}
+                title={aba === 'concluidos' ? 'Nenhuma consulta concluída ainda' : aba === 'cancelados' ? 'Nenhum agendamento cancelado' : 'Nenhum agendamento próximo'}
+                description={
+                  aba === 'concluidos'
+                    ? 'Quando o profissional confirmar que o atendimento foi realizado, você poderá avaliá-lo aqui.'
+                    : aba === 'cancelados'
+                      ? 'Agendamentos cancelados aparecerão nesta lista.'
+                      : 'Crie um novo agendamento para acompanhá-lo aqui.'
+                }
+              />
+            ) : (
+              <div>
+                {listaAtual.map((a, i) => (
+                  <div key={a.id} style={{ padding: '18px 0', borderBottom: i < listaAtual.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, flexWrap: 'wrap' }}>
+                      <p style={{ fontSize: 15, fontWeight: 700, color: colors.gray[900], margin: 0 }}>{a.prestador?.nomePrestador}</p>
+                      <StatusBadge status={a.status} />
+                      {aba === 'concluidos' && avaliados.has(a.id) && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11.5, fontWeight: 600, padding: '3px 10px', borderRadius: radius.sm, backgroundColor: colors.success[50], color: colors.success[600], border: `1px solid ${colors.success[100]}` }}>
+                          <Check size={12} /> Avaliado
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ fontSize: 13, color: colors.gray[500], margin: 0 }}>
+                      <PawPrint size={13} /> {a.pet?.nome} • <Building size={13} /> {a.servico ?? 'Serviço não informado'} • <Calendar size={13} /> {formatData(a.dataHora)}
+                    </p>
+                    {a.atendimentoDomiciliar && a.enderecoAtendimento && (
+                      <p style={{ fontSize: 12.5, color: colors.gray[500], margin: '6px 0 0', display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <MapPin size={13} color={colors.brand[600]} />
+                        <span style={{ color: colors.gray[700], fontWeight: 500 }}>Domicílio:</span> {a.enderecoAtendimento}
+                      </p>
+                    )}
+                    {aba === 'concluidos' && !avaliados.has(a.id) && avaliandoId !== a.id && (
+                      <div style={{ marginTop: 12 }}>
+                        <Button size="sm" variant="secondary" onClick={() => abrirAvaliacao(a)}>
+                          <Star size={14} color={colors.brand[600]} /> Avaliar atendimento
+                        </Button>
+                      </div>
+                    )}
+                    {avaliandoId === a.id && (
+                      <form onSubmit={e => handleAvaliar(a, e)} style={{ marginTop: 14, padding: 16, borderRadius: radius.lg, backgroundColor: colors.bg, border: `1px solid ${colors.border}` }}>
+                        {errorAv && (
+                          <div style={{ backgroundColor: colors.danger[50], border: `1px solid ${colors.danger[100]}`, borderRadius: 8, padding: '10px 14px', marginBottom: 12, fontSize: 13, color: colors.danger[600] }}>{errorAv}</div>
+                        )}
+                        <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: colors.gray[700], marginBottom: 8 }}>Como foi o atendimento de {a.prestador?.nomePrestador}?</label>
+                        <StarRatingInput value={avForm.nota} onChange={n => setAvForm(f => ({ ...f, nota: n }))} />
+                        <Textarea
+                          label="Comentário"
+                          value={avForm.comentario}
+                          onChange={e => setAvForm(f => ({ ...f, comentario: e.target.value }))}
+                          placeholder="Conte como foi a experiência..."
+                          rows={3}
+                        />
+                        <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                          <Button type="submit" loading={savingAv}>{savingAv ? 'Enviando...' : 'Enviar avaliação'}</Button>
+                          <Button type="button" variant="secondary" onClick={() => setAvaliandoId(null)}>Cancelar</Button>
+                        </div>
+                      </form>
+                    )}
+                  </div>
+                ))}
               </div>
-              <p style={{ fontSize: 13, color: colors.gray[500], margin: 0 }}>
-                <PawPrint size={13} /> {a.pet?.nome} • <Building size={13} /> {a.servico ?? 'Serviço não informado'} • <Calendar size={13} /> {formatData(a.dataHora)}
-              </p>
-              {a.atendimentoDomiciliar && a.enderecoAtendimento && (
-                <p style={{ fontSize: 12.5, color: colors.gray[500], margin: '6px 0 0', display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <MapPin size={13} color={colors.brand[600]} />
-                  <span style={{ color: colors.gray[700], fontWeight: 500 }}>Domicílio:</span> {a.enderecoAtendimento}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
+            )}
+          </Card>
+        </>
       )}
     </DashboardLayout>
   )

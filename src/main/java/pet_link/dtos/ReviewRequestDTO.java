@@ -16,6 +16,9 @@ public class ReviewRequestDTO {
     private Long prestadorId;
 
     @NotNull
+    private Long agendamentoId;
+
+    @NotNull
     @Min(1)
     @Max(5)
     private Integer nota;

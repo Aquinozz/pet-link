@@ -272,12 +272,6 @@ function AgendaMock() {
 
 function Hero() {
   const isMobile = useMediaQuery('(max-width: 1023px)')
-  const stats = [
-    { value: '+500', label: 'tutores ativos' },
-    { value: '+120', label: 'profissionais' },
-    { value: '4.8/5', label: 'avaliação média' },
-    { value: '5 min', label: 'para agendar' },
-  ]
   return (
     <section style={{ padding: isMobile ? '96px 0 0' : '128px 0 0', backgroundColor: colors.brand[50] }}>
       <div style={{ ...container, padding: '0 32px' }}>
@@ -313,17 +307,6 @@ function Hero() {
               </ScreenFrame>
             </Reveal>
           </div>
-        </div>
-      </div>
-
-      <div style={{ backgroundColor: colors.brand[900], marginTop: isMobile ? 64 : 88 }}>
-        <div style={{ ...container, padding: '32px 20px', display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr', gap: isMobile ? 24 : 0 }}>
-          {stats.map((s, i) => (
-            <div key={s.label} style={{ textAlign: 'center', borderLeft: i === 0 || isMobile ? 'none' : `1px solid ${colors.brand[800]}`, borderTop: isMobile && i >= 2 ? `1px solid ${colors.brand[800]}` : 'none', paddingTop: isMobile && i >= 2 ? 20 : 0 }}>
-              <p style={{ fontSize: 30, fontWeight: 800, color: colors.white, marginBottom: 4 }}>{s.value}</p>
-              <p style={{ fontSize: 13, color: colors.brand[200], margin: 0 }}>{s.label}</p>
-            </div>
-          ))}
         </div>
       </div>
     </section>

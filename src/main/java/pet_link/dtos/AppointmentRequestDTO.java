@@ -23,6 +23,10 @@ public class AppointmentRequestDTO {
 
     private String servico;
 
+
+    private Boolean atendimentoDomiciliar;
+
+    private String enderecoAtendimento;
     @NotNull
     @Schema(
             example = "20/06/2026 15:30:00",

@@ -153,6 +153,71 @@ class AppointmentServiceTest {
     }
 
     @Test
+    void criar_comAtendimentoDomiciliar_salvaEndereco() {
+        AppointmentRequestDTO dto = dto(pet.getId(), prestador.getId(), tutor.getId());
+        dto.setAtendimentoDomiciliar(true);
+        dto.setEnderecoAtendimento("Rua das Flores, 123 - Centro");
+
+        when(userRepository.findByEmail(tutor.getEmail())).thenReturn(Optional.of(tutor));
+        when(userRepository.findById(prestador.getId())).thenReturn(Optional.of(prestador));
+        when(petRepository.findById(pet.getId())).thenReturn(Optional.of(pet));
+        when(repository.save(any(AppointmentModel.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        AppointmentResponseDTO result = service.criar(dto, tutor.getEmail());
+
+        assertThat(result.getAtendimentoDomiciliar()).isTrue();
+        assertThat(result.getEnderecoAtendimento()).isEqualTo("Rua das Flores, 123 - Centro");
+    }
+
+    @Test
+    void criar_quandoDomiciliarSemEndereco_lancaBadRequest() {
+        AppointmentRequestDTO dto = dto(pet.getId(), prestador.getId(), tutor.getId());
+        dto.setAtendimentoDomiciliar(true);
+
+        when(userRepository.findByEmail(tutor.getEmail())).thenReturn(Optional.of(tutor));
+        when(userRepository.findById(prestador.getId())).thenReturn(Optional.of(prestador));
+        when(petRepository.findById(pet.getId())).thenReturn(Optional.of(pet));
+
+        assertThatThrownBy(() -> service.criar(dto, tutor.getEmail()))
+                .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void criar_semDomiciliar_enderecoNulo() {
+        AppointmentRequestDTO dto = dto(pet.getId(), prestador.getId(), tutor.getId());
+        dto.setAtendimentoDomiciliar(false);
+
+        when(userRepository.findByEmail(tutor.getEmail())).thenReturn(Optional.of(tutor));
+        when(userRepository.findById(prestador.getId())).thenReturn(Optional.of(prestador));
+        when(petRepository.findById(pet.getId())).thenReturn(Optional.of(pet));
+        when(repository.save(any(AppointmentModel.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        AppointmentResponseDTO result = service.criar(dto, tutor.getEmail());
+
+        assertThat(result.getAtendimentoDomiciliar()).isFalse();
+        assertThat(result.getEnderecoAtendimento()).isNull();
+    }
+
+    @Test
+    void atualizar_propagaEnderecoDomiciliar() {
+        AppointmentModel app = agendamento(AppointmentStatus.AGENDADO);
+        AppointmentRequestDTO dto = dto(pet.getId(), prestador.getId(), tutor.getId());
+        dto.setAtendimentoDomiciliar(true);
+        dto.setEnderecoAtendimento("Av. Brasil, 456");
+
+        when(userRepository.findByEmail(tutor.getEmail())).thenReturn(Optional.of(tutor));
+        when(repository.findByIdAndTutor_Id(app.getId(), tutor.getId())).thenReturn(Optional.of(app));
+        when(userRepository.findById(prestador.getId())).thenReturn(Optional.of(prestador));
+        when(petRepository.findById(pet.getId())).thenReturn(Optional.of(pet));
+        when(repository.save(any(AppointmentModel.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        AppointmentResponseDTO result = service.atualizar(app.getId(), dto, tutor.getEmail());
+
+        assertThat(result.getAtendimentoDomiciliar()).isTrue();
+        assertThat(result.getEnderecoAtendimento()).isEqualTo("Av. Brasil, 456");
+    }
+
+    @Test
     void atualizarStatus_prestadorPodeConfirmar() {
         AppointmentModel app = agendamento(AppointmentStatus.AGENDADO);
         when(userRepository.findByEmail(prestador.getEmail())).thenReturn(Optional.of(prestador));

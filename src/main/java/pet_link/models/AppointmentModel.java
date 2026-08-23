@@ -34,4 +34,9 @@ public class AppointmentModel {
 
     @Column
     private String servico;
+
+    private Boolean atendimentoDomiciliar;
+
+    @Column(length = 300)
+    private String enderecoAtendimento;
 }

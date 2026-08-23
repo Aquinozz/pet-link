@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Calendar, PawPrint, Building } from 'lucide-react'
+import { Calendar, PawPrint, Building, MapPin } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { agendamentoService } from '../../api/agendamentoService'
 import { petService } from '../../api/petService'
@@ -22,7 +22,7 @@ export default function Agendamentos() {
   const [prestadores, setPrestadores] = useState<PrestadorResponseDto[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ petId: '', prestadorId: '', dataHora: '', servico: '' })
+  const [form, setForm] = useState({ petId: '', prestadorId: '', dataHora: '', servico: '', domicilio: false, endereco: '' })
   const [prestadorSearch, setPrestadorSearch] = useState('')
   const [servicosPrestador, setServicosPrestador] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
@@ -76,6 +76,7 @@ export default function Agendamentos() {
     setSaving(true)
     try {
       if (!tutorId) { setError('Tutor não identificado. Faça login novamente.'); return }
+      if (form.domicilio && !form.endereco.trim()) { setError('Informe o endereço do atendimento a domicílio.'); return }
       const dt = new Date(form.dataHora)
       const dataFormatada = `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${dt.getFullYear()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}:00`
       await agendamentoService.criar({
@@ -84,8 +85,10 @@ export default function Agendamentos() {
         prestadorId: Number(form.prestadorId),
         dataHora: dataFormatada,
         servico: form.servico || undefined,
+        atendimentoDomiciliar: form.domicilio || undefined,
+        enderecoAtendimento: form.domicilio ? form.endereco.trim() : undefined,
       })
-      setForm({ petId: '', prestadorId: '', dataHora: '', servico: '' })
+      setForm({ petId: '', prestadorId: '', dataHora: '', servico: '', domicilio: false, endereco: '' })
       setServicosPrestador([])
       setShowForm(false)
       await load()
@@ -153,6 +156,31 @@ export default function Agendamentos() {
               </Select>
             )}
             <Input label="Data e hora" type="datetime-local" value={form.dataHora} onChange={e => setForm(f => ({ ...f, dataHora: e.target.value }))} required />
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14, fontWeight: 500, color: colors.gray[700], padding: '12px 0' }}>
+                <input
+                  type="checkbox"
+                  checked={form.domicilio}
+                  onChange={e => setForm(f => ({ ...f, domicilio: e.target.checked }))}
+                  style={{ width: 16, height: 16, accentColor: colors.brand[600], cursor: 'pointer' }}
+                />
+                Atendimento em domicílio <MapPin size={15} color={colors.brand[600]} />
+              </label>
+            </div>
+            {form.domicilio && (
+              <div style={{ gridColumn: '1/-1' }}>
+                <Input
+                  label="Endereço do atendimento"
+                  value={form.endereco}
+                  onChange={e => setForm(f => ({ ...f, endereco: e.target.value }))}
+                  placeholder="Ex.: Rua das Flores, 123 - Centro"
+                  maxLength={300}
+                />
+                <p style={{ fontSize: 12, color: colors.gray[500], marginTop: 6 }}>
+                  O profissional verá este endereço para ter uma noção da distância.
+                </p>
+              </div>
+            )}
             {error && (
               <div style={{ gridColumn: '1/-1', backgroundColor: colors.danger[50], border: `1px solid ${colors.danger[100]}`, borderRadius: 8, padding: '10px 14px', fontSize: 13, color: colors.danger[600] }}>{error}</div>
             )}
@@ -188,6 +216,12 @@ export default function Agendamentos() {
               <p style={{ fontSize: 13, color: colors.gray[500], margin: 0 }}>
                 <PawPrint size={13} /> {a.pet?.nome} • <Building size={13} /> {a.servico ?? 'Serviço não informado'} • <Calendar size={13} /> {formatData(a.dataHora)}
               </p>
+              {a.atendimentoDomiciliar && a.enderecoAtendimento && (
+                <p style={{ fontSize: 12.5, color: colors.gray[500], margin: '6px 0 0', display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <MapPin size={13} color={colors.brand[600]} />
+                  <span style={{ color: colors.gray[700], fontWeight: 500 }}>Domicílio:</span> {a.enderecoAtendimento}
+                </p>
+              )}
             </div>
           ))}
         </div>

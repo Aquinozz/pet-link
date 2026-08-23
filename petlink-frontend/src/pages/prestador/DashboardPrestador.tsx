@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Calendar, Check, PawPrint, X } from 'lucide-react'
+import { Calendar, Check, PawPrint, X, MapPin, ExternalLink } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { agendamentoService } from '../../api/agendamentoService'
 import { reviewService } from '../../api/reviewService'
@@ -88,6 +88,22 @@ export default function DashboardPrestador() {
                   <p style={{ fontSize: 13, color: colors.gray[500], margin: 0 }}>
                     <PawPrint size={13} /> {a.pet?.nome} ({a.pet?.especie}) • <Calendar size={13} /> {formatData(a.dataHora)}
                   </p>
+                  {a.atendimentoDomiciliar && a.enderecoAtendimento && (
+                    <div style={{ marginTop: 8, padding: '8px 12px', borderRadius: 8, backgroundColor: colors.brand[50], border: `1px solid ${colors.brand[100]}`, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <MapPin size={14} color={colors.brand[600]} />
+                      <span style={{ fontSize: 12.5, color: colors.gray[700], fontWeight: 600 }}>Domicílio:</span>
+                      <span style={{ fontSize: 12.5, color: colors.gray[600] }}>{a.enderecoAtendimento}</span>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.enderecoAtendimento)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: colors.brand[700], textDecoration: 'none' }}
+                      >
+                        Ver no mapa <ExternalLink size={12} />
+                      </a>
+                    </div>
+                  )}
                   {a.status === 'AGENDADO' && (
                     <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                       <Button size="sm" onClick={() => atualizarStatus(a.id, 'CONFIRMADO')}><Check size={14} /> Confirmar</Button>

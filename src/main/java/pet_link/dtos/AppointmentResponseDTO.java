@@ -14,6 +14,8 @@ public class AppointmentResponseDTO {
     private LocalDateTime dataHora;
     private String status;
     private String servico;
+    private Boolean atendimentoDomiciliar;
+    private String enderecoAtendimento;
     private TutorResponseDTO tutor;
     private PetResponseDTO pet;
     private PrestadorResponseDTO prestador;

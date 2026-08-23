@@ -62,7 +62,7 @@ export default function PrestadorProfileModal({
   const [pets, setPets] = useState<PetResponseDto[]>([])
   const [loadingPets, setLoadingPets] = useState(true)
 
-  const [agForm, setAgForm] = useState({ petId: '', dataHora: '', servico: '' })
+  const [agForm, setAgForm] = useState({ petId: '', dataHora: '', servico: '', domicilio: false, endereco: '' })
   const [savingAg, setSavingAg] = useState(false)
   const [errorAg, setErrorAg] = useState('')
 
@@ -89,6 +89,7 @@ export default function PrestadorProfileModal({
   const handleAgendar = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!tutorId) { setErrorAg('Faça login novamente.'); return }
+    if (agForm.domicilio && !agForm.endereco.trim()) { setErrorAg('Informe o endereço do atendimento a domicílio.'); return }
     setErrorAg('')
     setSavingAg(true)
     try {
@@ -101,6 +102,8 @@ export default function PrestadorProfileModal({
         prestadorId: prestador.id,
         dataHora: dataFormatada,
         servico: agForm.servico || undefined,
+        atendimentoDomiciliar: agForm.domicilio || undefined,
+        enderecoAtendimento: agForm.domicilio ? agForm.endereco.trim() : undefined,
       })
       onSuccess()
       onClose()
@@ -265,6 +268,29 @@ export default function PrestadorProfileModal({
               {servicos.map(s => <option key={s} value={s}>{s}</option>)}
             </Select>
             <Input label="Data e hora" type="datetime-local" value={agForm.dataHora} onChange={e => setAgForm(f => ({ ...f, dataHora: e.target.value }))} required />
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14, fontWeight: 500, color: colors.gray[700], margin: '4px 0 12px' }}>
+              <input
+                type="checkbox"
+                checked={agForm.domicilio}
+                onChange={e => setAgForm(f => ({ ...f, domicilio: e.target.checked }))}
+                style={{ width: 16, height: 16, accentColor: colors.brand[600], cursor: 'pointer' }}
+              />
+              Atendimento em domicílio <MapPin size={15} color={colors.brand[600]} />
+            </label>
+            {agForm.domicilio && (
+              <div>
+                <Input
+                  label="Endereço do atendimento"
+                  value={agForm.endereco}
+                  onChange={e => setAgForm(f => ({ ...f, endereco: e.target.value }))}
+                  placeholder="Ex.: Rua das Flores, 123 - Centro"
+                  maxLength={300}
+                />
+                <p style={{ fontSize: 12, color: colors.gray[500], marginTop: 6 }}>
+                  O profissional verá este endereço para ter uma noção da distância.
+                </p>
+              </div>
+            )}
             <Button type="submit" disabled={savingAg || loadingPets} style={{ width: '100%' }}>
               {savingAg ? 'Agendando...' : 'Confirmar agendamento'}
             </Button>

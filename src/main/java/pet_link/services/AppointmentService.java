@@ -74,6 +74,12 @@ public class AppointmentService {
             throw new BadRequestException("A data do agendamento deve ser uma data futura.");
         }
 
+        boolean domiciliar = Boolean.TRUE.equals(dto.getAtendimentoDomiciliar());
+        String endereco = dto.getEnderecoAtendimento();
+        if (domiciliar && (endereco == null || endereco.isBlank())) {
+            throw new BadRequestException("Informe o endereço do atendimento a domicílio.");
+        }
+
         AppointmentModel appointment = new AppointmentModel();
         appointment.setTutor(tutor);
         appointment.setPet(pet);
@@ -81,6 +87,8 @@ public class AppointmentService {
         appointment.setDataHora(dto.getDataHora());
         appointment.setStatus(AppointmentStatus.AGENDADO);
         appointment.setServico(dto.getServico());
+        appointment.setAtendimentoDomiciliar(domiciliar);
+        appointment.setEnderecoAtendimento(endereco);
 
         AppointmentModel salvo = repository.save(appointment);
         log.info("Agendamento criado com sucesso. ID: {}", salvo.getId());
@@ -145,6 +153,18 @@ public class AppointmentService {
                 throw new BadRequestException("O usuário informado não é um profissional cadastrado.");
             }
             appointment.setPrestador(prestador);
+        }
+
+        if (dto.getAtendimentoDomiciliar() != null) {
+            boolean domiciliar = dto.getAtendimentoDomiciliar();
+            String endereco = dto.getEnderecoAtendimento() != null ? dto.getEnderecoAtendimento() : appointment.getEnderecoAtendimento();
+            if (domiciliar && (endereco == null || endereco.isBlank())) {
+                throw new BadRequestException("Informe o endereço do atendimento a domicílio.");
+            }
+            appointment.setAtendimentoDomiciliar(domiciliar);
+            appointment.setEnderecoAtendimento(endereco);
+        } else if (dto.getEnderecoAtendimento() != null) {
+            appointment.setEnderecoAtendimento(dto.getEnderecoAtendimento());
         }
 
         AppointmentModel salvo = repository.save(appointment);
@@ -223,6 +243,8 @@ public class AppointmentService {
         response.setDataHora(model.getDataHora());
         response.setStatus(model.getStatus().name());
         response.setServico(model.getServico());
+        response.setAtendimentoDomiciliar(Boolean.TRUE.equals(model.getAtendimentoDomiciliar()));
+        response.setEnderecoAtendimento(model.getEnderecoAtendimento());
 
         if (model.getTutor() != null) {
             response.setTutor(new TutorResponseDTO(model.getTutor()));

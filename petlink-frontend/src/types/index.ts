@@ -71,6 +71,8 @@ export interface AgendamentoRequestDto {
   prestadorId: number
   dataHora: string
   servico?: string
+  atendimentoDomiciliar?: boolean
+  enderecoAtendimento?: string
 }
 
 export interface AgendamentoResponseDto {
@@ -78,6 +80,8 @@ export interface AgendamentoResponseDto {
   dataHora: string
   status: 'AGENDADO' | 'CONFIRMADO' | 'FINALIZADO' | 'CANCELADO'
   servico?: string
+  atendimentoDomiciliar?: boolean
+  enderecoAtendimento?: string
   tutor: TutorResponseDto
   pet: PetResponseDto
   prestador: PrestadorResponseDto

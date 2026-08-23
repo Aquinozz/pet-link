@@ -32,10 +32,12 @@ export default function ImageCropModal({
   imageSrc,
   onCancel,
   onConfirm,
+  aspectRatio = 1,
 }: {
   imageSrc: string
   onCancel: () => void
   onConfirm: (blob: Blob) => void
+  aspectRatio?: number
 }) {
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
@@ -64,8 +66,8 @@ export default function ImageCropModal({
       style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: 20 }}>
       <div onClick={e => e.stopPropagation()}
         style={{ backgroundColor: colors.white, borderRadius: radius.xl, boxShadow: shadow.md, width: '100%', maxWidth: 480, padding: 28 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h3 style={{ fontSize: 18, fontWeight: 800, color: colors.gray[900], margin: 0 }}>Ajustar foto</h3>
+<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: colors.gray[900], margin: 0 }}>Ajustar imagem</h3>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ fontSize: 12, color: colors.gray[400] }}>Prévia</span>
             {croppedAreaPixels && <CropPreview imageSrc={imageSrc} crop={croppedAreaPixels} />}
@@ -73,16 +75,16 @@ export default function ImageCropModal({
         </div>
 
         <div style={{ position: 'relative', width: '100%', height: 320, backgroundColor: '#000', borderRadius: radius.lg, overflow: 'hidden' }}>
-          <Cropper
-            image={imageSrc}
-            crop={crop}
-            zoom={zoom}
-            aspect={1}
-            onCropChange={setCrop}
-            onZoomChange={setZoom}
-            onCropComplete={onCropComplete}
-            showGrid={false}
-          />
+<Cropper
+              image={imageSrc}
+              crop={crop}
+              zoom={zoom}
+              aspect={aspectRatio}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={onCropComplete}
+              showGrid={false}
+            />
         </div>
 
         <div style={{ marginTop: 20 }}>

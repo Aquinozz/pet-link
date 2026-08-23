@@ -273,7 +273,7 @@ await prestadorService.removerBanner()
           imageSrc={cropBanner}
           onCancel={() => setCropBanner(null)}
           onConfirm={handleUploadBanner}
-          aspectRatio={16 / 5}
+          aspectRatio={4}
         />
       )}
     </DashboardLayout>

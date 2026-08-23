@@ -12,6 +12,7 @@ import { Avatar } from '../../components/ui/Avatar'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { colors, radius, shadow } from '../../theme/tokens'
 import { useHover } from '../../components/ui/useHover'
+import { heroPhotos, stepPhotos, testimonialPhotos, ctaPhoto } from './landingPhotos'
 
 const container: React.CSSProperties = { maxWidth: 1120, margin: '0 auto' }
 const sectionPad = (isMobile: boolean) => (isMobile ? '64px 20px' : '96px 32px')
@@ -308,6 +309,23 @@ function Hero() {
             </Reveal>
           </div>
         </div>
+
+        <Reveal style={{ marginTop: isMobile ? 56 : 72, paddingBottom: isMobile ? 64 : 88 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: isMobile ? 12 : 20 }}>
+            {heroPhotos.map((p, i) => (
+              <div key={i} style={{
+                borderRadius: radius.xl,
+                overflow: 'hidden',
+                aspectRatio: '4 / 5',
+                boxShadow: shadow.sm,
+                border: `1px solid ${colors.brand[100]}`,
+                transform: i % 2 === 0 ? 'translateY(0)' : isMobile ? 'none' : 'translateY(16px)',
+              }}>
+                <img src={p.src} alt={p.alt} loading={i < 2 ? 'eager' : 'lazy'} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              </div>
+            ))}
+          </div>
+        </Reveal>
       </div>
     </section>
   )
@@ -373,6 +391,15 @@ function ComoFunciona() {
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: isMobile ? 36 : 48 }}>
             {steps.map((s, i) => (
               <div key={s.num} style={{ position: 'relative' }}>
+                <div style={{
+                  borderRadius: radius.xl,
+                  overflow: 'hidden',
+                  aspectRatio: '4 / 3',
+                  boxShadow: shadow.sm,
+                  marginBottom: 20,
+                }}>
+                  <img src={stepPhotos[i].src} alt={stepPhotos[i].alt} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                </div>
                 <p style={{ fontSize: 40, fontWeight: 800, color: colors.brand[100], lineHeight: 1, marginBottom: 12, fontFeatureSettings: '"tnum"' }}>{s.num}</p>
                 <div style={{ width: 32, height: 3, borderRadius: 2, backgroundColor: colors.brand[600], marginBottom: 16 }} />
                 <h3 style={{ fontSize: 18, fontWeight: 700, color: colors.gray[900], marginBottom: 8 }}>{s.title}</h3>
@@ -537,7 +564,7 @@ function Avaliacoes() {
               <StarRating value={featured.nota} size={16} />
               <p style={{ fontSize: 20, fontWeight: 600, color: colors.gray[900], lineHeight: 1.55, margin: 0, flex: 1 }}>“{featured.texto}”</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 20, borderTop: `1px solid ${colors.border}` }}>
-                <Avatar name={featured.nome} size={44} />
+                <Avatar name={featured.nome} src={testimonialPhotos.ana} size={44} />
                 <div>
                   <p style={{ fontSize: 14, fontWeight: 700, color: colors.gray[900], margin: 0 }}>{featured.nome}</p>
                   <p style={{ fontSize: 12, color: colors.gray[500], margin: 0 }}>{featured.pet}</p>
@@ -553,7 +580,7 @@ function Avaliacoes() {
                   <StarRating value={o.nota} size={14} />
                   <p style={{ fontSize: 14, color: colors.gray[700], lineHeight: 1.6, margin: 0, flex: 1 }}>“{o.texto}”</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Avatar name={o.nome} size={32} />
+                    <Avatar name={o.nome} src={o.nome === 'Carlos Mendes' ? testimonialPhotos.carlos : testimonialPhotos.juliana} size={32} />
                     <div>
                       <p style={{ fontSize: 13, fontWeight: 700, color: colors.gray[900], margin: 0 }}>{o.nome}</p>
                       <p style={{ fontSize: 11, color: colors.gray[500], margin: 0 }}>{o.pet}</p>
@@ -605,16 +632,27 @@ function Confianca() {
 function CTA() {
   const isMobile = useMediaQuery('(max-width: 767px)')
   return (
-    <section data-anchor style={{ padding: sectionPad(isMobile), backgroundColor: colors.brand[950], textAlign: 'center' }}>
-      <div style={{ ...container, maxWidth: 620 }}>
+    <section data-anchor style={{ padding: sectionPad(isMobile), backgroundColor: colors.brand[950] }}>
+      <div style={{ ...container, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '0.9fr 1.1fr', gap: isMobile ? 40 : 64, alignItems: 'center' }}>
         <Reveal>
+          <div style={{
+            borderRadius: radius.xl,
+            overflow: 'hidden',
+            aspectRatio: isMobile ? '16 / 10' : '4 / 5',
+            boxShadow: '0 24px 48px rgba(0,0,0,0.35)',
+            border: `1px solid ${colors.brand[800]}`,
+          }}>
+            <img src={ctaPhoto.src} alt={ctaPhoto.alt} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          </div>
+        </Reveal>
+        <Reveal style={isMobile ? { textAlign: 'center' } : undefined}>
           <h2 style={{ fontSize: isMobile ? 28 : 36, fontWeight: 800, color: colors.white, lineHeight: 1.2, marginBottom: 16 }}>
             Seu pet merece um cuidado de confiança
           </h2>
           <p style={{ fontSize: 16, color: colors.brand[200], lineHeight: 1.7, marginBottom: 32 }}>
             Cadastre-se grátis e encontre profissionais perto de você em poucos minutos.
           </p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 20 }}>
+          <div style={{ display: 'flex', gap: 12, justifyContent: isMobile ? 'center' : 'flex-start', flexWrap: 'wrap', marginBottom: 20 }}>
             <Link to="/cadastro" style={{ textDecoration: 'none' }}>
               <Button size="lg" variant="secondary" style={{ backgroundColor: colors.white, color: colors.brand[900], fontWeight: 700 }}>Cadastrar grátis <ArrowRight size={16} /></Button>
             </Link>

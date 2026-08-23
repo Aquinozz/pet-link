@@ -37,7 +37,7 @@ done
 echo "[petlink] Iniciando nginx..."
 
 # Render injeta PORT (padrao 10000); usa 80 como fallback (docker local)
-PORT="${PORT:-80}"
+export PORT="${PORT:-80}"
 envsubst '${PORT}' < /etc/nginx/conf.d/default.conf > /etc/nginx/conf.d/default.conf.tmp \
   && mv /etc/nginx/conf.d/default.conf.tmp /etc/nginx/conf.d/default.conf
 

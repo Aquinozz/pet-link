@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { MapPin, Clock, Mail, MessageCircle, Building, Navigation } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
-import PrestadorProfileModal from '../../components/prestador/PrestadorProfileModal'
 import { API_URL } from '../../api/axiosInstance'
 import { prestadorService } from '../../api/prestadorService'
 import type { PrestadorResponseDto } from '../../types'
@@ -36,7 +36,7 @@ export default function Prestadores() {
   const [bairroFiltro, setBairroFiltro] = useState('')
   const [filtrosAplicados, setFiltrosAplicados] = useState({ busca: '', servico: '', cidade: '', bairro: '' })
 
-  const [prestadorSelecionado, setPrestadorSelecionado] = useState<PrestadorResponseDto | null>(null)
+  const navigate = useNavigate()
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [raio, setRaio] = useState(50)
   const [usarLocalizacao, setUsarLocalizacao] = useState(false)
@@ -157,7 +157,7 @@ export default function Prestadores() {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
           {filtrados.map(p => (
-            <Card key={p.id} hoverable onClick={() => setPrestadorSelecionado(p)} padding={24}>
+            <Card key={p.id} hoverable onClick={() => navigate(`/prestadores/${p.id}`)} padding={24}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
                 {p.fotoUrl ? (
                   <img src={`${API_URL}${p.fotoUrl}`} alt={p.nomePrestador}
@@ -221,15 +221,6 @@ export default function Prestadores() {
             <p style={{ color: colors.gray[500], gridColumn: '1/-1' }}>Nenhum prestador encontrado.</p>
           )}
         </div>
-      )}
-      {prestadorSelecionado && (
-        <PrestadorProfileModal
-          prestador={prestadorSelecionado}
-          onClose={() => setPrestadorSelecionado(null)}
-          onSuccess={() => {
-            prestadorService.listar().then(setPrestadores).catch(() => {})
-          }}
-        />
       )}
     </DashboardLayout>
   )

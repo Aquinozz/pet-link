@@ -5,6 +5,7 @@ import { authService } from '../api/authService'
 import LandingPage from '../pages/public/LandingPage'
 import LoginPage from '../pages/public/LoginPage'
 import CadastroPage from '../pages/public/CadastroPage'
+import PrestadorPerfilPage from '../pages/public/PrestadorPerfilPage'
 import DashboardTutor from '../pages/tutor/DashboardTutor'
 import MeusPets from '../pages/tutor/MeusPets'
 import Prestadores from '../pages/tutor/Prestadores'
@@ -61,6 +62,7 @@ export function AppRoutes() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/cadastro" element={<CadastroPage />} />
         <Route path="/redirect" element={<RedirectByRole />} />
+        <Route path="/prestadores/:id" element={<PrestadorPerfilPage />} />
 
         <Route path="/tutor/dashboard" element={<RoleRoute roles={['ROLE_TUTOR']}><DashboardTutor /></RoleRoute>} />
         <Route path="/tutor/pets" element={<RoleRoute roles={['ROLE_TUTOR']}><MeusPets /></RoleRoute>} />

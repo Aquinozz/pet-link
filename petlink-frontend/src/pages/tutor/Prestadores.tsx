@@ -13,6 +13,7 @@ import { Badge } from '../../components/ui/Badge'
 import { StarRating } from '../../components/ui/StarRating'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { useHover } from '../../components/ui/useHover'
+import { useIsMobile } from '../../hooks/useMediaQuery'
 import { colors, radius, shadow } from '../../theme/tokens'
 
 const whatsappLink = (tel: string) =>
@@ -30,6 +31,7 @@ const tipoLabel: Record<string, string> = {
 
 function PrestadorRow({ prestador: p, onOpen }: { prestador: PrestadorResponseDto; onOpen: () => void }) {
   const { hovered, onMouseEnter, onMouseLeave } = useHover()
+  const isMobile = useIsMobile()
 
   return (
     <div
@@ -50,24 +52,24 @@ function PrestadorRow({ prestador: p, onOpen }: { prestador: PrestadorResponseDt
         boxShadow: hovered ? shadow.md : shadow.sm,
         transform: hovered ? 'translateY(-2px)' : 'none',
         transition: 'box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease',
-        padding: 20,
+        padding: isMobile ? 14 : 20,
         cursor: 'pointer',
       }}
     >
       {p.fotoUrl ? (
         <img src={`${API_URL}${p.fotoUrl}`} alt={p.nomePrestador}
-          style={{ width: 110, height: 110, borderRadius: radius.lg, objectFit: 'cover', flexShrink: 0 }}
+          style={{ width: isMobile ? 72 : 110, height: isMobile ? 72 : 110, borderRadius: radius.lg, objectFit: 'cover', flexShrink: 0 }}
         />
       ) : (
         <div style={{
-          width: 110, height: 110, borderRadius: radius.lg, backgroundColor: colors.brand[100],
+          width: isMobile ? 72 : 110, height: isMobile ? 72 : 110, borderRadius: radius.lg, backgroundColor: colors.brand[100],
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
         }}>
-          <Building size={40} color={colors.brand[600]} />
+          <Building size={isMobile ? 28 : 40} color={colors.brand[600]} />
         </div>
       )}
 
-      <div style={{ flex: 1, minWidth: 260 }}>
+      <div style={{ flex: 1, minWidth: isMobile ? 0 : 260 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
           <p style={{ fontSize: 18, fontWeight: 800, color: colors.gray[900], margin: 0 }}>{p.nomePrestador}</p>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -118,11 +120,14 @@ function PrestadorRow({ prestador: p, onOpen }: { prestador: PrestadorResponseDt
         )}
       </div>
 
-      <div onClick={e => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', gap: 8, width: 168, flexShrink: 0 }}>
-        <Button onClick={onOpen}>Ver perfil <ChevronRight size={15} /></Button>
+      <div onClick={e => e.stopPropagation()} style={isMobile
+        ? { display: 'flex', gap: 8, width: '100%' }
+        : { display: 'flex', flexDirection: 'column', gap: 8, width: 168, flexShrink: 0 }}
+      >
+        <Button onClick={onOpen} style={isMobile ? { flex: 1 } : undefined}>Ver perfil <ChevronRight size={15} /></Button>
         {p.telefone && (
-          <a href={whatsappLink(p.telefone)} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-            <Button variant="secondary" style={{ width: '100%' }}><MessageCircle size={14} /> WhatsApp</Button>
+          <a href={whatsappLink(p.telefone)} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', flex: isMobile ? 1 : undefined }}>
+            <Button variant="secondary" style={{ width: isMobile ? '100%' : undefined }}><MessageCircle size={14} /> WhatsApp</Button>
           </a>
         )}
       </div>

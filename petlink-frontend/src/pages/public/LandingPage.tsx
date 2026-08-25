@@ -12,22 +12,11 @@ import { Avatar } from '../../components/ui/Avatar'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { colors, radius, shadow } from '../../theme/tokens'
 import { useHover } from '../../components/ui/useHover'
+import { useMediaQuery } from '../../hooks/useMediaQuery'
 import { heroPhotos, stepPhotos, testimonialPhotos, ctaPhoto } from './landingPhotos'
 
 const container: React.CSSProperties = { maxWidth: 1120, margin: '0 auto' }
 const sectionPad = (isMobile: boolean) => (isMobile ? '64px 20px' : '96px 32px')
-
-function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches)
-  useEffect(() => {
-    const mq = window.matchMedia(query)
-    const onChange = () => setMatches(mq.matches)
-    mq.addEventListener('change', onChange)
-    setMatches(mq.matches)
-    return () => mq.removeEventListener('change', onChange)
-  }, [query])
-  return matches
-}
 
 function Reveal({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   const ref = useRef<HTMLDivElement>(null)

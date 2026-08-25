@@ -16,6 +16,7 @@ import { StarRatingInput } from '../../components/ui/StarRating'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { colors, radius } from '../../theme/tokens'
+import { useIsMobile } from '../../hooks/useMediaQuery'
 
 type Aba = 'proximos' | 'concluidos' | 'cancelados'
 
@@ -26,6 +27,7 @@ const abasConfig: { key: Aba; label: string }[] = [
 ]
 
 export default function Agendamentos() {
+  const isMobile = useIsMobile()
   const { user, tutorId } = useAuth()
   const [agendamentos, setAgendamentos] = useState<AgendamentoResponseDto[]>([])
   const [pets, setPets] = useState<PetResponseDto[]>([])
@@ -171,7 +173,7 @@ export default function Agendamentos() {
       {showForm && (
         <Card padding={24} style={{ marginBottom: 24 }}>
           <h2 style={{ fontSize: 16, fontWeight: 700, color: colors.gray[900], marginBottom: 20 }}>Novo agendamento</h2>
-          <form onSubmit={handleSave} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+          <form onSubmit={handleSave} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '0 16px' }}>
             <Select label="Pet" value={form.petId} onChange={e => setForm(f => ({ ...f, petId: e.target.value }))} required>
               <option value="">Selecione o pet</option>
               {pets.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}

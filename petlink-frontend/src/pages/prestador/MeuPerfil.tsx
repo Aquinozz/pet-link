@@ -13,8 +13,10 @@ import { Input, Textarea } from '../../components/ui/Input'
 import { Skeleton } from '../../components/ui/Skeleton'
 import ImageCropModal from '../../components/ui/ImageCropModal'
 import { colors, radius } from '../../theme/tokens'
+import { useIsMobile } from '../../hooks/useMediaQuery'
 
 export default function MeuPerfil() {
+  const isMobile = useIsMobile()
   const { setFotoUrl } = useAuth()
   const [perfil, setPerfil] = useState<MeResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -134,7 +136,7 @@ await prestadorService.removerBanner()
             <Skeleton width={140} height={13} />
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 24 }}>
           <Card padding={24}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} height={40} />)}
@@ -211,7 +213,7 @@ await prestadorService.removerBanner()
         </div>
       </Card>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 24 }}>
         <Card padding={24}>
           <h2 style={{ fontSize: 16, fontWeight: 700, color: colors.gray[900], marginBottom: 20 }}>Informações do perfil</h2>
           <form onSubmit={handleSave}>

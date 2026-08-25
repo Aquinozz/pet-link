@@ -1,16 +1,22 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LogOut, ChevronDown } from 'lucide-react'
+import { LogOut, ChevronDown, Menu } from 'lucide-react'
 import { useAuth } from '../../contexts/useAuth'
 import { API_URL } from '../../api/axiosInstance'
 import { Avatar } from '../ui/Avatar'
 import { colors, radius, shadow } from '../../theme/tokens'
+import { useMediaQuery } from '../../hooks/useMediaQuery'
 
-export default function Topbar() {
+interface TopbarProps {
+  onMenuClick?: () => void
+}
+
+export default function Topbar({ onMenuClick }: TopbarProps) {
   const { user, fotoUrl, signOut } = useAuth()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const isTiny = useMediaQuery('(max-width: 479px)')
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -36,11 +42,27 @@ export default function Topbar() {
         borderBottom: `1px solid ${colors.border}`,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'flex-end',
-        padding: '0 32px',
+        justifyContent: 'space-between',
+        gap: 12,
+        padding: isTiny ? '0 16px' : '0 32px',
         flexShrink: 0,
       }}
     >
+      {onMenuClick ? (
+        <button
+          onClick={onMenuClick}
+          aria-label="Abrir menu"
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: 38, height: 38, borderRadius: radius.md,
+            border: 'none', background: 'transparent', cursor: 'pointer', color: colors.gray[700],
+          }}
+        >
+          <Menu size={22} />
+        </button>
+      ) : (
+        <span />
+      )}
       <div ref={ref} style={{ position: 'relative' }}>
         <button
           onClick={() => setOpen(o => !o)}
@@ -59,10 +81,12 @@ export default function Topbar() {
           }}
         >
           <Avatar name={username} src={fotoUrl ? `${API_URL}${fotoUrl}` : undefined} size={32} />
-          <div style={{ textAlign: 'left' }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: colors.gray[900], lineHeight: 1.1 }}>{username}</p>
-            <p style={{ fontSize: 11, color: colors.gray[400], lineHeight: 1.2 }}>{user?.role === 'ROLE_PROFISSIONAL' ? 'Prestador' : 'Tutor'}</p>
-          </div>
+          {!isTiny && (
+            <div style={{ textAlign: 'left' }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: colors.gray[900], lineHeight: 1.1 }}>{username}</p>
+              <p style={{ fontSize: 11, color: colors.gray[400], lineHeight: 1.2 }}>{user?.role === 'ROLE_PROFISSIONAL' ? 'Prestador' : 'Tutor'}</p>
+            </div>
+          )}
           <ChevronDown size={16} color={colors.gray[400]} />
         </button>
 

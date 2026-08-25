@@ -14,10 +14,12 @@ import { EspecieIcon } from '../../components/ui/EspecieIcon'
 import { Skeleton } from '../../components/ui/Skeleton'
 import ImageCropModal from '../../components/ui/ImageCropModal'
 import { colors, radius, fontSize } from '../../theme/tokens'
+import { useIsMobile } from '../../hooks/useMediaQuery'
 
 const especies = ['Cachorro', 'Gato', 'Coelho', 'Pássaro', 'Peixe', 'Outro']
 
 export default function MeusPets() {
+  const isMobile = useIsMobile()
   const { user, tutorId } = useAuth()
   const [pets, setPets] = useState<PetResponseDto[]>([])
   const [loading, setLoading] = useState(true)
@@ -106,7 +108,7 @@ export default function MeusPets() {
       {showForm && (
         <Card padding={24} style={{ marginBottom: 24 }}>
           <h2 style={{ fontSize: 16, fontWeight: 700, color: colors.gray[900], marginBottom: 20 }}>Cadastrar novo pet</h2>
-          <form onSubmit={handleSave} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+          <form onSubmit={handleSave} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '0 16px' }}>
             <Input label="Nome do pet" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} required placeholder="Rex" />
             <Input label="Raça" value={form.raca} onChange={e => setForm(f => ({ ...f, raca: e.target.value }))} placeholder="Labrador" />
             <Select label="Espécie" value={form.especie} onChange={e => setForm(f => ({ ...f, especie: e.target.value }))} required>

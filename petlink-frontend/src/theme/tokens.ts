@@ -75,5 +75,7 @@ export const spacing = {
   16: 64,
 }
 
-export const tokens = { colors, radius, shadow, fontSize, spacing }
+export const breakpoints = { sm: 640, md: 768, lg: 1023 }
+
+export const tokens = { colors, radius, shadow, fontSize, spacing, breakpoints }
 export default tokens

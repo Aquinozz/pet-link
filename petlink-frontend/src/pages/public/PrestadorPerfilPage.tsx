@@ -19,6 +19,7 @@ import { StarRating } from '../../components/ui/StarRating'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { colors, shadow } from '../../theme/tokens'
+import { useIsMobile } from '../../hooks/useMediaQuery'
 
 const tipoLabel: Record<string, string> = {
   CLINICA_VETERINARIA: 'Clínica Veterinária',
@@ -63,6 +64,7 @@ function BannerPattern() {
 }
 
 export default function PrestadorPerfilPage() {
+  const isMobile = useIsMobile()
   const { id } = useParams()
   const navigate = useNavigate()
   const { user, tutorId } = useAuth()
@@ -110,7 +112,7 @@ export default function PrestadorPerfilPage() {
               <Skeleton height={24} width={260} />
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginTop: 32 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 20, marginTop: 32 }}>
             <Skeleton height={140} /><Skeleton height={140} />
           </div>
         </div>
@@ -300,7 +302,7 @@ export default function PrestadorPerfilPage() {
             </p>
           </Card>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 20 }}>
             <Card padding={24}>
               <h2 style={{ fontSize: 15, fontWeight: 700, color: colors.gray[900], margin: '0 0 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Calendar size={16} color={colors.brand[600]} /> Serviços
@@ -372,7 +374,7 @@ export default function PrestadorPerfilPage() {
                   {errorAg && (
                     <div style={{ backgroundColor: colors.danger[50], border: `1px solid ${colors.danger[100]}`, borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: colors.danger[600] }}>{errorAg}</div>
                   )}
-                  <form onSubmit={handleAgendar} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <form onSubmit={handleAgendar} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
                     <Select label="Pet" value={agForm.petId} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setAgForm(f => ({ ...f, petId: e.target.value }))} required disabled={loadingPets}>
                       <option value="">{loadingPets ? 'Carregando...' : 'Selecione um pet'}</option>
                       {pets.map(pet => <option key={pet.id} value={pet.id}>{pet.nome}</option>)}

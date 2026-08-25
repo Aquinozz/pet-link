@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, Clock, MessageCircle, Building, Navigation, ChevronRight } from 'lucide-react'
+import { MapPin, Clock, MessageCircle, Building, Navigation, ChevronRight, Search } from 'lucide-react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
+import { EmptyState } from '../../components/ui/EmptyState'
 import { API_URL } from '../../api/axiosInstance'
 import { prestadorService } from '../../api/prestadorService'
 import type { PrestadorResponseDto } from '../../types'
@@ -270,7 +271,25 @@ export default function Prestadores() {
             <PrestadorRow key={p.id} prestador={p} onOpen={() => navigate(`/prestadores/${p.id}`)} />
           ))}
           {filtrados.length === 0 && (
-            <p style={{ color: colors.gray[500] }}>Nenhum prestador encontrado.</p>
+            <EmptyState
+              icon={<Search size={26} />}
+              title="Nenhum prestador encontrado"
+              description="Tente outro termo de busca ou limpe os filtros para ver todos."
+            >
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setBusca('')
+                  setServicoFiltro('')
+                  setCidadeFiltro('')
+                  setBairroFiltro('')
+                  setFiltrosAplicados({ busca: '', servico: '', cidade: '', bairro: '' })
+                }}
+              >
+                Limpar filtros
+              </Button>
+            </EmptyState>
           )}
         </div>
       )}

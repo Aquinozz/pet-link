@@ -37,7 +37,7 @@ function LoginForm() {
       <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: colors.brand[600], marginBottom: 12 }}>
         Acesso à plataforma
       </p>
-      <h1 style={{ fontSize: 26, fontWeight: 800, color: colors.gray[900], lineHeight: 1.2, marginBottom: 6 }}>
+      <h1 style={{ fontSize: 26, fontWeight: 640, color: colors.gray[900], lineHeight: 1.2, marginBottom: 6 }}>
         Entre na sua conta
       </h1>
       <p style={{ fontSize: 14, color: colors.gray[500], lineHeight: 1.6, marginBottom: 28 }}>

@@ -1,54 +1,60 @@
 export const colors = {
   brand: {
-    950: '#0A2E28',
-    900: '#0D3B34',
-    800: '#0F4A40',
-    700: '#15803D',
-    600: '#16A34A',
-    500: '#22C55E',
-    400: '#4ADE80',
-    200: '#A7E07E',
-    100: '#EAF8ED',
-    50: '#F0FDF4',
+    950: '#0A1F17',
+    900: '#123528',
+    800: '#1A4636',
+    700: '#245A44',
+    600: '#2E7055',
+    500: '#3E8A69',
+    400: '#6BA98A',
+    300: '#93C4AB',
+    200: '#BCDAC8',
+    100: '#DDEDE2',
+    50: '#F0F7F2',
   },
   gray: {
-    900: '#111827',
-    700: '#374151',
-    600: '#4B5563',
-    500: '#6B7280',
-    400: '#9CA3AF',
-    300: '#D1D5DB',
-    200: '#E5E7EB',
-    100: '#F3F4F6',
-    50: '#F9FAFB',
+    900: '#26221C',
+    700: '#443E35',
+    600: '#5C554A',
+    500: '#756C5F',
+    400: '#9A9083',
+    300: '#C4BBAE',
+    200: '#DED7CB',
+    100: '#EEE9DF',
+    50: '#F7F4EE',
   },
-  accent: '#FACC15',
-  bg: '#F4F7F6',
-  border: '#E5E7EB',
+  accent: '#E0A93E',
+  bg: '#FAF7F2',
+  border: '#E8E2D6',
   white: '#FFFFFF',
   danger: {
-    600: '#DC2626',
-    500: '#EF4444',
-    100: '#FEE2E2',
-    50: '#FEF2F2',
+    600: '#CB3A2E',
+    500: '#E05243',
+    100: '#FBEBE7',
+    50: '#FCF3F0',
   },
   success: {
-    600: '#16A34A',
-    100: '#DCFCE7',
-    50: '#F0FDF4',
+    600: '#2E7055',
+    100: '#DDEDE2',
+    50: '#F0F7F2',
   },
+}
+
+export const fontFamily = {
+  display: "'Fraunces Variable', Georgia, 'Times New Roman', serif",
+  body: "'Figtree Variable', -apple-system, 'Segoe UI', sans-serif",
 }
 
 export const radius = {
-  sm: 6,
-  md: 8,
-  lg: 12,
-  xl: 16,
+  sm: 4,
+  md: 6,
+  lg: 10,
+  xl: 14,
 }
 
 export const shadow = {
-  sm: '0 1px 2px rgba(15,23,42,0.04)',
-  md: '0 1px 3px rgba(15,23,42,0.05), 0 4px 16px rgba(15,23,42,0.04)',
+  sm: '0 1px 2px rgba(38,34,28,0.05)',
+  md: '0 1px 2px rgba(38,34,28,0.04), 0 6px 20px rgba(38,34,28,0.07)',
 }
 
 export const fontSize = {
@@ -60,6 +66,7 @@ export const fontSize = {
   xl: 20,
   '2xl': 24,
   '3xl': 30,
+  '4xl': 40,
 }
 
 export const spacing = {
@@ -76,15 +83,15 @@ export const spacing = {
 }
 
 export const stateColors = {
-  info:    { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', light: '#DBEAFE' },
-  success: { bg: '#F0FDF4', border: '#BBF7D0', text: '#15803D', light: '#DCFCE7' },
-  warning: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', light: '#FEF3C7' },
-  danger:  { bg: '#FEF2F2', border: '#FECACA', text: '#DC2626', light: '#FEE2E2' },
+  info:    { bg: '#EDF2F7', border: '#C9D8EA', text: '#2B527F', light: '#DEEAF5' },
+  success: { bg: '#F0F7F2', border: '#BCDAC8', text: '#245A44', light: '#DDEDE2' },
+  warning: { bg: '#FBF3E4', border: '#EBD5AC', text: '#96660F', light: '#F5E7C8' },
+  danger:  { bg: '#FBF0EE', border: '#EFD0CA', text: '#B03A2E', light: '#F7E2DD' },
 } as const
 
 export const transition = 'all 0.15s ease'
 
 export const breakpoints = { sm: 640, md: 768, lg: 1023 }
 
-export const tokens = { colors, radius, shadow, fontSize, spacing, breakpoints, stateColors, transition }
+export const tokens = { colors, fontFamily, radius, shadow, fontSize, spacing, breakpoints, stateColors, transition }
 export default tokens

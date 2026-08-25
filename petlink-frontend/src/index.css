@@ -1,33 +1,39 @@
 @import "tailwindcss";
 
 :root {
-  --brand-950: #0a2e28;
-  --brand-900: #0d3b34;
-  --brand-800: #0f4a40;
-  --brand-700: #15803d;
-  --brand-600: #16a34a;
-  --brand-500: #22c55e;
-  --brand-400: #4ade80;
-  --brand-200: #a7e07e;
-  --brand-100: #eaf8ed;
-  --brand-50: #f0fdf4;
-  --gray-900: #111827;
-  --gray-700: #374151;
-  --gray-600: #4b5563;
-  --gray-500: #6b7280;
-  --gray-400: #9ca3af;
-  --gray-300: #d1d5db;
-  --gray-200: #e5e7eb;
-  --gray-100: #f3f4f6;
-  --gray-50: #f9fafb;
-  --accent: #facc15;
-  --danger-600: #dc2626;
-  --danger-100: #fee2e2;
-  --danger-50: #fef2f2;
-  --success-600: #16a34a;
-  --success-100: #dcfce7;
-  --color-bg: #f4f7f6;
-  --color-border: #e5e7eb;
+  --font-display: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+  --font-body: 'Figtree Variable', -apple-system, 'Segoe UI', sans-serif;
+
+  --brand-950: #0a1f17;
+  --brand-900: #123528;
+  --brand-800: #1a4636;
+  --brand-700: #245a44;
+  --brand-600: #2e7055;
+  --brand-500: #3e8a69;
+  --brand-400: #6ba98a;
+  --brand-300: #93c4ab;
+  --brand-200: #bcdac8;
+  --brand-100: #ddede2;
+  --brand-50: #f0f7f2;
+
+  --gray-900: #26221c;
+  --gray-700: #443e35;
+  --gray-600: #5c554a;
+  --gray-500: #756c5f;
+  --gray-400: #9a9083;
+  --gray-300: #c4bbae;
+  --gray-200: #ded7cb;
+  --gray-100: #eee9df;
+  --gray-50: #f7f4ee;
+
+  --accent: #e0a93e;
+  --danger-600: #cb3a2e;
+  --danger-100: #fbebe7;
+  --danger-50: #fcf3f0;
+  --success-600: #2e7055;
+  --success-100: #ddede2;
+  --color-bg: #faf7f2;
+  --color-border: #e8e2d6;
 }
 
 * {
@@ -41,10 +47,23 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-body);
   background-color: var(--color-bg);
-  color: #111827;
+  color: #26221c;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'ss01';
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background-color: var(--brand-200);
+  color: var(--brand-950);
 }
 
 :focus-visible {
@@ -76,18 +95,17 @@ section[id],
   animation: landing-fade-up 0.55s ease-out 0.12s both;
 }
 
-@keyframes skeleton-pulse {
-  0% {
-    opacity: 1;
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 200% 0;
   }
-  50% {
-    opacity: 0.45;
-  }
-  100% {
-    opacity: 1;
+  to {
+    background-position: -200% 0;
   }
 }
 
 .skeleton {
-  animation: skeleton-pulse 1.4s ease-in-out infinite;
+  background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-50) 45%, var(--gray-100) 65%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.6s linear infinite;
 }

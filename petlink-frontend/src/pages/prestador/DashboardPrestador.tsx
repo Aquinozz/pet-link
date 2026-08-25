@@ -13,7 +13,7 @@ import { StatusBadge } from '../../components/ui/StatusBadge'
 import { StarRating } from '../../components/ui/StarRating'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { Skeleton } from '../../components/ui/Skeleton'
-import { colors } from '../../theme/tokens'
+import { colors, stateColors, transition } from '../../theme/tokens'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 
 export default function DashboardPrestador() {
@@ -79,10 +79,10 @@ export default function DashboardPrestador() {
             />
           ) : (
             <div>
-              {agendamentos.map((a, i) => (
-                <div key={a.id} style={{ padding: '16px 0', borderBottom: i < agendamentos.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
+              {agendamentos.map((a) => (
+                <div key={a.id} style={{ padding: '14px 10px', borderRadius: 8, marginBottom: 4, transition, cursor: 'pointer' }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = colors.gray[50] }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    <p style={{ fontSize: 15, fontWeight: 700, color: colors.gray[900] }}>{a.tutor?.nome}</p>
+                    <p style={{ fontSize: 15, fontWeight: 700, color: colors.gray[900], margin: 0 }}>{a.tutor?.nome}</p>
                     <StatusBadge status={a.status} />
                   </div>
                   <p style={{ fontSize: 13, color: colors.gray[500], margin: 0 }}>
@@ -124,13 +124,16 @@ export default function DashboardPrestador() {
                 {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} height={32} />)}
               </div>
             ) : (
-              <div>
-                {resumo.map((r, i) => (
-                  <div key={r.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 0', borderBottom: i < resumo.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
-                    <span style={{ fontSize: 14, color: colors.gray[500] }}>{r.label}</span>
-                    <span style={{ fontSize: 18, fontWeight: 800, color: colors.brand[700] }}>{r.value}</span>
-                  </div>
-                ))}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {resumo.map((r, i) => {
+                  const sc = [stateColors.info, stateColors.warning, stateColors.success][i]
+                  return (
+                    <div key={r.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: 8, backgroundColor: sc.bg, border: `1px solid ${sc.border}`, transition }}>
+                      <span style={{ fontSize: 14, fontWeight: 500, color: sc.text }}>{r.label}</span>
+                      <span style={{ fontSize: 22, fontWeight: 800, color: sc.text }}>{r.value}</span>
+                    </div>
+                  )
+                })}
               </div>
             )}
           </Card>
@@ -139,8 +142,8 @@ export default function DashboardPrestador() {
             <Card padding={24}>
               <SectionHeader title="Avaliações recebidas" />
               <div>
-                {reviews.slice(0, 4).map((r, i) => (
-                  <div key={r.id} style={{ padding: '13px 0', borderBottom: i < Math.min(reviews.length, 4) - 1 ? `1px solid ${colors.border}` : 'none' }}>
+                {reviews.slice(0, 4).map((r) => (
+                  <div key={r.id} style={{ padding: '12px 10px', borderRadius: 8, marginBottom: 4, transition, cursor: 'default' }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = colors.gray[50] }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
                       <p style={{ fontSize: 14, fontWeight: 600, color: colors.gray[700], margin: 0 }}>{r.tutorNome}</p>
                       <StarRating value={r.nota} size={13} />

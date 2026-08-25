@@ -145,7 +145,7 @@ export default function MeusPets() {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
           {pets.map(pet => (
-            <Card key={pet.id} padding={20}>
+            <Card key={pet.id} padding={20} hoverable style={{ cursor: 'pointer' }}>
               <div style={{ position: 'relative', width: '100%', height: 120, marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg, borderRadius: radius.lg }}>
                 {pet.fotoUrl ? (
                   <img src={`${API_URL}${pet.fotoUrl}`} alt={pet.nome}

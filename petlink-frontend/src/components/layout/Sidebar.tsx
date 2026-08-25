@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/useAuth'
 import { BrandLogo } from '../BrandLogo'
 import { Calendar, LayoutDashboard, PawPrint, Search, Settings, X } from 'lucide-react'
 import { useIsTablet } from '../../hooks/useMediaQuery'
-import { colors, radius, shadow } from '../../theme/tokens'
+import { colors, radius, shadow, transition } from '../../theme/tokens'
 
 const menuTutor = [
   { path: '/tutor/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} strokeWidth={2} /> },
@@ -110,6 +110,7 @@ export default function Sidebar({ open = true, onClose }: SidebarProps) {
               <Link
                 key={item.path}
                 to={item.path}
+                aria-current={active ? 'page' : undefined}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -120,12 +121,13 @@ export default function Sidebar({ open = true, onClose }: SidebarProps) {
                   textDecoration: 'none',
                   fontSize: 14,
                   fontWeight: active ? 600 : 500,
-                  color: active ? colors.brand[900] : colors.gray[500],
-                  backgroundColor: active ? colors.brand[100] : 'transparent',
-                  transition: 'background-color 0.15s ease, color 0.15s ease',
+                  color: active ? colors.brand[700] : colors.gray[500],
+                  backgroundColor: active ? colors.brand[50] : 'transparent',
+                  borderLeft: active ? `3px solid ${colors.brand[600]}` : '3px solid transparent',
+                  transition,
                 }}
               >
-                {item.icon}
+                <span style={{ color: active ? colors.brand[600] : colors.gray[400], display: 'flex' }}>{item.icon}</span>
                 {item.label}
               </Link>
             )

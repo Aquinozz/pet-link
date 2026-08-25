@@ -75,7 +75,16 @@ export const spacing = {
   16: 64,
 }
 
+export const stateColors = {
+  info:    { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', light: '#DBEAFE' },
+  success: { bg: '#F0FDF4', border: '#BBF7D0', text: '#15803D', light: '#DCFCE7' },
+  warning: { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', light: '#FEF3C7' },
+  danger:  { bg: '#FEF2F2', border: '#FECACA', text: '#DC2626', light: '#FEE2E2' },
+} as const
+
+export const transition = 'all 0.15s ease'
+
 export const breakpoints = { sm: 640, md: 768, lg: 1023 }
 
-export const tokens = { colors, radius, shadow, fontSize, spacing, breakpoints }
+export const tokens = { colors, radius, shadow, fontSize, spacing, breakpoints, stateColors, transition }
 export default tokens

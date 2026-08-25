@@ -15,7 +15,7 @@ import { StatusBadge } from '../../components/ui/StatusBadge'
 import { StarRatingInput } from '../../components/ui/StarRating'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { Skeleton } from '../../components/ui/Skeleton'
-import { colors, radius } from '../../theme/tokens'
+import { colors, radius, transition } from '../../theme/tokens'
 import { useIsMobile } from '../../hooks/useMediaQuery'
 
 type Aba = 'proximos' | 'concluidos' | 'cancelados'
@@ -309,8 +309,8 @@ export default function Agendamentos() {
               />
             ) : (
               <div>
-                {listaAtual.map((a, i) => (
-                  <div key={a.id} style={{ padding: '18px 0', borderBottom: i < listaAtual.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
+                {listaAtual.map((a) => (
+                  <div key={a.id} style={{ padding: '16px 12px', borderRadius: 10, marginBottom: 8, transition, cursor: 'default' }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = colors.gray[50] }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, flexWrap: 'wrap' }}>
                       <p style={{ fontSize: 15, fontWeight: 700, color: colors.gray[900], margin: 0 }}>{a.prestador?.nomePrestador}</p>
                       <StatusBadge status={a.status} />

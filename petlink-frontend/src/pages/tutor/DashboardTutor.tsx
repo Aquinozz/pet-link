@@ -16,7 +16,7 @@ import { EspecieIcon } from '../../components/ui/EspecieIcon'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { StatusBadge } from '../../components/ui/StatusBadge'
-import { colors } from '../../theme/tokens'
+import { colors, stateColors, shadow, transition } from '../../theme/tokens'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 
 const formatData = (dt: string) => {
@@ -84,16 +84,16 @@ export default function DashboardTutor() {
               </EmptyState>
             ) : (
               <div>
-                {proximos.map((a, i) => (
-                  <div key={a.id} style={{ padding: '14px 0', borderBottom: i < proximos.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
+                {proximos.map((a) => (
+                  <Link key={a.id} to="/tutor/agendamentos" style={{ textDecoration: 'none', display: 'block', padding: '12px 10px', borderRadius: 8, marginBottom: 4, transition, cursor: 'pointer' }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = colors.gray[50] }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <p style={{ fontSize: 14, fontWeight: 700, color: colors.gray[900] }}>{a.prestador?.nomePrestador}</p>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: colors.gray[900], margin: 0 }}>{a.prestador?.nomePrestador}</p>
                       <StatusBadge status={a.status} />
                     </div>
                     <p style={{ fontSize: 13, color: colors.gray[500], margin: 0 }}>
                       <PawPrint size={13} /> {a.pet?.nome} • <Calendar size={13} /> {formatData(a.dataHora)}
                     </p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}
@@ -123,15 +123,18 @@ export default function DashboardTutor() {
                 {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} height={32} />)}
               </div>
             ) : (
-              <div>
-                {resumo.map((r, i) => (
-                  <Link key={r.label} to={r.to} style={{ textDecoration: 'none' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 0', borderBottom: i < resumo.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
-                      <span style={{ fontSize: 14, color: colors.gray[500] }}>{r.label}</span>
-                      <span style={{ fontSize: 18, fontWeight: 800, color: colors.brand[700] }}>{r.value}</span>
-                    </div>
-                  </Link>
-                ))}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {resumo.map((r, i) => {
+                  const sc = [stateColors.success, stateColors.info, stateColors.warning][i]
+                  return (
+                    <Link key={r.label} to={r.to} style={{ textDecoration: 'none', display: 'block' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: 8, backgroundColor: sc.bg, border: `1px solid ${sc.border}`, transition, cursor: 'pointer' }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = shadow.sm }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = 'none' }}>
+                        <span style={{ fontSize: 14, fontWeight: 500, color: sc.text }}>{r.label}</span>
+                        <span style={{ fontSize: 22, fontWeight: 800, color: sc.text }}>{r.value}</span>
+                      </div>
+                    </Link>
+                  )
+                })}
               </div>
             )}
           </Card>
@@ -154,14 +157,14 @@ export default function DashboardTutor() {
               </EmptyState>
             ) : (
               <div>
-                {pets.slice(0, 3).map((p, i) => (
-                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: i < Math.min(pets.length, 3) - 1 ? `1px solid ${colors.border}` : 'none' }}>
+                {pets.slice(0, 3).map((p) => (
+                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px', borderRadius: 8, marginBottom: 4, transition, cursor: 'pointer' }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = colors.gray[50] }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}>
                     <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: colors.brand[50], display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.brand[600], flexShrink: 0 }}>
                       <EspecieIcon especie={p.especie} size={20} />
                     </div>
                     <div>
                       <p style={{ fontSize: 14, fontWeight: 700, color: colors.gray[900], margin: 0 }}>{p.nome}</p>
-                      <p style={{ fontSize: 12, color: colors.gray[500], margin: 0 }}>{p.especie}{p.raca ? ` • ${p.raca}` : ''}</p>
+                      <p style={{ fontSize: 12, color: colors.gray[500], margin: 0 }}>{p.especie} • {p.raca}</p>
                     </div>
                   </div>
                 ))}

@@ -1,9 +1,11 @@
+import { colors, fontFamily } from '../theme/tokens'
+
 interface BrandLogoProps {
   size?: number
   colorText?: string
 }
 
-export function BrandLogo({ size = 28, colorText = '#0D3B34' }: BrandLogoProps) {
+export function BrandLogo({ size = 28, colorText = colors.brand[800] }: BrandLogoProps) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
       <svg
@@ -17,16 +19,16 @@ export function BrandLogo({ size = 28, colorText = '#0D3B34' }: BrandLogoProps) 
       >
         <path
           d="M32 6C20 6 10 16 10 28c0 13 10 22 22 30 12-8 22-17 22-30C54 16 44 6 32 6Z"
-          fill="#0D3B34"
+          fill="#1A4636"
         />
         <path
           d="M40 24c0 5-4 9-8 9s-8-4-8-9 4-9 8-9 8 4 8 9Z"
-          fill="#16A34A"
+          fill="#E0A93E"
         />
-        <path d="M26 24c0 2 1 4 2 4s2-2 2-4-1-4-2-4-2 2-2 4Z" fill="#F4F7F6" />
+        <path d="M26 24c0 2 1 4 2 4s2-2 2-4-1-4-2-4-2 2-2 4Z" fill="#FAF7F2" />
       </svg>
-      <span style={{ fontSize: size * 0.7, fontWeight: 800, color: colorText }}>
-        Pet<span style={{ color: '#16A34A' }}>Link</span>
+      <span style={{ fontFamily: fontFamily.display, fontSize: size * 0.72, fontWeight: 620, letterSpacing: '-0.01em', color: colorText }}>
+        Pet<span style={{ color: colors.brand[600] }}>Link</span>
       </span>
     </div>
   )

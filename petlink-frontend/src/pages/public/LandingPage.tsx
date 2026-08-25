@@ -10,7 +10,7 @@ import { StarRating } from '../../components/ui/StarRating'
 import { Badge } from '../../components/ui/Badge'
 import { Avatar } from '../../components/ui/Avatar'
 import { StatusBadge } from '../../components/ui/StatusBadge'
-import { colors, radius, shadow } from '../../theme/tokens'
+import { colors, radius, shadow, fontFamily } from '../../theme/tokens'
 import { useHover } from '../../components/ui/useHover'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 import { heroPhotos, stepPhotos, testimonialPhotos, ctaPhoto } from './landingPhotos'
@@ -50,7 +50,7 @@ function Reveal({ children, style }: { children: React.ReactNode; style?: React.
 
 function Eyebrow({ children, color = colors.brand[600] }: { children: React.ReactNode; color?: string }) {
   return (
-    <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color, marginBottom: 16 }}>
+    <p style={{ fontFamily: fontFamily.display, fontStyle: 'italic', fontSize: 18, fontWeight: 500, color, marginBottom: 14 }}>
       {children}
     </p>
   )
@@ -277,16 +277,16 @@ function Hero() {
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.05fr 0.95fr', gap: isMobile ? 48 : 64, alignItems: 'center' }}>
           <div className="landing-fade-up">
             <Eyebrow>Plataforma de serviços pet</Eyebrow>
-            <h1 style={{ fontSize: isMobile ? 34 : 46, fontWeight: 800, color: colors.gray[900], lineHeight: 1.12, marginBottom: 20, letterSpacing: '-0.02em' }}>
-              Encontre o <span style={{ color: colors.brand[600] }}>profissional certo</span> para cuidar do seu pet
+            <h1 style={{ fontSize: isMobile ? 36 : 52, fontWeight: 620, color: colors.gray[900], lineHeight: 1.08, marginBottom: 20, letterSpacing: '-0.015em' }}>
+              Encontre o <em style={{ fontStyle: 'italic', fontWeight: 560 }}>profissional certo</em> para cuidar do seu pet
             </h1>
             <p style={{ fontSize: 17, color: colors.gray[500], lineHeight: 1.7, marginBottom: 32, maxWidth: 480 }}>
-              Veterinários, pet shops, passeadores e clínicas avaliados por tutores reais, perto de você. Compare perfis e agende direto pelo WhatsApp.
+              Veterinário, banho e tosa, passeio ou creche — com avaliação de quem já levou o pet antes de você. Compare perfis, converse pelo WhatsApp e marque em minutos.
             </p>
 
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
               <Link to="/cadastro" style={{ textDecoration: 'none' }}>
-                <Button size="lg">Cadastrar grátis <ArrowRight size={16} /></Button>
+                <Button size="lg">Criar conta grátis <ArrowRight size={16} /></Button>
               </Link>
               <a href="#como-funciona" style={{ textDecoration: 'none' }}>
                 <Button size="lg" variant="secondary">Ver como funciona</Button>
@@ -295,7 +295,7 @@ function Hero() {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: colors.gray[500] }}>
               <Check size={15} color={colors.brand[600]} />
-              Cadastro gratuito • sem taxas para tutores
+              Grátis para tutores • você fala direto com o profissional
             </div>
           </div>
 
@@ -309,19 +309,27 @@ function Hero() {
         </div>
 
         <Reveal style={{ marginTop: isMobile ? 56 : 72, paddingBottom: isMobile ? 64 : 88 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: isMobile ? 12 : 20 }}>
-            {heroPhotos.map((p, i) => (
-              <div key={i} style={{
-                borderRadius: radius.xl,
-                overflow: 'hidden',
-                aspectRatio: '4 / 5',
-                boxShadow: shadow.sm,
-                border: `1px solid ${colors.brand[100]}`,
-                transform: i % 2 === 0 ? 'translateY(0)' : isMobile ? 'none' : 'translateY(16px)',
-              }}>
-                <img src={p.src} alt={p.alt} loading={i < 2 ? 'eager' : 'lazy'} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-              </div>
-            ))}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: isMobile ? 14 : 20 }}>
+            {heroPhotos.map((p, i) => {
+              const collage = [
+                { radius: '18px 18px 18px 6px', rotate: '-1.6deg' },
+                { radius: '18px 6px 18px 18px', rotate: '1.2deg' },
+                { radius: '6px 18px 18px 18px', rotate: '-0.8deg' },
+                { radius: '18px 18px 6px 18px', rotate: '1.6deg' },
+              ][i % 4]
+              return (
+                <div key={i} style={{
+                  borderRadius: collage.radius,
+                  overflow: 'hidden',
+                  aspectRatio: '4 / 5',
+                  boxShadow: shadow.sm,
+                  border: `1px solid ${colors.border}`,
+                  transform: `${isMobile ? 'none' : i % 2 === 0 ? 'translateY(0)' : 'translateY(16px)'} rotate(${collage.rotate})`,
+                }}>
+                  <img src={p.src} alt={p.alt} loading={i < 2 ? 'eager' : 'lazy'} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                </div>
+              )
+            })}
           </div>
         </Reveal>
       </div>
@@ -344,7 +352,7 @@ function Problema() {
         <div>
           <Reveal>
             <Eyebrow>O problema</Eyebrow>
-            <h2 style={{ fontSize: isMobile ? 26 : 34, fontWeight: 800, color: colors.gray[900], lineHeight: 1.2, margin: 0 }}>
+            <h2 style={{ fontSize: isMobile ? 26 : 34, fontWeight: 640, color: colors.gray[900], lineHeight: 1.2, margin: 0 }}>
               Cuidar de um pet é uma responsabilidade de todo dia
             </h2>
           </Reveal>
@@ -381,7 +389,7 @@ function ComoFunciona() {
       <div style={container}>
         <Reveal style={{ textAlign: 'center', marginBottom: 56 }}>
           <Eyebrow>Como funciona</Eyebrow>
-          <h2 style={{ fontSize: isMobile ? 26 : 34, fontWeight: 800, color: colors.gray[900], lineHeight: 1.2, margin: 0 }}>
+          <h2 style={{ fontSize: isMobile ? 26 : 34, fontWeight: 640, color: colors.gray[900], lineHeight: 1.2, margin: 0 }}>
             Três passos até o cuidado ideal
           </h2>
         </Reveal>
@@ -398,7 +406,7 @@ function ComoFunciona() {
                 }}>
                   <img src={stepPhotos[i].src} alt={stepPhotos[i].alt} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 </div>
-                <p style={{ fontSize: 40, fontWeight: 800, color: colors.brand[100], lineHeight: 1, marginBottom: 12, fontFeatureSettings: '"tnum"' }}>{s.num}</p>
+                <p style={{ fontFamily: fontFamily.display, fontStyle: 'italic', fontSize: 40, fontWeight: 600, color: colors.brand[200], lineHeight: 1, marginBottom: 12, fontFeatureSettings: '"tnum"' }}>{s.num}</p>
                 <div style={{ width: 32, height: 3, borderRadius: 2, backgroundColor: colors.brand[600], marginBottom: 16 }} />
                 <h3 style={{ fontSize: 18, fontWeight: 700, color: colors.gray[900], marginBottom: 8 }}>{s.title}</h3>
                 <p style={{ fontSize: 14, color: colors.gray[500], lineHeight: 1.6, margin: 0, maxWidth: 260 }}>{s.desc}</p>
@@ -448,7 +456,7 @@ function Produto() {
       <div style={container}>
         <Reveal style={{ maxWidth: 640, marginBottom: 64 }}>
           <Eyebrow>O produto</Eyebrow>
-          <h2 style={{ fontSize: isMobile ? 26 : 34, fontWeight: 800, color: colors.gray[900], lineHeight: 1.2, marginBottom: 12 }}>
+          <h2 style={{ fontSize: isMobile ? 26 : 34, fontWeight: 640, color: colors.gray[900], lineHeight: 1.2, marginBottom: 12 }}>
             Feito para facilitar o cuidado no dia a dia
           </h2>
           <p style={{ fontSize: 16, color: colors.gray[500], lineHeight: 1.7, margin: 0 }}>
@@ -469,7 +477,7 @@ function Produto() {
                 )}
                 <div>
                   <Eyebrow>{row.eyebrow}</Eyebrow>
-                  <h3 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800, color: colors.gray[900], lineHeight: 1.25, marginBottom: 12 }}>{row.title}</h3>
+                  <h3 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 640, color: colors.gray[900], lineHeight: 1.25, marginBottom: 12 }}>{row.title}</h3>
                   <p style={{ fontSize: 15, color: colors.gray[500], lineHeight: 1.7, margin: 0, maxWidth: 420 }}>{row.desc}</p>
                 </div>
                 {row.flip && !isMobile && (
@@ -506,7 +514,7 @@ function Servicos() {
         <div>
           <Reveal>
             <Eyebrow color={colors.brand[200]}>Cuidado completo</Eyebrow>
-            <h2 style={{ fontSize: isMobile ? 26 : 34, fontWeight: 800, color: colors.white, lineHeight: 1.2, marginBottom: 16 }}>
+            <h2 style={{ fontSize: isMobile ? 26 : 34, fontWeight: 640, color: colors.white, lineHeight: 1.2, marginBottom: 16 }}>
               Profissionais para cada necessidade
             </h2>
             <p style={{ fontSize: 16, color: colors.brand[200], lineHeight: 1.7, margin: 0, maxWidth: 400 }}>
@@ -540,18 +548,18 @@ function Avaliacoes() {
   const isMobile = useMediaQuery('(max-width: 1023px)')
   const featured = {
     nome: 'Ana Souza', pet: 'Tutora de Mel, uma gata', nota: 5,
-    texto: 'Encontrei uma veterinária em minutos, com avaliações de verdade. Minha Mel foi tratada com carinho e eu me senti segura o tempo todo.',
+    texto: 'Marquei consulta para a Mel num domingo à noite e na segunda de manhã já estávamos no consultório. Li todas as avaliações antes de escolher — ajudou demais.',
   }
   const others = [
-    { nome: 'Carlos Mendes', pet: 'Tutor de Rex', nota: 5, texto: 'Agendei o banho do meu dog pelo WhatsApp em dois minutos. Simples assim.' },
-    { nome: 'Juliana Lima', pet: 'Tutora de Pepê', nota: 4, texto: 'Muita opção perto de casa e perfis completos. Facilitou muito a escolha.' },
+    { nome: 'Carlos Mendes', pet: 'Tutor de Rex', nota: 5, texto: 'O banho do Rex era aquele telefone ocupado de sempre. Agora é mensagem no WhatsApp e resolvido.' },
+    { nome: 'Juliana Lima', pet: 'Tutora de Pepê', nota: 4, texto: 'Horário de funcionamento e serviços certinhos no perfil. Escolhi em cinco minutos, sem ligar pra ninguém.' },
   ]
   return (
     <section id="depoimentos" data-anchor style={{ padding: sectionPad(isMobile), backgroundColor: colors.brand[50] }}>
       <div style={container}>
         <Reveal style={{ maxWidth: 560, marginBottom: 48 }}>
           <Eyebrow>Depoimentos</Eyebrow>
-          <h2 style={{ fontSize: isMobile ? 26 : 34, fontWeight: 800, color: colors.gray[900], lineHeight: 1.2, margin: 0 }}>
+          <h2 style={{ fontSize: isMobile ? 26 : 34, fontWeight: 640, color: colors.gray[900], lineHeight: 1.2, margin: 0 }}>
             Tutores que já confiam no PetLink
           </h2>
         </Reveal>
@@ -644,11 +652,11 @@ function CTA() {
           </div>
         </Reveal>
         <Reveal style={isMobile ? { textAlign: 'center' } : undefined}>
-          <h2 style={{ fontSize: isMobile ? 28 : 36, fontWeight: 800, color: colors.white, lineHeight: 1.2, marginBottom: 16 }}>
-            Seu pet merece um cuidado de confiança
+          <h2 style={{ fontSize: isMobile ? 28 : 36, fontWeight: 640, color: colors.white, lineHeight: 1.2, marginBottom: 16 }}>
+            Seu pet merece um cuidado de <em style={{ fontStyle: 'italic', fontWeight: 560 }}>confiança</em>
           </h2>
           <p style={{ fontSize: 16, color: colors.brand[200], lineHeight: 1.7, marginBottom: 32 }}>
-            Cadastre-se grátis e encontre profissionais perto de você em poucos minutos.
+            Cadastre-se grátis e encontre quem cuida bem, perto de você — em poucos minutos.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: isMobile ? 'center' : 'flex-start', flexWrap: 'wrap', marginBottom: 20 }}>
             <Link to="/cadastro" style={{ textDecoration: 'none' }}>

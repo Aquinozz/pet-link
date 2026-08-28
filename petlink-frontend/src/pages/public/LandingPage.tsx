@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   ArrowRight, Bath, Building2, Camera, Check, Dog, Heart,
-  MapPin, Menu, MessageCircle, PawPrint, Search, ShieldCheck, Star, Stethoscope, Store, X,
+  LayoutDashboard, LogOut, MapPin, Menu, MessageCircle, PawPrint, Search, ShieldCheck, Star, Stethoscope, Store, X,
+  ChevronDown,
 } from 'lucide-react'
 import { BrandLogo } from '../../components/BrandLogo'
 import { Button } from '../../components/ui/Button'
@@ -16,6 +17,7 @@ import { useMediaQuery } from '../../hooks/useMediaQuery'
 import { heroPhotos, stepPhotos, testimonialPhotos, ctaPhoto } from './landingPhotos'
 import { prestadorService } from '../../api/prestadorService'
 import type { PrestadorResponseDto } from '../../types'
+import { useAuth } from '../../contexts/useAuth'
 
 const container: React.CSSProperties = { maxWidth: 1120, margin: '0 auto' }
 const sectionPad = (isMobile: boolean) => (isMobile ? '64px 20px' : '96px 32px')
@@ -78,14 +80,41 @@ function NavLink({ href, children }: { href: string; children: string }) {
 }
 
 function Navbar() {
+  const { isAuthenticated, user, signOut, fotoUrl } = useAuth()
+  const navigate = useNavigate()
   const isMobile = useMediaQuery('(max-width: 767px)')
   const [open, setOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const userMenuRef = useRef<HTMLDivElement>(null)
   const links = [
     { href: '#como-funciona', label: 'Como funciona' },
     { href: '#produto', label: 'O produto' },
     { href: '#servicos', label: 'Serviços' },
     { href: '#depoimentos', label: 'Depoimentos' },
   ]
+
+  const getDashboardPath = () => {
+    if (user?.role === 'ROLE_PROFISSIONAL') return '/prestador/dashboard'
+    if (user?.role === 'ROLE_ADMIN') return '/admin/dashboard'
+    return '/tutor/dashboard'
+  }
+
+  const handleLogout = () => {
+    setUserMenuOpen(false)
+    signOut()
+    navigate('/login')
+  }
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setUserMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [])
+
+  const username = user?.email?.split('@')[0] ?? ''
+
   return (
     <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, backgroundColor: colors.white, borderBottom: `1px solid ${colors.border}` }}>
       <div style={{ ...container, padding: '0 20px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -111,10 +140,43 @@ function Navbar() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {!isMobile && (
             <>
-              <Link to="/login" style={{ fontSize: 14, color: colors.gray[700], textDecoration: 'none', fontWeight: 500 }}>Entrar</Link>
-              <Link to="/cadastro" style={{ textDecoration: 'none' }}>
-                <Button size="sm">Cadastrar grátis</Button>
-              </Link>
+              {isAuthenticated ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <Link to={getDashboardPath()} style={{ textDecoration: 'none' }}>
+                    <Button variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <LayoutDashboard size={16} /> Dashboard
+                    </Button>
+                  </Link>
+                  <div style={{ position: 'relative' }} ref={userMenuRef}>
+                    <button
+                      onClick={() => setUserMenuOpen(o => !o)}
+                      aria-label="Menu do usuário"
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', border: `1px solid ${colors.border}`, borderRadius: radius.md, backgroundColor: colors.white, cursor: 'pointer' }}
+                    >
+                      <Avatar src={fotoUrl ?? undefined} name={username} size={32} />
+                      <ChevronDown size={16} />
+                    </button>
+                    {userMenuOpen && (
+                      <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, minWidth: 200, backgroundColor: colors.white, border: `1px solid ${colors.border}`, borderRadius: radius.lg, boxShadow: shadow.md, padding: 8, zIndex: 20 }}>
+                        <div style={{ padding: '8px 12px', borderBottom: `1px solid ${colors.border}`, marginBottom: 4 }}>
+                          <p style={{ fontSize: 14, fontWeight: 600, color: colors.gray[900], margin: 0 }}>{username}</p>
+                          <p style={{ fontSize: 12, color: colors.gray[500], margin: 0 }}>{user?.role?.replace('ROLE_', '')}</p>
+                        </div>
+                        <button onClick={handleLogout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', border: 'none', background: 'transparent', borderRadius: radius.md, cursor: 'pointer', fontSize: 14, color: colors.danger[600] }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = colors.danger[50] }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}>
+                          <LogOut size={16} /> Sair
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <Link to="/login" style={{ fontSize: 14, color: colors.gray[700], textDecoration: 'none', fontWeight: 500 }}>Entrar</Link>
+                  <Link to="/cadastro" style={{ textDecoration: 'none' }}>
+                    <Button size="sm">Cadastrar grátis</Button>
+                  </Link>
+                </>
+              )}
             </>
           )}
           {isMobile && (
@@ -139,13 +201,35 @@ function Navbar() {
               </a>
             ))}
           </nav>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <Link to="/login" style={{ flex: 1, textDecoration: 'none' }}>
-              <Button variant="secondary" style={{ width: '100%' }}>Entrar</Button>
-            </Link>
-            <Link to="/cadastro" style={{ flex: 1, textDecoration: 'none' }}>
-              <Button style={{ width: '100%' }}>Cadastrar grátis</Button>
-            </Link>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {isAuthenticated ? (
+              <>
+                <Link to={getDashboardPath()} onClick={() => setOpen(false)} style={{ textDecoration: 'none' }}>
+                  <Button variant="secondary" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    <LayoutDashboard size={18} /> Dashboard
+                  </Button>
+                </Link>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderTop: `1px solid ${colors.border}` }}>
+                  <Avatar src={fotoUrl ?? undefined} name={username} size={36} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: colors.gray[900], margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{username}</p>
+                    <p style={{ fontSize: 12, color: colors.gray[500], margin: 0 }}>{user?.role?.replace('ROLE_', '')}</p>
+                  </div>
+                  <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', border: 'none', background: 'transparent', borderRadius: radius.md, cursor: 'pointer', fontSize: 14, color: colors.danger[600] }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = colors.danger[50] }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}>
+                    <LogOut size={16} /> Sair
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <Link to="/login" onClick={() => setOpen(false)} style={{ flex: 1, textDecoration: 'none' }}>
+                  <Button variant="secondary" style={{ width: '100%' }}>Entrar</Button>
+                </Link>
+                <Link to="/cadastro" onClick={() => setOpen(false)} style={{ flex: 1, textDecoration: 'none' }}>
+                  <Button style={{ width: '100%' }}>Cadastrar grátis</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

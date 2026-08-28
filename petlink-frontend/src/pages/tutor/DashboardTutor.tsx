@@ -15,6 +15,7 @@ import { TextLink } from '../../components/ui/TextLink'
 import { EspecieIcon } from '../../components/ui/EspecieIcon'
 import { Skeleton } from '../../components/ui/Skeleton'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { StarRating } from '../../components/ui/StarRating'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { colors, stateColors, shadow, transition } from '../../theme/tokens'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
@@ -29,22 +30,11 @@ export default function DashboardTutor() {
   const [pets, setPets] = useState<PetResponseDto[]>([])
   const [agendamentos, setAgendamentos] = useState<AgendamentoResponseDto[]>([])
   const [prestadores, setPrestadores] = useState<PrestadorResponseDto[]>([])
+  const [topAvaliados, setTopAvaliados] = useState<PrestadorResponseDto[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const email = user?.email
-    Promise.all([
-      petService.listar(),
-      agendamentoService.listar(),
-      prestadorService.listar(),
-    ]).then(([petsData, agsData, prsData]) => {
-      setPets(petsData.filter(p => p.tutor?.email === email))
-      setAgendamentos(agsData.filter(a => a.tutor?.email === email))
-      setPrestadores(prsData)
-    }).catch(() => {}).finally(() => setLoading(false))
-  }, [user?.email])
-
-  const proximos = [...agendamentos]
+  const proximos = agendamentos
+    .filter(a => ['AGENDADO', 'CONFIRMADO'].includes(a.status))
     .sort((a, b) => new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime())
     .slice(0, 3)
 
@@ -53,6 +43,23 @@ export default function DashboardTutor() {
     { label: 'Agendamentos', value: agendamentos.length, to: '/tutor/agendamentos' },
     { label: 'Prestadores disponíveis', value: prestadores.length, to: '/tutor/prestadores' },
   ]
+
+  useEffect(() => {
+    const email = user?.email
+    Promise.all([
+      petService.listar(),
+      agendamentoService.listar(),
+      prestadorService.listar(),
+      prestadorService.listarTopAvaliados(10),
+    ]).then(([petsData, agsData, prsData, topData]) => {
+      setPets(petsData.filter(p => p.tutor?.email === email))
+      setAgendamentos(agsData.filter(a => a.tutor?.email === email))
+      setPrestadores(prsData)
+      setTopAvaliados(topData)
+    }).catch((err) => {
+      console.error('[DashboardTutor] erro ao carregar dados:', err)
+    }).finally(() => setLoading(false))
+  }, [user?.email])
 
   return (
     <DashboardLayout>
@@ -99,6 +106,42 @@ export default function DashboardTutor() {
             )}
           </Card>
 
+          <Card padding={24} style={{ marginBottom: 24 }}>
+            <SectionHeader title="Seus pets" action={pets.length > 0 ? <TextLink to="/tutor/pets">Gerenciar</TextLink> : undefined} />
+            {loading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} height={40} />)}
+              </div>
+            ) : pets.length === 0 ? (
+              <EmptyState
+                icon={<PawPrint size={26} />}
+                title="Cadastre seu primeiro pet"
+                description="Adicione nome, espécie e raça para facilitar os agendamentos."
+              >
+                <Link to="/tutor/pets" style={{ textDecoration: 'none' }}>
+                  <Button size="sm">Adicionar pet</Button>
+                </Link>
+              </EmptyState>
+            ) : (
+              <div>
+                {pets.slice(0, 3).map((p) => (
+                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px', borderRadius: 8, marginBottom: 4, transition, cursor: 'pointer' }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = colors.gray[50] }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: colors.brand[50], display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.brand[600], flexShrink: 0 }}>
+                      <EspecieIcon especie={p.especie} size={20} />
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: colors.gray[900], margin: 0 }}>{p.nome}</p>
+                      <p style={{ fontSize: 12, color: colors.gray[500], margin: 0 }}>{p.especie} • {p.raca}</p>
+                    </div>
+                  </div>
+                ))}
+                {pets.length > 3 && (
+                  <TextLink to="/tutor/pets">Ver todos os {pets.length} pets</TextLink>
+                )}
+              </div>
+            )}
+          </Card>
+
           <div>
             <SectionHeader title="Ações rápidas" />
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -139,38 +182,28 @@ export default function DashboardTutor() {
             )}
           </Card>
 
-          <Card padding={24}>
-            <SectionHeader title="Seus pets" action={pets.length > 0 ? <TextLink to="/tutor/pets">Gerenciar</TextLink> : undefined} />
-            {loading ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} height={40} />)}
-              </div>
-            ) : pets.length === 0 ? (
-              <EmptyState
-                icon={<PawPrint size={26} />}
-                title="Cadastre seu primeiro pet"
-                description="Adicione nome, espécie e raça para facilitar os agendamentos."
-              >
-                <Link to="/tutor/pets" style={{ textDecoration: 'none' }}>
-                  <Button size="sm">Adicionar pet</Button>
-                </Link>
-              </EmptyState>
-            ) : (
-              <div>
-                {pets.slice(0, 3).map((p) => (
-                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px', borderRadius: 8, marginBottom: 4, transition, cursor: 'pointer' }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = colors.gray[50] }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: colors.brand[50], display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.brand[600], flexShrink: 0 }}>
-                      <EspecieIcon especie={p.especie} size={20} />
+          {topAvaliados.length > 0 && (
+            <Card padding={24} style={{ marginBottom: 24 }}>
+              <SectionHeader title="Top 10 melhores avaliados" action={<TextLink to="/tutor/prestadores">Ver todos</TextLink>} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {topAvaliados.map((p, idx) => (
+                  <Link key={p.id} to={`/tutor/prestadores/${p.id}`} style={{ textDecoration: 'none', display: 'block', padding: '8px 12px', borderRadius: 8, transition, cursor: 'pointer', backgroundColor: colors.white, border: `1px solid ${colors.border}` }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = shadow.sm; (e.currentTarget as HTMLElement).style.borderColor = colors.brand[300] }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; (e.currentTarget as HTMLElement).style.borderColor = colors.border }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <span style={{ width: 24, height: 24, borderRadius: '50%', backgroundColor: colors.brand[100], display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.brand[700], fontWeight: 'bold', fontSize: 12, flexShrink: 0 }}>{idx + 1}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                          <p style={{ fontSize: 14, fontWeight: 'bold', color: colors.gray[900], margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.nomePrestador}</p>
+                          <StarRating value={Math.round(p.avaliacaoMedia || 0)} size={12} />
+                          <span style={{ fontSize: 12, color: colors.gray[500] }}>{p.avaliacaoMedia?.toFixed(1)}</span>
+                        </div>
+                        <p style={{ fontSize: 12, color: colors.gray[500], margin: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.cidade} - {p.bairro}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p style={{ fontSize: 14, fontWeight: 700, color: colors.gray[900], margin: 0 }}>{p.nome}</p>
-                      <p style={{ fontSize: 12, color: colors.gray[500], margin: 0 }}>{p.especie} • {p.raca}</p>
-                    </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
-            )}
-          </Card>
+            </Card>
+          )}
         </div>
       </div>
     </DashboardLayout>

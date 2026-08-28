@@ -14,11 +14,13 @@ import { colors, radius, shadow, fontFamily } from '../../theme/tokens'
 import { useHover } from '../../components/ui/useHover'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 import { heroPhotos, stepPhotos, testimonialPhotos, ctaPhoto } from './landingPhotos'
+import { prestadorService } from '../../api/prestadorService'
+import type { PrestadorResponseDto } from '../../types'
 
 const container: React.CSSProperties = { maxWidth: 1120, margin: '0 auto' }
 const sectionPad = (isMobile: boolean) => (isMobile ? '64px 20px' : '96px 32px')
 
-function Reveal({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+function Reveal({ children, style, delay }: { children: React.ReactNode; style?: React.CSSProperties; delay?: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(false)
   useEffect(() => {
@@ -30,9 +32,13 @@ function Reveal({ children, style }: { children: React.ReactNode; style?: React.
         obs.disconnect()
       }
     }, { threshold: 0.12 })
-    obs.observe(el)
+    if (delay) {
+      setTimeout(() => obs.observe(el), delay)
+    } else {
+      obs.observe(el)
+    }
     return () => obs.disconnect()
-  }, [])
+  }, [delay])
   return (
     <div
       ref={ref}
@@ -602,6 +608,102 @@ function Avaliacoes() {
   )
 }
 
+/* ---------------------------- TOP AVALIADOS ---------------------------- */
+
+function TopAvaliados() {
+  const isMobile = useMediaQuery('(max-width: 1023px)')
+  const [topAvaliados, setTopAvaliados] = useState<PrestadorResponseDto[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    prestadorService.listarTopAvaliados(10)
+      .then(data => {
+        setTopAvaliados(data)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
+  return (
+    <section data-anchor style={{ padding: sectionPad(isMobile), backgroundColor: colors.brand[50], borderTop: `1px solid ${colors.border}`, borderBottom: `1px solid ${colors.border}` }}>
+      <div style={container}>
+        <Reveal>
+          <Eyebrow>Destaque</Eyebrow>
+          <h2 style={{ fontSize: isMobile ? 26 : 34, fontWeight: 640, color: colors.gray[900], lineHeight: 1.2, marginBottom: 8 }}>
+            Top 10 melhores prestadores
+          </h2>
+          <p style={{ fontSize: 16, color: colors.gray[500], lineHeight: 1.7, margin: 0, maxWidth: 560 }}>
+            Os profissionais com as melhores avaliações de tutores que já usaram o PetLink.
+          </p>
+        </Reveal>
+
+        <Reveal delay={100} style={{ marginTop: 32 }}>
+          {loading ? (
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(5, 1fr)', gap: 16 }}>
+              {Array.from({ length: 10 }).map((_, i) => (
+                <Skeleton key={i} />
+              ))}
+            </div>
+          ) : topAvaliados.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 40, color: colors.gray[500] }}>
+              Nenhum profissional avaliado ainda.
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(5, 1fr)', gap: 16 }}>
+              {topAvaliados.map((p, idx) => (
+                <Link key={p.id} to={`/prestadores/${p.id}`} style={{ textDecoration: 'none', display: 'block', borderRadius: radius.xl, overflow: 'hidden', backgroundColor: colors.white, border: `1px solid ${colors.border}`, transition: 'box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease', boxShadow: shadow.sm }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = shadow.md; (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.borderColor = colors.brand[300] }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = shadow.sm; (e.currentTarget as HTMLElement).style.transform = 'none'; (e.currentTarget as HTMLElement).style.borderColor = colors.border }}>
+                  {p.bannerUrl && (
+                    <div style={{ aspectRatio: '4 / 1', width: '100%', backgroundColor: colors.brand[100], overflow: 'hidden' }}>
+                      <img src={`${p.bannerUrl.startsWith('http') ? '' : 'http://localhost:8080'}${p.bannerUrl}`} alt={p.nomePrestador} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.3s ease' }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)' }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'none' }} />
+                    </div>
+                  )}
+                  <div style={{ padding: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
+                      <div style={{ width: 28, height: 28, borderRadius: '50%', backgroundColor: colors.brand[100], display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.brand[700], fontWeight: 700, fontSize: 12, flexShrink: 0 }}>{idx + 1}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: colors.gray[900], margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.nomePrestador}</p>
+                        <p style={{ fontSize: 11, color: colors.gray[400], margin: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.cidade} - {p.bairro}</p>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <StarRating value={Math.round(p.avaliacaoMedia || 0)} size={12} />
+                      <span style={{ fontSize: 13, fontWeight: 600, color: colors.brand[600] }}>{p.avaliacaoMedia?.toFixed(1)}</span>
+                      <Badge tone="green">{p.type}</Badge>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </Reveal>
+
+        <Reveal delay={200} style={{ marginTop: 24, textAlign: 'center' }}>
+          <Link to="/tutor/prestadores" style={{ textDecoration: 'none' }}>
+            <Button variant="secondary" size="lg">Ver todos os profissionais</Button>
+          </Link>
+        </Reveal>
+      </div>
+    </section>
+  )
+}
+
+function Skeleton() {
+  return (
+    <div style={{ borderRadius: radius.xl, overflow: 'hidden', backgroundColor: colors.white, border: `1px solid ${colors.border}`, boxShadow: shadow.sm }}>
+      <div style={{ aspectRatio: '4 / 1', background: `linear-gradient(90deg, ${colors.gray[100]} 25%, ${colors.gray[200]} 50%, ${colors.gray[100]} 75%)`, backgroundSize: '200% 100%', animation: 'skeleton-shimmer 1.5s infinite' }} />
+      <div style={{ padding: 16 }}>
+        <div style={{ height: 18, borderRadius: 4, background: `linear-gradient(90deg, ${colors.gray[100]} 25%, ${colors.gray[200]} 50%, ${colors.gray[100]} 75%)`, backgroundSize: '200% 100%', animation: 'skeleton-shimmer 1.5s infinite', marginBottom: 8, width: '60%' }} />
+        <div style={{ height: 12, borderRadius: 4, background: `linear-gradient(90deg, ${colors.gray[100]} 25%, ${colors.gray[200]} 50%, ${colors.gray[100]} 75%)`, backgroundSize: '200% 100%', animation: 'skeleton-shimmer 1.5s infinite', marginBottom: 8, width: '40%' }} />
+        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+          <div style={{ height: 14, width: 50, borderRadius: 4, background: `linear-gradient(90deg, ${colors.gray[100]} 25%, ${colors.gray[200]} 50%, ${colors.gray[100]} 75%)`, backgroundSize: '200% 100%', animation: 'skeleton-shimmer 1.5s infinite' }} />
+          <div style={{ height: 14, width: 50, borderRadius: 4, background: `linear-gradient(90deg, ${colors.gray[100]} 25%, ${colors.gray[200]} 50%, ${colors.gray[100]} 75%)`, backgroundSize: '200% 100%', animation: 'skeleton-shimmer 1.5s infinite' }} />
+          <div style={{ height: 14, width: 80, borderRadius: 4, background: `linear-gradient(90deg, ${colors.gray[100]} 25%, ${colors.gray[200]} 50%, ${colors.gray[100]} 75%)`, backgroundSize: '200% 100%', animation: 'skeleton-shimmer 1.5s infinite' }} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ------------------------------- CONFIANÇA ------------------------------- */
 
 function Confianca() {
@@ -700,6 +802,7 @@ export default function LandingPage() {
       <ComoFunciona />
       <Produto />
       <Servicos />
+      <TopAvaliados />
       <Avaliacoes />
       <Confianca />
       <CTA />

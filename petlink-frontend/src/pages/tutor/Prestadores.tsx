@@ -143,6 +143,7 @@ export default function Prestadores() {
   const [servicoFiltro, setServicoFiltro] = useState('')
   const [cidadeFiltro, setCidadeFiltro] = useState('')
   const [bairroFiltro, setBairroFiltro] = useState('')
+  const [ordenacao, setOrdenacao] = useState<'relevancia' | 'avaliacao' | 'distancia' | 'nome'>('relevancia')
   const [filtrosAplicados, setFiltrosAplicados] = useState({ busca: '', servico: '', cidade: '', bairro: '' })
 
   const navigate = useNavigate()
@@ -191,13 +192,29 @@ export default function Prestadores() {
     prestadores.flatMap(p => p.servicos ? p.servicos.split(',').map(s => s.trim()) : [])
   )).filter(Boolean)
 
-  const filtrados = prestadores.filter(p => {
-    const matchBusca = !filtrosAplicados.busca || p.nomePrestador.toLowerCase().includes(filtrosAplicados.busca.toLowerCase())
-    const matchServico = !filtrosAplicados.servico || (p.servicos && p.servicos.toLowerCase().includes(filtrosAplicados.servico.toLowerCase()))
-    const matchCidade = !filtrosAplicados.cidade || (p.cidade && p.cidade.toLowerCase().includes(filtrosAplicados.cidade.toLowerCase()))
-    const matchBairro = !filtrosAplicados.bairro || (p.bairro && p.bairro.toLowerCase().includes(filtrosAplicados.bairro.toLowerCase()))
-    return matchBusca && matchServico && matchCidade && matchBairro
-  })
+  const filtrados = prestadores
+    .filter(p => {
+      const matchBusca = !filtrosAplicados.busca || p.nomePrestador.toLowerCase().includes(filtrosAplicados.busca.toLowerCase())
+      const matchServico = !filtrosAplicados.servico || (p.servicos && p.servicos.toLowerCase().includes(filtrosAplicados.servico.toLowerCase()))
+      const matchCidade = !filtrosAplicados.cidade || (p.cidade && p.cidade.toLowerCase().includes(filtrosAplicados.cidade.toLowerCase()))
+      const matchBairro = !filtrosAplicados.bairro || (p.bairro && p.bairro.toLowerCase().includes(filtrosAplicados.bairro.toLowerCase()))
+      return matchBusca && matchServico && matchCidade && matchBairro
+    })
+    .sort((a, b) => {
+      switch (ordenacao) {
+        case 'avaliacao':
+          return (b.avaliacaoMedia ?? 0) - (a.avaliacaoMedia ?? 0)
+        case 'distancia':
+          if (a.distanciaKm == null && b.distanciaKm == null) return 0
+          if (a.distanciaKm == null) return 1
+          if (b.distanciaKm == null) return -1
+          return a.distanciaKm - b.distanciaKm
+        case 'nome':
+          return a.nomePrestador.localeCompare(b.nomePrestador)
+        default:
+          return 0
+      }
+    })
 
   const handleAplicarFiltros = () => {
     setFiltrosAplicados({
@@ -221,6 +238,12 @@ export default function Prestadores() {
           {todosServicos.map(s => <option key={s} value={s}>{s}</option>)}
         </Select>
         <Button onClick={handleAplicarFiltros} style={{ height: 40 }}>Aplicar filtros</Button>
+        <Select noMargin value={ordenacao} onChange={e => setOrdenacao(e.target.value as typeof ordenacao)} style={{ minWidth: 180, width: 'auto', height: 40 }}>
+          <option value="relevancia">Relevância</option>
+          <option value="avaliacao">Melhores avaliados</option>
+          {usarLocalizacao && <option value="distancia">Mais próximos</option>}
+          <option value="nome">Nome A-Z</option>
+        </Select>
       </div>
 
       <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>

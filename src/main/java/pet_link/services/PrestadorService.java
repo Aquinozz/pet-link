@@ -100,6 +100,17 @@ public class PrestadorService {
                 .toList();
     }
 
+    public List<PrestadorResponseDTO> listarTopAvaliados(int limit) {
+        return userRepository.findAllByRoleComPrestador(UserRole.ROLE_PROFISSIONAL.name()).stream()
+                .filter(user -> user.getPrestador() != null
+                        && user.getPrestador().getAvaliacaoMedia() != null
+                        && user.getPrestador().getAvaliacaoMedia() > 0)
+                .sorted(Comparator.comparing((Users u) -> u.getPrestador().getAvaliacaoMedia()).reversed())
+                .limit(limit)
+                .map(PrestadorResponseDTO::new)
+                .toList();
+    }
+
     @Transactional
     public PrestadorResponseDTO atualizarPerfil(AtualizarPrestadorDto dto, String email) {
         Users usuario = userRepository.findByEmail(email)

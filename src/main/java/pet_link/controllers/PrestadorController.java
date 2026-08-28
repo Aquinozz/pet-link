@@ -45,23 +45,20 @@ public class PrestadorController {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(dto));
     }
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Buscar um prestador por ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Prestador encontrado"),
-            @ApiResponse(responseCode = "404", description = "Prestador não encontrado")
-    })
-    public ResponseEntity<PrestadorResponseDTO> buscarPorId(
-            @Parameter(description = "ID do prestador", example = "1")
-            @PathVariable Long id) {
-        return ResponseEntity.ok(service.buscarPorId(id));
-    }
-
     @GetMapping
     @Operation(summary = "Listar todos os prestadores")
     @ApiResponse(responseCode = "200", description = "Lista de prestadores recuperada com sucesso")
     public ResponseEntity<List<PrestadorResponseDTO>> listarTodos() {
         return ResponseEntity.ok(service.listarTodosProfissionais());
+    }
+
+    @GetMapping("/top-avaliados")
+    @Operation(summary = "Listar prestadores mais bem avaliados",
+            description = "Retorna os prestadores com maior avaliação média, limitado ao parâmetro limit")
+    @ApiResponse(responseCode = "200", description = "Lista de prestadores mais bem avaliados")
+    public ResponseEntity<List<PrestadorResponseDTO>> listarTopAvaliados(
+            @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(service.listarTopAvaliados(limit));
     }
 
     @GetMapping("/proximos")
@@ -76,6 +73,18 @@ public class PrestadorController {
             @RequestParam double lng,
             @RequestParam(defaultValue = "50") double raio) {
         return ResponseEntity.ok(service.listarProximos(lat, lng, raio));
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Buscar um prestador por ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Prestador encontrado"),
+            @ApiResponse(responseCode = "404", description = "Prestador não encontrado")
+    })
+    public ResponseEntity<PrestadorResponseDTO> buscarPorId(
+            @Parameter(description = "ID do prestador", example = "1")
+            @PathVariable Long id) {
+        return ResponseEntity.ok(service.buscarPorId(id));
     }
 
     @PostMapping("/backfill-coords")

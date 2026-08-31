@@ -391,7 +391,7 @@ function Hero() {
 
           <div className="landing-fade-up-delay">
             <Reveal>
-              <ScreenFrame title="PetLink">
+              <ScreenFrame title="Zoop">
                 <ProvidersMock />
               </ScreenFrame>
             </Reveal>
@@ -650,7 +650,7 @@ function Avaliacoes() {
         <Reveal style={{ maxWidth: 560, marginBottom: 48 }}>
           <Eyebrow>Depoimentos</Eyebrow>
           <h2 style={{ fontSize: isMobile ? 26 : 34, fontWeight: 640, color: colors.gray[900], lineHeight: 1.2, margin: 0 }}>
-            Tutores que já confiam no PetLink
+            Tutores que já confiam no Zoop
           </h2>
         </Reveal>
 
@@ -717,7 +717,7 @@ function TopAvaliados() {
             Top 10 melhores prestadores
           </h2>
           <p style={{ fontSize: 16, color: colors.gray[500], lineHeight: 1.7, margin: 0, maxWidth: 560 }}>
-            Os profissionais com as melhores avaliações de tutores que já usaram o PetLink.
+            Os profissionais com as melhores avaliações de tutores que já usaram o Zoop.
           </p>
         </Reveal>
 
@@ -867,7 +867,7 @@ function Footer() {
     <footer style={{ backgroundColor: colors.brand[950], borderTop: `1px solid ${colors.brand[800]}`, padding: '40px 20px' }}>
       <div style={{ ...container, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexDirection: isMobile ? 'column' : 'row', gap: 20 }}>
         <BrandLogo size={24} colorText={colors.white} />
-        <p style={{ fontSize: 13, color: colors.gray[500], margin: 0, textAlign: 'center' }}>© 2026 PetLink. Conectando tutores e prestadores de serviços pet.</p>
+        <p style={{ fontSize: 13, color: colors.gray[500], margin: 0, textAlign: 'center' }}>© 2026 Zoop. Conectando tutores e prestadores de serviços pet.</p>
         <div style={{ display: 'flex', gap: 20 }}>
           <Link to="/login" style={{ fontSize: 13, color: colors.gray[400], textDecoration: 'none' }}>Entrar</Link>
           <Link to="/cadastro" style={{ fontSize: 13, color: colors.gray[400], textDecoration: 'none' }}>Cadastrar</Link>

@@ -39,16 +39,16 @@ describe('AuthContext', () => {
 
     expect(screen.getByTestId('email')).toHaveTextContent('a@b.com')
     expect(screen.getByTestId('role')).toHaveTextContent('ROLE_TUTOR')
-    const stored = localStorage.getItem('petlink_token')
+    const stored = localStorage.getItem('zoop_token')
     expect(stored).not.toBeNull()
     expect(stored?.split('.')).toHaveLength(3)
   })
 
   it('signOut limpa estado e localStorage', async () => {
     const user = userEvent.setup()
-    localStorage.setItem('petlink_token', makeToken({ sub: 'b@c.com', roles: ['ROLE_PROFISSIONAL'] }))
-    localStorage.setItem('petlink_prestador_id', '7')
-    localStorage.setItem('petlink_foto_url', '/uploads/prestadores/1.jpg')
+    localStorage.setItem('zoop_token', makeToken({ sub: 'b@c.com', roles: ['ROLE_PROFISSIONAL'] }))
+    localStorage.setItem('zoop_prestador_id', '7')
+    localStorage.setItem('zoop_foto_url', '/uploads/prestadores/1.jpg')
     renderAuth()
 
     expect(screen.getByTestId('email')).toHaveTextContent('b@c.com')
@@ -61,14 +61,14 @@ describe('AuthContext', () => {
     expect(screen.getByTestId('token')).toHaveTextContent('none')
     expect(screen.getByTestId('tutor')).toHaveTextContent('none')
     expect(screen.getByTestId('foto')).toHaveTextContent('none')
-    expect(localStorage.getItem('petlink_token')).toBeNull()
-    expect(localStorage.getItem('petlink_prestador_id')).toBeNull()
-    expect(localStorage.getItem('petlink_foto_url')).toBeNull()
+    expect(localStorage.getItem('zoop_token')).toBeNull()
+    expect(localStorage.getItem('zoop_prestador_id')).toBeNull()
+    expect(localStorage.getItem('zoop_foto_url')).toBeNull()
   })
 
   it('restaura estado persistido ao montar', () => {
-    localStorage.setItem('petlink_token', makeToken({ sub: 'd@e.com', roles: ['ROLE_TUTOR'] }))
-    localStorage.setItem('petlink_tutor_id', '5')
+    localStorage.setItem('zoop_token', makeToken({ sub: 'd@e.com', roles: ['ROLE_TUTOR'] }))
+    localStorage.setItem('zoop_tutor_id', '5')
     renderAuth()
 
     expect(screen.getByTestId('email')).toHaveTextContent('d@e.com')

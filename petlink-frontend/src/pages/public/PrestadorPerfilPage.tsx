@@ -32,7 +32,7 @@ const tipoLabel: Record<string, string> = {
 }
 
 const whatsappLink = (tel: string) =>
-  `https://api.whatsapp.com/send?phone=55${tel.replace(/\D/g, '')}&text=${encodeURIComponent('Olá! Vi seu perfil no PetLink e gostaria de agendar um serviço.')}`
+  `https://api.whatsapp.com/send?phone=55${tel.replace(/\D/g, '')}&text=${encodeURIComponent('Olá! Vi seu perfil no Zoop e gostaria de agendar um serviço.')}`
 
 const container: React.CSSProperties = { maxWidth: 960, margin: '0 auto', padding: '0 20px' }
 

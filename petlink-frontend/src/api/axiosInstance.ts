@@ -11,7 +11,7 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('petlink_token')
+    const token = localStorage.getItem('zoop_token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -24,7 +24,7 @@ api.interceptors.response.use(
   (res) => res,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('petlink_token')
+      localStorage.removeItem('zoop_token')
     }
     return Promise.reject(error)
   }

@@ -18,7 +18,7 @@ import { useIsMobile } from '../../hooks/useMediaQuery'
 import { colors, radius, shadow } from '../../theme/tokens'
 
 const whatsappLink = (tel: string) =>
-  `https://api.whatsapp.com/send?phone=55${tel.replace(/\D/g, '')}&text=${encodeURIComponent('Olá! Vi seu perfil no PetLink e gostaria de agendar um serviço.')}`
+  `https://api.whatsapp.com/send?phone=55${tel.replace(/\D/g, '')}&text=${encodeURIComponent('Olá! Vi seu perfil no Zoop e gostaria de agendar um serviço.')}`
 
 const tipoLabel: Record<string, string> = {
   CLINICA_VETERINARIA: 'Clínica Veterinária',

@@ -48,7 +48,7 @@ export function AuthBrandPanel() {
         </div>
       </div>
 
-      <p style={{ fontSize: 13, color: colors.brand[400], margin: 0 }}>© 2026 PetLink</p>
+      <p style={{ fontSize: 13, color: colors.brand[400], margin: 0 }}>© 2026 Zoop</p>
     </aside>
   )
 }

@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: petlink
+    name: zoop
     runtime: docker
     repo: https://github.com/Aquinozz/pet-link.git
     plan: free

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # =====================================================================
-# PETLINK - imagem combinada (backend Spring Boot + frontend SPA)
+# ZOOP - imagem combinada (backend Spring Boot + frontend SPA)
 # Usada pelo Render (Web Service unico) e testes locais.
 # Porta publica: 80 (nginx) | API interna: 8080 (Spring Boot)
 # =====================================================================

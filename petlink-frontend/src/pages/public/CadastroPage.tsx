@@ -84,7 +84,7 @@ function CadastroForm() {
       </p>
 
       <p style={{ textAlign: 'center', fontSize: 12, color: colors.gray[400], marginTop: 20, lineHeight: 1.6 }}>
-        Ao criar a conta, você concorda com os termos de uso do PetLink.
+        Ao criar a conta, você concorda com os termos de uso do Zoop.
       </p>
     </div>
   )

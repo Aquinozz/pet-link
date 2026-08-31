@@ -65,7 +65,7 @@ export default function DashboardTutor() {
     <DashboardLayout>
       <PageHeader
         title={<>Olá, {user?.email?.split('@')[0]} <PawPrint size={22} color={colors.brand[600]} style={{ verticalAlign: 'middle' }} /></>}
-        subtitle="Bem-vindo ao PetLink. Acompanhe seus próximos passos por aqui."
+        subtitle="Bem-vindo ao Zoop. Acompanhe seus próximos passos por aqui."
       />
 
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.6fr 1fr', gap: 24, alignItems: 'start' }}>

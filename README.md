@@ -1,10 +1,10 @@
-# PetLink
+# Zoop
 
 Ongoing TCC (undergraduate thesis) project that integrates a Spring Boot backend and a React + Vite frontend.
 
 ## Description
 
-This repository contains the PetLink system, an application for managing pet owners (tutors), service providers and pet bookings.
+This repository contains the Zoop system, an application for managing pet owners (tutors), service providers and pet bookings.
 
 The project is under development as a Course Conclusion Project (TCC) and currently includes:
 - Backend in Java with Spring Boot

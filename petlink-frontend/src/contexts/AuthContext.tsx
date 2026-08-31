@@ -23,48 +23,48 @@ function parseToken(token: string): AuthUser | null {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('petlink_token'))
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('zoop_token'))
   const [user, setUser] = useState<AuthUser | null>(() => {
-    const t = localStorage.getItem('petlink_token')
+    const t = localStorage.getItem('zoop_token')
     return t ? parseToken(t) : null
   })
   const [tutorId, setTutorIdState] = useState<number | null>(() => {
-    const id = localStorage.getItem('petlink_tutor_id')
+    const id = localStorage.getItem('zoop_tutor_id')
     return id ? Number(id) : null
   })
   const [prestadorId, setPrestadorIdState] = useState<number | null>(() => {
-    const id = localStorage.getItem('petlink_prestador_id')
+    const id = localStorage.getItem('zoop_prestador_id')
     return id ? Number(id) : null
   })
-  const [fotoUrl, setFotoUrlState] = useState<string | null>(() => localStorage.getItem('petlink_foto_url'))
+  const [fotoUrl, setFotoUrlState] = useState<string | null>(() => localStorage.getItem('zoop_foto_url'))
 
   const signIn = useCallback((newToken: string) => {
-    localStorage.setItem('petlink_token', newToken)
+    localStorage.setItem('zoop_token', newToken)
     setToken(newToken)
     setUser(parseToken(newToken))
   }, [])
 
   const setTutorId = useCallback((id: number) => {
-    localStorage.setItem('petlink_tutor_id', String(id))
+    localStorage.setItem('zoop_tutor_id', String(id))
     setTutorIdState(id)
   }, [])
 
   const setPrestadorId = useCallback((id: number) => {
-    localStorage.setItem('petlink_prestador_id', String(id))
+    localStorage.setItem('zoop_prestador_id', String(id))
     setPrestadorIdState(id)
   }, [])
 
   const setFotoUrl = useCallback((url: string | null) => {
-    if (url) localStorage.setItem('petlink_foto_url', url)
-    else localStorage.removeItem('petlink_foto_url')
+    if (url) localStorage.setItem('zoop_foto_url', url)
+    else localStorage.removeItem('zoop_foto_url')
     setFotoUrlState(url)
   }, [])
 
   const signOut = useCallback(() => {
-    localStorage.removeItem('petlink_token')
-    localStorage.removeItem('petlink_tutor_id')
-    localStorage.removeItem('petlink_prestador_id')
-    localStorage.removeItem('petlink_foto_url')
+    localStorage.removeItem('zoop_token')
+    localStorage.removeItem('zoop_tutor_id')
+    localStorage.removeItem('zoop_prestador_id')
+    localStorage.removeItem('zoop_foto_url')
     setToken(null)
     setUser(null)
     setTutorIdState(null)

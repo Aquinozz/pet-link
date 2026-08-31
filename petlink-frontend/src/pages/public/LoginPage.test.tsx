@@ -45,7 +45,7 @@ describe('LoginPage', () => {
 
     expect(loginMock).toHaveBeenCalledWith({ email: 'a@b.com', senha: '123456' })
     await waitFor(() => expect(screen.getByText('redirecionou')).toBeInTheDocument())
-    expect(localStorage.getItem('petlink_token')).toBe(token)
+    expect(localStorage.getItem('zoop_token')).toBe(token)
   })
 
   it('exibe erro quando as credenciais sao invalidas', async () => {
@@ -59,6 +59,6 @@ describe('LoginPage', () => {
     await user.click(screen.getByRole('button', { name: 'Entrar' }))
 
     expect(await screen.findByText('Email ou senha incorretos.')).toBeInTheDocument()
-    expect(localStorage.getItem('petlink_token')).toBeNull()
+    expect(localStorage.getItem('zoop_token')).toBeNull()
   })
 })

@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
-  ArrowRight, Bath, Building2, Camera, Check, Dog, Heart,
-  LayoutDashboard, LogOut, MapPin, Menu, MessageCircle, PawPrint, Search, ShieldCheck, Star, Stethoscope, Store, X,
-  ChevronDown,
+  ArrowRight, Award, Bath, Building2, Camera, Check, ChevronRight, Dog, Heart,
+  LayoutDashboard, LogOut, MapPin, Menu, MessageCircle, Percent, PawPrint, Search, ShieldCheck, ShoppingCart, Star, Stethoscope, Store, Truck, User, X,
 } from 'lucide-react'
 import { BrandLogo } from '../../components/BrandLogo'
 import { Button } from '../../components/ui/Button'
@@ -12,9 +11,8 @@ import { Badge } from '../../components/ui/Badge'
 import { Avatar } from '../../components/ui/Avatar'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { colors, radius, shadow, fontFamily } from '../../theme/tokens'
-import { useHover } from '../../components/ui/useHover'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
-import { heroPhotos, stepPhotos, testimonialPhotos, ctaPhoto } from './landingPhotos'
+import { stepPhotos, testimonialPhotos, ctaPhoto } from './landingPhotos'
 import { prestadorService } from '../../api/prestadorService'
 import type { PrestadorResponseDto } from '../../types'
 import { useAuth } from '../../contexts/useAuth'
@@ -66,31 +64,47 @@ function Eyebrow({ children, color = colors.brand[600] }: { children: React.Reac
 
 /* ------------------------------- NAVBAR ------------------------------- */
 
-function NavLink({ href, children }: { href: string; children: string }) {
-  const { hovered, ...hoverProps } = useHover()
-  return (
-    <a
-      href={href}
-      {...hoverProps}
-      style={{ fontSize: 14, fontWeight: 500, color: hovered ? colors.brand[600] : colors.gray[500], textDecoration: 'none' }}
-    >
-      {children}
-    </a>
-  )
+/* Cores exatas extraídas do globals.css original do Zoop-Site (referência do colega) */
+const Z = {
+  dark: '#002724',
+  darkText: '#16332e',
+  bodyText: '#254640',
+  muted: '#61726b',
+  border: '#dce6d7',
+  primary: '#5a8f2b',
+  accentLime: '#9bd45b',
+  secondaryBg: '#e8f0e2',
+}
+
+const navIconBtn: React.CSSProperties = {
+  position: 'relative',
+  width: 42,
+  height: 42,
+  display: 'grid',
+  placeItems: 'center',
+  color: colors.white,
+  background: 'transparent',
+  border: 'none',
+  borderRadius: '50%',
+  cursor: 'pointer',
+  textDecoration: 'none',
 }
 
 function Navbar() {
   const { isAuthenticated, user, signOut, fotoUrl } = useAuth()
   const navigate = useNavigate()
-  const isMobile = useMediaQuery('(max-width: 767px)')
+  const isMobile = useMediaQuery('(max-width: 920px)')
+  const isSmallMobile = useMediaQuery('(max-width: 480px)')
   const [open, setOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
   const links = [
-    { href: '#como-funciona', label: 'Como funciona' },
-    { href: '#produto', label: 'O produto' },
+    { href: '#', label: 'Início' },
+    { href: '#produtos-destaque', label: 'Produtos' },
     { href: '#servicos', label: 'Serviços' },
-    { href: '#depoimentos', label: 'Depoimentos' },
+    { href: '#como-funciona', label: 'Clínicas' },
+    { href: '/tutor/prestadores', label: 'Profissionais' },
+    { href: '#cuidados', label: 'Cuidados' },
   ]
 
   const getDashboardPath = () => {
@@ -114,125 +128,127 @@ function Navbar() {
   }, [])
 
   const username = user?.email?.split('@')[0] ?? ''
+  const logoW = isMobile ? 130 : 184
+  const logoH = isMobile ? 48 : 68
 
   return (
-    <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, backgroundColor: colors.white, borderBottom: `1px solid ${colors.border}` }}>
-      <div style={{ ...container, padding: '0 20px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <header style={{ position: 'relative', zIndex: 20, backgroundColor: Z.dark, color: colors.white, boxShadow: '0 12px 28px rgba(0,39,36,0.08)' }}>
+      <div style={{ background: 'linear-gradient(90deg, #4d7f1e, #6aa42c 52%, #4e801f)', color: colors.white, fontWeight: 650 }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 24px', minHeight: isMobile ? 37 : 42, display: 'flex', alignItems: 'center', justifyContent: isMobile ? 'flex-start' : 'center', gap: isMobile ? 34 : 'clamp(40px, 6vw, 120px)', overflowX: isMobile ? 'auto' : 'visible', fontSize: isMobile ? 12 : 14.4 }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap' }}><Truck size={20} /> Frete grátis acima de R$ 129</span>
+          {!isSmallMobile && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap' }}><Percent size={20} /> 10% OFF na primeira compra</span>}
+          {!isMobile && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap' }}><ShieldCheck size={20} /> Agendamento fácil e seguro</span>}
+        </div>
+      </div>
+
+      <div style={{
+        maxWidth: 1400, margin: '0 auto', padding: isMobile ? '10px 24px 14px' : '0 24px',
+        minHeight: isMobile ? 88 : 92,
+        display: 'grid',
+        gridTemplateColumns: isMobile ? `${logoW}px 1fr` : '220px minmax(320px, 660px) 1fr',
+        gridTemplateRows: isMobile ? 'auto auto' : undefined,
+        gap: isMobile ? 12 : 24,
+        alignItems: 'center',
+      }}>
         <Link
           to="/"
-          onClick={e => {
-            if (window.location.pathname === '/') {
-              e.preventDefault()
-              window.scrollTo({ top: 0, behavior: 'smooth' })
-            }
-          }}
-          style={{ textDecoration: 'none' }}
+          onClick={e => { if (window.location.pathname === '/') { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) } }}
+          style={{ width: logoW, height: logoH, display: 'block', overflow: 'hidden', borderRadius: 6, flex: '0 0 auto' }}
         >
-          <BrandLogo size={28} />
+          <img src="/zoop-logo-source.png" alt="Zoop" style={{ width: logoW, maxWidth: 'none', height: 'auto', display: 'block', transform: 'translateY(-5px)' }} />
         </Link>
 
-        {!isMobile && (
-          <nav style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-            {links.map(l => <NavLink key={l.href} href={l.href}>{l.label}</NavLink>)}
-          </nav>
-        )}
+        <div style={{
+          gridColumn: isMobile ? '1 / -1' : undefined,
+          gridRow: isMobile ? 2 : undefined,
+          height: isMobile ? 48 : 56,
+          display: 'flex', alignItems: 'center', gap: 10, padding: '0 18px',
+          backgroundColor: colors.white, border: '1px solid rgba(255,255,255,0.75)', borderRadius: 999, boxShadow: '0 8px 22px rgba(0,0,0,0.12)',
+        }}>
+          <Search size={22} color={Z.dark} style={{ flexShrink: 0 }} />
+          <input
+            placeholder="O que você procura para o seu pet?"
+            style={{ flex: 1, height: '100%', border: 'none', outline: 'none', background: 'transparent', color: Z.darkText, fontSize: 15, fontFamily: 'inherit', minWidth: 0 }}
+          />
+        </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ gridColumn: isMobile ? 2 : undefined, gridRow: isMobile ? 1 : undefined, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: isMobile ? 2 : 6 }}>
           {!isMobile && (
             <>
+              <button aria-label="Selecionar localização" style={navIconBtn}><MapPin size={24} strokeWidth={1.8} /></button>
+              <button aria-label="Favoritos" style={navIconBtn}><Heart size={24} strokeWidth={1.8} /></button>
               {isAuthenticated ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <Link to={getDashboardPath()} style={{ textDecoration: 'none' }}>
-                    <Button variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <LayoutDashboard size={16} /> Dashboard
-                    </Button>
-                  </Link>
-                  <div style={{ position: 'relative' }} ref={userMenuRef}>
-                    <button
-                      onClick={() => setUserMenuOpen(o => !o)}
-                      aria-label="Menu do usuário"
-                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', border: `1px solid ${colors.border}`, borderRadius: radius.md, backgroundColor: colors.white, cursor: 'pointer' }}
-                    >
-                      <Avatar src={fotoUrl ?? undefined} name={username} size={32} />
-                      <ChevronDown size={16} />
-                    </button>
-                    {userMenuOpen && (
-                      <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, minWidth: 200, backgroundColor: colors.white, border: `1px solid ${colors.border}`, borderRadius: radius.lg, boxShadow: shadow.md, padding: 8, zIndex: 20 }}>
-                        <div style={{ padding: '8px 12px', borderBottom: `1px solid ${colors.border}`, marginBottom: 4 }}>
-                          <p style={{ fontSize: 14, fontWeight: 600, color: colors.gray[900], margin: 0 }}>{username}</p>
-                          <p style={{ fontSize: 12, color: colors.gray[500], margin: 0 }}>{user?.role?.replace('ROLE_', '')}</p>
-                        </div>
-                        <button onClick={handleLogout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', border: 'none', background: 'transparent', borderRadius: radius.md, cursor: 'pointer', fontSize: 14, color: colors.danger[600] }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = colors.danger[50] }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}>
-                          <LogOut size={16} /> Sair
-                        </button>
+                <div style={{ position: 'relative' }} ref={userMenuRef}>
+                  <button onClick={() => setUserMenuOpen(o => !o)} aria-label="Menu do usuário" style={navIconBtn}>
+                    <Avatar src={fotoUrl ?? undefined} name={username} size={28} />
+                  </button>
+                  {userMenuOpen && (
+                    <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 10, minWidth: 200, backgroundColor: colors.white, border: `1px solid ${colors.border}`, borderRadius: radius.lg, boxShadow: shadow.md, padding: 8, zIndex: 20 }}>
+                      <div style={{ padding: '8px 12px', borderBottom: `1px solid ${colors.border}`, marginBottom: 4 }}>
+                        <p style={{ fontSize: 14, fontWeight: 600, color: colors.gray[900], margin: 0 }}>{username}</p>
+                        <p style={{ fontSize: 12, color: colors.gray[500], margin: 0 }}>{user?.role?.replace('ROLE_', '')}</p>
                       </div>
-                    )}
-                  </div>
+                      <Link to={getDashboardPath()} onClick={() => setUserMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: radius.md, fontSize: 14, color: colors.gray[700], textDecoration: 'none' }}>
+                        <LayoutDashboard size={16} /> Dashboard
+                      </Link>
+                      <button onClick={handleLogout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', border: 'none', background: 'transparent', borderRadius: radius.md, cursor: 'pointer', fontSize: 14, color: colors.danger[600] }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = colors.danger[50] }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}>
+                        <LogOut size={16} /> Sair
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <>
-                  <Link to="/login" style={{ fontSize: 14, color: colors.gray[700], textDecoration: 'none', fontWeight: 500 }}>Entrar</Link>
-                  <Link to="/cadastro" style={{ textDecoration: 'none' }}>
-                    <Button size="sm">Cadastrar grátis</Button>
-                  </Link>
-                </>
+                <Link to="/login" aria-label="Entrar" style={navIconBtn}>
+                  <User size={24} strokeWidth={1.8} />
+                </Link>
               )}
             </>
           )}
+          <button aria-label="Carrinho" style={navIconBtn} onClick={() => navigate(isAuthenticated ? getDashboardPath() : '/login')}>
+            <ShoppingCart size={24} strokeWidth={1.8} />
+          </button>
           {isMobile && (
-            <button
-              onClick={() => setOpen(o => !o)}
-              aria-label="Abrir menu"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 40, height: 40, border: `1px solid ${colors.border}`, borderRadius: radius.md, background: 'transparent', cursor: 'pointer', color: colors.gray[700] }}
-            >
-              {open ? <X size={18} /> : <Menu size={18} />}
+            <button onClick={() => setOpen(o => !o)} aria-label="Abrir menu" style={navIconBtn}>
+              {open ? <X size={24} strokeWidth={1.8} /> : <Menu size={24} strokeWidth={1.8} />}
             </button>
           )}
         </div>
       </div>
 
-      {isMobile && open && (
-        <div style={{ borderTop: `1px solid ${colors.border}`, backgroundColor: colors.white, padding: '8px 20px 20px' }}>
-          <nav style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
-            {links.map(l => (
-              <a key={l.href} href={l.href} onClick={() => setOpen(false)}
-                style={{ padding: '12px 0', borderBottom: `1px solid ${colors.border}`, fontSize: 15, color: colors.gray[700], textDecoration: 'none', fontWeight: 500 }}>
-                {l.label}
-              </a>
-            ))}
-          </nav>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {isAuthenticated ? (
-              <>
-                <Link to={getDashboardPath()} onClick={() => setOpen(false)} style={{ textDecoration: 'none' }}>
-                  <Button variant="secondary" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                    <LayoutDashboard size={18} /> Dashboard
-                  </Button>
-                </Link>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderTop: `1px solid ${colors.border}` }}>
-                  <Avatar src={fotoUrl ?? undefined} name={username} size={36} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: colors.gray[900], margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{username}</p>
-                    <p style={{ fontSize: 12, color: colors.gray[500], margin: 0 }}>{user?.role?.replace('ROLE_', '')}</p>
-                  </div>
-                  <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', border: 'none', background: 'transparent', borderRadius: radius.md, cursor: 'pointer', fontSize: 14, color: colors.danger[600] }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = colors.danger[50] }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}>
-                    <LogOut size={16} /> Sair
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <Link to="/login" onClick={() => setOpen(false)} style={{ flex: 1, textDecoration: 'none' }}>
-                  <Button variant="secondary" style={{ width: '100%' }}>Entrar</Button>
-                </Link>
-                <Link to="/cadastro" onClick={() => setOpen(false)} style={{ flex: 1, textDecoration: 'none' }}>
-                  <Button style={{ width: '100%' }}>Cadastrar grátis</Button>
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: isMobile ? (open ? '8px 24px 18px' : 0) : '0 24px', display: isMobile && !open ? 'none' : 'flex', alignItems: isMobile ? 'stretch' : 'center', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', gap: 24, minHeight: isMobile ? undefined : 56 }}>
+        <nav style={{ display: isMobile ? 'grid' : 'flex', gridTemplateColumns: isMobile ? '1fr 1fr' : undefined, gap: isMobile ? 4 : 'clamp(28px, 3.5vw, 66px)', alignItems: 'center' }}>
+          {links.map(l => (
+            <a
+              key={l.label}
+              href={l.href}
+              onClick={() => setOpen(false)}
+              style={{
+                padding: isMobile ? '12px' : '17px 0 15px',
+                borderRadius: isMobile ? 10 : 0,
+                color: 'rgba(255,255,255,0.92)',
+                textDecoration: 'none',
+                fontWeight: 650,
+                fontSize: 15,
+              }}
+            >
+              {l.label}
+            </a>
+          ))}
+        </nav>
+        <Link
+          to={isAuthenticated ? getDashboardPath() : '/login'}
+          onClick={() => setOpen(false)}
+          style={{
+            minWidth: 128, height: 40, padding: '0 22px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            borderRadius: 999, background: 'linear-gradient(90deg, #5a8f2b, #74aa31)',
+            color: colors.white, fontWeight: 800, fontSize: 14, textDecoration: 'none',
+            boxShadow: '0 8px 16px rgba(30,80,12,0.24)',
+          }}
+        >
+          {isAuthenticated ? 'Dashboard' : 'Entrar'}
+        </Link>
+      </div>
     </header>
   )
 }
@@ -359,71 +375,266 @@ function AgendaMock() {
 
 /* --------------------------------- HERO --------------------------------- */
 
-function Hero() {
-  const isMobile = useMediaQuery('(max-width: 1023px)')
-  return (
-    <section style={{ padding: isMobile ? '96px 0 0' : '128px 0 0', backgroundColor: colors.brand[50] }}>
-      <div style={{ ...container, padding: '0 32px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.05fr 0.95fr', gap: isMobile ? 48 : 64, alignItems: 'center' }}>
-          <div className="landing-fade-up">
-            <Eyebrow>Plataforma de serviços pet</Eyebrow>
-            <h1 style={{ fontSize: isMobile ? 36 : 52, fontWeight: 620, color: colors.gray[900], lineHeight: 1.08, marginBottom: 20, letterSpacing: '-0.015em' }}>
-              Encontre o <em style={{ fontStyle: 'italic', fontWeight: 560 }}>profissional certo</em> para cuidar do seu pet
-            </h1>
-            <p style={{ fontSize: 17, color: colors.gray[500], lineHeight: 1.7, marginBottom: 32, maxWidth: 480 }}>
-              Veterinário, banho e tosa, passeio ou creche — com avaliação de quem já levou o pet antes de você. Compare perfis, converse pelo WhatsApp e marque em minutos.
-            </p>
+const categorias = [
+  { label: 'Veterinário', icon: <Stethoscope size={31} strokeWidth={1.7} /> },
+  { label: 'Banho & Tosa', icon: <Bath size={31} strokeWidth={1.7} /> },
+  { label: 'Pet sitter', icon: <Dog size={31} strokeWidth={1.7} /> },
+  { label: 'Hotel para pets', icon: <Building2 size={31} strokeWidth={1.7} /> },
+  { label: 'Adestramento', icon: <Award size={31} strokeWidth={1.7} /> },
+]
 
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
-              <Link to="/cadastro" style={{ textDecoration: 'none' }}>
-                <Button size="lg">Criar conta grátis <ArrowRight size={16} /></Button>
+const produtosDestaque = [
+  { nome: 'Ração Premier Fórmula', desc: 'Cães adultos · 15 kg', preco: 189.9, rating: 5, reviews: 1256, img: '/product-premier.png' },
+  { nome: 'Ração Gran Plus', desc: 'Gatos castrados · 10,1 kg', preco: 159.9, rating: 5, reviews: 982, img: '/product-granplus.png' },
+  { nome: 'NexGard Spectra', desc: 'Antipulgas e carrapatos', preco: 99.9, rating: 5, reviews: 743, img: '/product-nexgard.png' },
+]
+
+const heroBtnBase: React.CSSProperties = {
+  minHeight: 49,
+  padding: '0 24px',
+  borderRadius: 12,
+  fontWeight: 800,
+  fontSize: 15,
+  border: 'none',
+  cursor: 'pointer',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+  fontFamily: 'inherit',
+  textDecoration: 'none',
+}
+
+function Hero() {
+  const isMobile = useMediaQuery('(max-width: 920px)')
+  const [topAvaliados, setTopAvaliados] = useState<PrestadorResponseDto[]>([])
+  const [busca, setBusca] = useState({ servico: '', local: 'Salvador, BA' })
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    prestadorService.listarTopAvaliados(2).then(setTopAvaliados).catch(() => {})
+  }, [])
+
+  return (
+    <div style={{ backgroundColor: colors.bg }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: isMobile ? '20px 24px 0' : '24px 24px 0' }}>
+
+        {/* HERO */}
+        <section style={{
+          position: 'relative',
+          overflow: 'hidden',
+          minHeight: isMobile ? undefined : 354,
+          display: isMobile ? 'block' : 'grid',
+          gridTemplateColumns: isMobile ? undefined : '54% 46%',
+          borderRadius: isMobile ? 22 : 30,
+          boxShadow: '0 18px 48px rgba(0,39,36,0.12)',
+          background: isMobile ? colors.bg : 'linear-gradient(120deg, #fffdfb 0%, #f9f7f6 58%, #002724 58%)',
+          paddingBottom: isMobile ? 250 : undefined,
+        }}>
+          <div style={{ position: 'absolute', left: -60, bottom: isMobile ? 130 : -105, width: 260, height: 170, background: Z.primary, borderRadius: '50%', zIndex: 0 }} />
+
+          <div style={{ position: 'relative', zIndex: 3, padding: isMobile ? '28px 22px 34px' : '38px 36px 50px 64px' }}>
+            <span style={{ display: 'inline-block', marginBottom: 14, padding: '6px 14px', borderRadius: 999, backgroundColor: Z.secondaryBg, color: '#406c1d', border: '1px solid #d8e7cd', fontSize: 13, fontWeight: 700 }}>
+              Cuidado completo para o seu pet
+            </span>
+            <h1 style={{ margin: 0, color: '#002724', fontSize: isMobile ? 'clamp(2.1rem, 9vw, 3.2rem)' : 'clamp(2.5rem, 4vw, 4.1rem)', lineHeight: isMobile ? 1.05 : 0.98, letterSpacing: '-0.04em', fontWeight: 800 }}>
+              Conectando quem <span style={{ color: Z.primary }}>ama</span>,<br />
+              com quem <span style={{ color: Z.primary }}>cuida.</span>
+            </h1>
+            <p style={{ maxWidth: 500, margin: isMobile ? '14px 0 18px' : '18px 0 22px', color: Z.bodyText, fontSize: isMobile ? 16 : 17.9, lineHeight: 1.55 }}>
+              Produtos, serviços e profissionais para cuidar do seu pet em um só lugar.
+            </p>
+            <div style={{ display: isMobile ? 'grid' : 'flex', flexWrap: 'wrap', gap: 14 }}>
+              <Link to="/tutor/prestadores" style={{ ...heroBtnBase, backgroundColor: Z.primary, color: colors.white }}>
+                Encontrar profissionais
               </Link>
-              <a href="#como-funciona" style={{ textDecoration: 'none' }}>
-                <Button size="lg" variant="secondary">Ver como funciona</Button>
+              <a href="#produtos-destaque" style={{ ...heroBtnBase, color: '#002724', border: '2px solid #002724', backgroundColor: 'rgba(255,255,255,0.82)' }}>
+                Ver produtos
               </a>
             </div>
+          </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: colors.gray[500] }}>
-              <Check size={15} color={colors.brand[600]} />
-              Grátis para tutores • você fala direto com o profissional
+          {!isMobile ? (
+            <div style={{ position: 'relative', zIndex: 2, overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', inset: '0 auto 0 0', zIndex: 2, width: 110, background: 'linear-gradient(90deg, #f9f7f6, transparent)', pointerEvents: 'none' }} />
+              <img src="/hero-pets.png" alt="Cachorro golden retriever e gato juntos" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
-          </div>
+          ) : (
+            <div style={{ position: 'absolute', right: 0, bottom: 0, left: 0, height: 260, backgroundColor: '#002724', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', inset: '0 0 auto 0', width: '100%', height: 60, background: 'linear-gradient(#f9f7f6, transparent)', zIndex: 2 }} />
+              <img src="/hero-pets.png" alt="Cachorro golden retriever e gato juntos" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+          )}
+        </section>
 
-          <div className="landing-fade-up-delay">
-            <Reveal>
-              <ScreenFrame title="Zoop">
-                <ProvidersMock />
-              </ScreenFrame>
-            </Reveal>
-          </div>
+        {/* SERVICE SHORTCUTS */}
+        <div style={{
+          position: 'relative', zIndex: 8,
+          marginTop: isMobile ? 20 : -34,
+          display: 'grid',
+          gridTemplateColumns: isMobile ? 'repeat(5, minmax(150px, 1fr))' : 'repeat(5, 1fr)',
+          gap: 16,
+          padding: isMobile ? 0 : '0 76px',
+          overflowX: isMobile ? 'auto' : 'visible',
+        }}>
+          {categorias.map(c => (
+            <a key={c.label} href="#servicos" style={{
+              minHeight: 116, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10,
+              color: Z.darkText, backgroundColor: colors.white, border: '1px solid rgba(0,39,36,0.08)', borderRadius: 17,
+              boxShadow: '0 9px 24px rgba(0,39,36,0.11)', textDecoration: 'none', fontWeight: 750, fontSize: 14,
+            }}>
+              <span style={{ width: 49, height: 49, display: 'grid', placeItems: 'center', color: '#002724', backgroundColor: '#f0f5ec', borderRadius: 15 }}>{c.icon}</span>
+              {c.label}
+            </a>
+          ))}
         </div>
 
-        <Reveal style={{ marginTop: isMobile ? 56 : 72, paddingBottom: isMobile ? 64 : 88 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: isMobile ? 14 : 20 }}>
-            {heroPhotos.map((p, i) => {
-              const collage = [
-                { radius: '18px 18px 18px 6px', rotate: '-1.6deg' },
-                { radius: '18px 6px 18px 18px', rotate: '1.2deg' },
-                { radius: '6px 18px 18px 18px', rotate: '-0.8deg' },
-                { radius: '18px 18px 6px 18px', rotate: '1.6deg' },
-              ][i % 4]
-              return (
-                <div key={i} style={{
-                  borderRadius: collage.radius,
-                  overflow: 'hidden',
-                  aspectRatio: '4 / 5',
-                  boxShadow: shadow.sm,
-                  border: `1px solid ${colors.border}`,
-                  transform: `${isMobile ? 'none' : i % 2 === 0 ? 'translateY(0)' : 'translateY(16px)'} rotate(${collage.rotate})`,
-                }}>
-                  <img src={p.src} alt={p.alt} loading={i < 2 ? 'eager' : 'lazy'} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        {/* CONTENT GRID */}
+        <div id="produtos-destaque" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.85fr) minmax(340px, 1fr)', gap: 28, alignItems: 'start', marginTop: 20, paddingBottom: isMobile ? 40 : 72 }}>
+
+          {/* CATALOG COLUMN */}
+          <div style={{ minWidth: 0 }}>
+            <div style={{
+              minHeight: isMobile ? undefined : 56, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', alignItems: 'center',
+              backgroundColor: 'rgba(255,255,255,0.74)', border: `1px solid ${Z.border}`, borderRadius: 14,
+              padding: isMobile ? '12px 0' : 0, gap: isMobile ? 10 : 0,
+            }}>
+              <span style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10, fontSize: 14.7, fontWeight: 650, color: Z.darkText, borderRight: isMobile ? 'none' : `1px solid ${Z.border}`, borderTop: isMobile ? `1px solid ${Z.border}` : 'none', paddingTop: isMobile ? 10 : 0 }}>
+                <Truck size={25} color="#002724" /> Frete grátis acima de R$ 129
+              </span>
+              <span style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10, fontSize: 14.7, fontWeight: 650, color: Z.darkText }}>
+                <Percent size={25} color="#002724" /> 10% OFF na primeira compra
+              </span>
+            </div>
+
+            <section style={{ marginTop: 16, padding: '22px 16px 18px', backgroundColor: 'rgba(255,255,255,0.68)', border: '1px solid #e1e8dd', borderRadius: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, margin: '0 2px 16px' }}>
+                <div>
+                  <span style={{ display: 'block', marginBottom: 3, color: Z.primary, fontSize: 11.7, fontWeight: 850, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Seleção Zoop</span>
+                  <h2 style={{ margin: 0, color: '#002724', fontSize: 21, lineHeight: 1.2, fontWeight: 800 }}>Produtos em destaque</h2>
                 </div>
-              )
-            })}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, color: '#4a7c22', fontSize: 13.4, fontWeight: 800 }}>
+                  Ver todos <ChevronRight size={17} />
+                </span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, minmax(0, 1fr))', gap: 14 }}>
+                {produtosDestaque.map(p => (
+                  <div key={p.nome} style={{
+                    minHeight: 220, display: 'grid', gridTemplateColumns: '104px minmax(0, 1fr)', gap: 10, padding: 12,
+                    backgroundColor: colors.white, border: '1px solid rgba(0,39,36,0.09)', borderRadius: 15, boxShadow: '0 7px 18px rgba(0,39,36,0.07)', overflow: 'hidden',
+                  }}>
+                    <img src={p.img} alt={p.nome} style={{ width: 104, height: 188, alignSelf: 'center', objectFit: 'cover', borderRadius: 11 }} />
+                    <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 8, padding: '6px 0 3px' }}>
+                      <div>
+                        <h3 style={{ margin: 0, color: Z.darkText, fontSize: 13.8, lineHeight: 1.25, fontWeight: 700 }}>{p.nome}</h3>
+                        <p style={{ margin: '4px 0 0', color: Z.muted, fontSize: 12, lineHeight: 1.35 }}>{p.desc}</p>
+                      </div>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#50615a', fontSize: 11.8 }}>
+                        <Star size={14} fill="#f5b700" color="#f5b700" /> {p.rating.toFixed(1)} ({p.reviews})
+                      </span>
+                      <strong style={{ color: '#002724', fontSize: 17.9, fontWeight: 700 }}>R$ {p.preco.toFixed(2).replace('.', ',')}</strong>
+                      <Button size="sm" disabled title="Catálogo de produtos ainda não disponível" style={{ alignSelf: 'flex-start', borderRadius: 9 }}>
+                        Adicionar <ShoppingCart size={14} />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
           </div>
-        </Reveal>
+
+          {/* CARE FINDER */}
+          <aside style={{ padding: 22, background: 'linear-gradient(145deg, #edf4e9, #e5efe0)', border: '1px solid #d6e4d0', borderRadius: 20, boxShadow: '0 10px 24px rgba(0,39,36,0.08)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 17 }}>
+              <span style={{ width: 45, height: 45, display: 'grid', placeItems: 'center', color: colors.white, backgroundColor: Z.primary, borderRadius: 14, flexShrink: 0 }}>
+                <PawPrint size={25} />
+              </span>
+              <div>
+                <span style={{ display: 'block', color: Z.primary, fontSize: 11.2, fontWeight: 850, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Rede Zoop</span>
+                <h2 style={{ margin: 0, color: '#002724', fontSize: 21, lineHeight: 1.2, fontWeight: 800 }}>Encontre cuidado perto de você</h2>
+              </div>
+            </div>
+
+            <form onSubmit={e => { e.preventDefault(); navigate('/tutor/prestadores') }} style={{ display: 'grid', gap: 10 }}>
+              <label>
+                <span style={{ display: 'block', margin: '0 0 5px 3px', color: '#3c554e', fontSize: 11.5, fontWeight: 750 }}>Serviço</span>
+                <div style={{ minHeight: 42, display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', backgroundColor: colors.white, border: '1px solid #c8d5c5', borderRadius: 10 }}>
+                  <Search size={17} color="#002724" />
+                  <input
+                    value={busca.servico}
+                    onChange={e => setBusca(b => ({ ...b, servico: e.target.value }))}
+                    placeholder="Serviço ou especialidade"
+                    style={{ flex: 1, height: 40, border: 'none', outline: 'none', background: 'transparent', fontSize: 14, fontFamily: 'inherit', color: Z.darkText, minWidth: 0 }}
+                  />
+                </div>
+              </label>
+              <label>
+                <span style={{ display: 'block', margin: '0 0 5px 3px', color: '#3c554e', fontSize: 11.5, fontWeight: 750 }}>Localização</span>
+                <div style={{ minHeight: 42, display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', backgroundColor: colors.white, border: '1px solid #c8d5c5', borderRadius: 10 }}>
+                  <MapPin size={17} color="#002724" />
+                  <input
+                    value={busca.local}
+                    onChange={e => setBusca(b => ({ ...b, local: e.target.value }))}
+                    placeholder="Cidade ou bairro"
+                    style={{ flex: 1, height: 40, border: 'none', outline: 'none', background: 'transparent', fontSize: 14, fontFamily: 'inherit', color: Z.darkText, minWidth: 0 }}
+                  />
+                </div>
+              </label>
+              <button type="submit" style={{ height: 42, marginTop: 2, backgroundColor: '#002724', color: colors.white, border: 'none', borderRadius: 10, fontWeight: 800, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>
+                Buscar
+              </button>
+            </form>
+
+            {topAvaliados.length > 0 && (
+              <div style={{ display: 'grid', gap: 8, marginTop: 14 }}>
+                {topAvaliados.map(p => (
+                  <Link key={p.id} to={`/prestadores/${p.id}`} style={{
+                    minWidth: 0, display: 'grid', gridTemplateColumns: '48px minmax(0, 1fr) auto', alignItems: 'center', gap: 10, padding: 10,
+                    backgroundColor: colors.white, border: '1px solid rgba(0,39,36,0.07)', borderRadius: 12, textDecoration: 'none',
+                  }}>
+                    <Avatar src={p.fotoUrl} name={p.nomePrestador} size={46} />
+                    <div style={{ minWidth: 0 }}>
+                      <h3 style={{ overflow: 'hidden', margin: 0, color: Z.darkText, fontSize: 13.8, fontWeight: 800, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.nomePrestador}</h3>
+                      <p style={{ margin: '2px 0 4px', color: Z.muted, fontSize: 11.5 }}>{p.type}</p>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#53645e', fontSize: 10.9 }}>
+                        <Star size={14} fill="#f5b700" color="#f5b700" /> {(p.avaliacaoMedia ?? 0).toFixed(1)} <b>•</b> {p.bairro}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', lineHeight: 1.1 }}>
+                      <Badge tone="green" style={{ marginBottom: 6, color: '#315f1a', backgroundColor: '#dcefd3', fontSize: 9.9 }}>Disponível hoje</Badge>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </aside>
+        </div>
+
+        {/* CARE MESSAGE */}
+        <section style={{
+          marginBottom: isMobile ? 40 : 72,
+          display: isMobile ? 'block' : 'grid',
+          gridTemplateColumns: isMobile ? undefined : '145px minmax(0, 1fr) auto',
+          alignItems: 'center', gap: 28, padding: isMobile ? 24 : '24px 30px',
+          backgroundColor: '#002724', borderRadius: 24, boxShadow: '0 16px 34px rgba(0,39,36,0.16)', overflow: 'hidden',
+        }}>
+          <img src="/zoop-symbol-source.png" alt="Símbolo Zoop com cachorro e gato" style={{ width: isMobile ? 96 : 132, height: isMobile ? 96 : 132, objectFit: 'cover', borderRadius: 18, float: isMobile ? 'right' : undefined, margin: isMobile ? '0 0 12px 16px' : undefined }} />
+          <div>
+            <span style={{ display: 'block', margin: '3px 0 8px', color: Z.accentLime, fontSize: 11.7, fontWeight: 850, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Quem ama, cuida</span>
+            <h2 style={{ maxWidth: 650, margin: '3px 0 8px', color: colors.white, fontSize: isMobile ? 23 : 'clamp(1.45rem, 2.3vw, 2.25rem)', lineHeight: 1.1, letterSpacing: '-0.025em', fontWeight: 700 }}>
+              Uma rede de confiança para cada fase da vida do seu pet.
+            </h2>
+            <p style={{ maxWidth: 670, margin: 0, color: 'rgba(255,255,255,0.72)', fontSize: 15 }}>
+              Descubra profissionais, serviços e conteúdos selecionados para tornar o cuidado mais simples e seguro.
+            </p>
+          </div>
+          <a href="#como-funciona" style={{ ...heroBtnBase, marginTop: isMobile ? 18 : 0, color: colors.white, border: '1px solid rgba(255,255,255,0.48)', backgroundColor: 'rgba(255,255,255,0.07)' }}>
+            Conhecer a Zoop <ChevronRight size={17} />
+          </a>
+        </section>
       </div>
-    </section>
+    </div>
   )
 }
 

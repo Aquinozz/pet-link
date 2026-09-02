@@ -11,7 +11,6 @@ export const metadata: Metadata = {
   description:
     "Serviços e profissionais para cuidar do seu pet em um só lugar.",
   other: {
-    "codex-preview": "development",
     "theme-color": "#002724",
   },
   openGraph: {

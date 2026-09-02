@@ -1,34 +1,50 @@
 #!/bin/sh
 # =====================================================================
-# Entrypoint do Zoop (Render):
-#  1. sobe o backend Spring Boot em background
-#  2. aguarda o backend responder
+# Entrypoint do Zoop (Render / docker-compose):
+#  1. sobe o backend Spring Boot em background (porta ${SERVER_PORT})
+#  2. sobe o frontend Vinext em background (porta ${VINEXT_PORT})
 #  3. sobe o nginx em primeiro plano (mantem o container vivo)
 # =====================================================================
 set -e
 
 JAVA_OPTS="${JAVA_OPTS:--Xmx256m -XX:MaxRAMPercentage=50}"
+SERVER_PORT="${SERVER_PORT:-8090}"
+VINEXT_PORT="${VINEXT_PORT:-3000}"
 
-echo "[zoop] Iniciando backend (java ${JAVA_OPTS})..."
+echo "[zoop] Iniciando backend (java ${JAVA_OPTS}) na porta ${SERVER_PORT}..."
 java ${JAVA_OPTS} -jar /app/app.jar &
 BACK_PID=$!
 
-cleanup() {
-  echo "[zoop] Encerrando backend (pid ${BACK_PID})..."
-  kill "${BACK_PID}" 2>/dev/null || true
-}
-trap cleanup EXIT TERM INT
-
-echo "[zoop] Aguardando o backend responder em http://localhost:8090/ ..."
+echo "[zoop] Aguardando o backend responder em http://localhost:${SERVER_PORT}/ ..."
 i=0
-until curl -fs http://localhost:8090/ >/dev/null 2>&1; do
+until curl -fs "http://localhost:${SERVER_PORT}/" >/dev/null 2>&1; do
   i=$((i + 1))
   if [ "${BACK_PID}" -gt 0 ] && ! kill -0 "${BACK_PID}" 2>/dev/null; then
     echo "[zoop] ERRO: backend encerrou antes de responder."
     exit 1
   fi
   if [ "${i}" -ge 120 ]; then
-    echo "[zoop] AVISO: backend ainda nao respondeu; iniciando nginx mesmo assim."
+    echo "[zoop] AVISO: backend ainda nao respondeu; seguindo mesmo assim."
+    break
+  fi
+  sleep 1
+done
+
+echo "[zoop] Iniciando frontend vinext na porta ${VINEXT_PORT}..."
+node_modules/.bin/vinext start --port "${VINEXT_PORT}" >/tmp/vinext.log 2>&1 &
+FRONT_PID=$!
+
+echo "[zoop] Aguardando o frontend responder em http://localhost:${VINEXT_PORT}/ ..."
+i=0
+until curl -fs "http://localhost:${VINEXT_PORT}/" >/dev/null 2>&1; do
+  i=$((i + 1))
+  if [ "${FRONT_PID}" -gt 0 ] && ! kill -0 "${FRONT_PID}" 2>/dev/null; then
+    echo "[zoop] ERRO: frontend encerrou antes de responder. Log:"
+    tail -30 /tmp/vinext.log || true
+    exit 1
+  fi
+  if [ "${i}" -ge 120 ]; then
+    echo "[zoop] AVISO: frontend ainda nao respondeu; seguindo mesmo assim."
     break
   fi
   sleep 1

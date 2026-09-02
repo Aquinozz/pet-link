@@ -56,11 +56,8 @@ jobs:
         run: ./mvnw -B verify
 
   frontend:
-    name: Frontend (Lint + Test + Build)
+    name: Frontend (Lint + Build + Test)
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: petlink-frontend
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -70,7 +67,6 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-          cache-dependency-path: petlink-frontend/package-lock.json
 
       - name: Instalar dependencias
         run: npm ci
@@ -78,8 +74,8 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Test
-        run: npm test
-
       - name: Build
         run: npm run build
+
+      - name: Test
+        run: node --test tests/*.test.mjs

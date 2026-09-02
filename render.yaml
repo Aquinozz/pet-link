@@ -2,7 +2,7 @@ services:
   - type: web
     name: zoop
     runtime: docker
-    repo: https://github.com/Aquinozz/pet-link.git
+    repo: https://github.com/Aquinozz/zoop.git
     plan: free
     dockerfilePath: ./Dockerfile.combined
     healthCheckPath: /
@@ -27,6 +27,8 @@ services:
         value: /app/uploads
       - key: SERVER_PORT
         value: "8090"
+      - key: VINEXT_PORT
+        value: "3000"
       - key: JAVA_OPTS
         value: -Xmx256m -XX:MaxRAMPercentage=50
       - key: ADMIN_EMAIL

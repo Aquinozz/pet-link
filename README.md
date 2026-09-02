@@ -1,72 +1,74 @@
-# PetLink
+# Zoop
 
-Web platform connecting pet owners with service providers for animals. A capstone project (TCC) built with a Spring Boot backend and React + Vite frontend.
+Plataforma web que conecta tutores de pets a profissionais e serviços para animais de estimação. Projeto acadêmico (TCC) construído com um backend Spring Boot e um frontend Vinext (React SSR).
 
-## Features
+## Funcionalidades
 
-- **JWT Authentication** with three access roles: Tutor, Professional, and Admin
-- **Pet management** with photo upload and image cropping
-- **Provider search** by city, neighborhood, service type, and proximity (Haversine geolocation)
-- **Appointment scheduling** with state machine (Scheduled → Confirmed → Completed / Cancelled)
-- **Reviews and ratings** for providers by tutors (1–5 stars + comment)
-- **Provider profile** with photo, banner, operating hours, and services editing
-- **Home visit support** with address registration
-- **API documentation** via Swagger/OpenAPI
+- **Autenticação JWT** com três papéis de acesso: Tutor, Profissional e Admin
+- **Gestão de pets** com upload de foto e recorte de imagem
+- **Busca de profissionais** por cidade, bairro, tipo de serviço e proximidade (geolocalização Haversine)
+- **Agendamento de consultas** com máquina de estados (Agendado → Confirmado → Concluído / Cancelado)
+- **Avaliações e notas** para profissionais feitas por tutores (1–5 estrelas + comentário)
+- **Perfil do profissional** com foto, banner, horário de funcionamento e edição de serviços
+- **Suporte a atendimento domiciliar** com cadastro de endereço
+- **Documentação da API** via Swagger/OpenAPI
 
-## Tech Stack
+## Stack Tecnológica
 
-| Layer | Technologies |
-|-------|-------------|
+| Camada | Tecnologias |
+|--------|-------------|
 | Backend | Java 21, Spring Boot 3.5, Spring Data JPA, Spring Security, JWT (jjwt 0.12), Lombok, Springdoc OpenAPI |
-| Frontend | React 19, TypeScript, Vite 8, React Router DOM 7, Tailwind CSS 4, Axios, lucide-react |
-| Database | PostgreSQL (production) / H2 (tests) |
+| Frontend | React 19, TypeScript, Vinext (Vite 8 + SSR), Tailwind CSS 4, shadcn/ui, Axios, lucide-react, Recharts, Drizzle ORM |
+| Banco de dados | PostgreSQL (produção) / H2 (testes) |
 | Infra | Docker, Docker Compose, Nginx, Render.com |
-| CI/CD | GitHub Actions (lint, tests, build) |
+| CI/CD | GitHub Actions (testes, lint e build) |
 
-## Project Structure
+## Estrutura do Projeto
 
 ```
-petlink/
-├── src/main/java/pet_link/       # Spring Boot backend
-│   ├── controllers/              # AuthController, PrestadorController, PetController, AppointmentController, ReviewController
-│   ├── services/                 # Business logic + GeocodingService (Nominatim/OpenStreetMap)
-│   ├── models/                   # Users, RolesEntity, PetModel, PrestadorModel, AppointmentModel, ReviewModel
-│   ├── dtos/                     # Request/response DTOs (16 files)
-│   ├── repositories/             # Spring Data JPA repositories
-│   ├── enums/                    # UserRole, PrestadorType, AppointmentStatus
-│   ├── config/                   # SecurityConfiguration, TokenProvider, JwtAuthenticationFilter, SwaggerConfig
-│   ├── exceptions/               # GlobalExceptionHandler + custom exceptions
-│   └── utils/                    # DataUtils
-├── src/test/                     # Unit and integration tests
-├── petlink-frontend/             # React + Vite frontend
-│   └── src/
-│       ├── pages/                # LandingPage, LoginPage, CadastroPage, Dashboards, MeusPets, Agendamentos...
-│       ├── components/           # Reusable UI (Button, Card, Badge, StarRating, StatusBadge...)
-│       ├── api/                  # HTTP services (auth, pet, prestador, agendamento, review)
-│       ├── contexts/             # AuthContext (JWT + client-side role)
-│       ├── types/                # TypeScript interfaces
-│       └── theme/                # Design tokens
+zoop/
+├── app/                         # Frontend Vinext (rotas SSR)
+│   ├── entrar/                  # Login
+│   ├── servicos/                # Busca de serviços
+│   ├── profissionais/           # Página pública do profissional
+│   ├── profissional/            # Painel do profissional (agenda, avaliações, clientes, serviços)
+│   └── tutor/                   # Painel do tutor (agendamentos, histórico, pets)
+├── components/                  # Componentes React reutilizáveis (ui/, zoop/)
+├── lib/                         # API, autenticação, tipos e dados (api.ts, auth.tsx, services.ts)
+├── src/main/java/pet_link/      # Backend Spring Boot
+│   ├── config/                  # SecurityConfiguration, TokenProvider, JwtAuthenticationFilter, SwaggerConfig
+│   ├── controllers/             # AuthController, PrestadorController, PetController, AppointmentController, ReviewController
+│   ├── services/                # Regras de negócio + GeocodingService (Nominatim/OpenStreetMap)
+│   ├── models/                  # Users, RolesEntity, PetModel, PrestadorModel, AppointmentModel, ReviewModel
+│   ├── dtos/                    # DTOs de requisição/resposta
+│   ├── repositories/            # Repositórios Spring Data JPA
+│   ├── enums/                   # UserRole, PrestadorType, AppointmentStatus
+│   ├── exceptions/              # GlobalExceptionHandler + exceções personalizadas
+│   └── utils/                   # DataUtils
+├── db/                          # Configuração de banco (Drizzle)
+├── worker/                      # Configuração do Cloudflare Worker
+├── render/                      # nginx.conf e entrypoint.sh (Render/Docker)
 ├── docker-compose.yml
-├── Dockerfile.combined           # Multi-stage build: Backend + Frontend + Nginx
-└── render.yaml                   # Render.com deployment
+├── Dockerfile.combined          # Build multi-stage: Backend + Frontend + Nginx
+└── render.yaml                  # Deploy no Render.com
 ```
 
-## Getting Started
+## Começando
 
-### Prerequisites
+### Pré-requisitos
 
 - Java 21
 - Node.js 22+
 - PostgreSQL
-- Docker (optional)
+- Docker (opcional)
 
 ### Backend
 
 ```bash
-# Copy and configure environment variables
-cp .env.example .env
+# Configure o arquivo .env com as variáveis de ambiente (ver seção abaixo)
+# .env não é versionado e é ignorado pelo Git
 
-# Run with Maven Wrapper
+# Execute com o Maven Wrapper
 ./mvnw spring-boot:run
 ```
 
@@ -76,7 +78,6 @@ cp .env.example .env
 ### Frontend
 
 ```bash
-cd petlink-frontend
 npm install
 npm run dev
 ```
@@ -86,48 +87,50 @@ npm run dev
 ### Docker Compose
 
 ```bash
-docker compose up
+docker compose up -d --build
 ```
+
+O container sobe o backend, o frontend Vinext e o Nginx juntos:
 
 - App (via Nginx): `http://localhost:80`
 
-## Key Endpoints
+## Endpoints Principais
 
-| Method | Route | Description | Access |
-|--------|-------|-------------|--------|
-| POST | `/auth/register` | Tutor registration | Public |
-| POST | `/auth/login` | Login (returns JWT) | Public |
-| GET | `/auth/me` | Current user profile | Authenticated |
-| GET | `/prestadores` | List providers | Public |
-| GET | `/prestadores/proximos` | Nearby search (lat/lng/radius) | Public |
-| GET | `/prestadores/top-avaliados` | Top-rated providers | Public |
-| POST | `/pets` | Register pet | Tutor / Admin |
-| POST | `/appointment` | Create appointment | Tutor / Professional |
-| PATCH | `/appointment/{id}/status` | Update appointment status | Tutor / Professional |
-| POST | `/reviews` | Rate a provider | Tutor / Professional |
+| Método | Rota | Descrição | Acesso |
+|--------|------|-----------|--------|
+| POST | `/auth/register` | Cadastro de tutor | Público |
+| POST | `/auth/login` | Login (retorna JWT) | Público |
+| GET | `/auth/me` | Perfil do usuário atual | Autenticado |
+| GET | `/prestadores` | Lista de profissionais | Público |
+| GET | `/prestadores/proximos` | Busca por proximidade (lat/lng/raio) | Público |
+| GET | `/prestadores/top-avaliados` | Profissionais mais bem avaliados | Público |
+| POST | `/pets` | Cadastra pet | Tutor / Admin |
+| POST | `/appointment` | Cria agendamento | Tutor / Profissional |
+| PATCH | `/appointment/{id}/status` | Atualiza status do agendamento | Tutor / Profissional |
+| POST | `/reviews` | Avalia um profissional | Tutor / Profissional |
 
-## Environment Variables
+## Variáveis de Ambiente
 
-See `.env.example` for the full list. Main ones:
+O `.env` (ignorado pelo Git) é lido pelo Docker Compose e pelo Maven. As principais variáveis:
 
-| Variable | Description |
-|----------|-------------|
-| `SPRING_DATASOURCE_URL` | PostgreSQL connection URL |
-| `SPRING_DATASOURCE_USERNAME` | Database user |
-| `SPRING_DATASOURCE_PASSWORD` | Database password |
-| `JWT_SECRET` | JWT signing secret |
-| `JWT_EXPIRATION` | Token expiration time (ms) |
-| `ADMIN_EMAIL` | Seed admin email |
-| `ADMIN_PASSWORD` | Seed admin password |
+| Variável | Descrição |
+|----------|-----------|
+| `SPRING_DATASOURCE_URL` | URL de conexão do PostgreSQL |
+| `SPRING_DATASOURCE_USERNAME` | Usuário do banco |
+| `SPRING_DATASOURCE_PASSWORD` | Senha do banco |
+| `JWT_SECRET` | Chave de assinatura do JWT |
+| `JWT_EXPIRATION` | Tempo de expiração do token (ms) |
+| `ADMIN_EMAIL` | E-mail do admin inicial |
+| `ADMIN_PASSWORD` | Senha do admin inicial |
 
-## Deployment
+## Deploy
 
-Configured for **Render.com** via `render.yaml`:
+Configurado para **Render.com** via `render.yaml`:
 
-- Multi-stage Docker build with `Dockerfile.combined` (Spring Boot + React build + Nginx)
-- Nginx serves the SPA and proxies `/api/` and `/uploads/` to the backend
-- Backend runs internally on port 8090, Nginx exposes port 80
+- Build multi-stage com `Dockerfile.combined` (Spring Boot + build Vinext + Nginx)
+- O Nginx serve o frontend e faz proxy das rotas `/api/` e `/uploads/` para o backend
+- Backend roda internamente em `8090`, frontend Vinext em `3000` e Nginx expõe a porta `80`
 
-## License
+## Licença
 
-Academic project (TCC) — all rights reserved.
+Projeto acadêmico (TCC) — todos os direitos reservados.

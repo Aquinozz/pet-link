@@ -1,5 +1,6 @@
 services:
   app:
+    container_name: zoop
     build:
       context: .
       dockerfile: Dockerfile.combined

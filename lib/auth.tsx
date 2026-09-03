@@ -3,7 +3,6 @@
 import {
   createContext,
   useContext,
-  useEffect,
   useState,
   type ReactNode,
 } from "react";
@@ -51,28 +50,22 @@ function readStored(key: string): string | null {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [tutorId, setTutorIdState] = useState<number | null>(null);
-  const [prestadorId, setPrestadorIdState] = useState<number | null>(null);
-  const [nome, setNomeState] = useState<string | null>(null);
-  const [fotoUrl, setFotoUrlState] = useState<string | null>(null);
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  useEffect(() => {
+  const [token, setToken] = useState<string | null>(() => readStored(TOKEN_KEY));
+  const [user, setUser] = useState<AuthUser | null>(() => {
     const storedToken = readStored(TOKEN_KEY);
-    if (storedToken) {
-      setToken(storedToken);
-      setUser(parseToken(storedToken));
-    }
-    const storedTutorId = readStored("zoop_tutor_id");
-    if (storedTutorId) setTutorIdState(Number(storedTutorId));
-    const storedPrestadorId = readStored("zoop_prestador_id");
-    if (storedPrestadorId) setPrestadorIdState(Number(storedPrestadorId));
-    setNomeState(readStored("zoop_nome"));
-    setFotoUrlState(readStored("zoop_foto_url"));
-    setIsHydrated(true);
-  }, []);
+    return storedToken ? parseToken(storedToken) : null;
+  });
+  const [tutorId, setTutorIdState] = useState<number | null>(() => {
+    const stored = readStored("zoop_tutor_id");
+    return stored ? Number(stored) : null;
+  });
+  const [prestadorId, setPrestadorIdState] = useState<number | null>(() => {
+    const stored = readStored("zoop_prestador_id");
+    return stored ? Number(stored) : null;
+  });
+  const [nome, setNomeState] = useState<string | null>(() => readStored("zoop_nome"));
+  const [fotoUrl, setFotoUrlState] = useState<string | null>(() => readStored("zoop_foto_url"));
+  const isHydrated = typeof window !== "undefined";
 
   const signIn = (newToken: string) => {
     localStorage.setItem(TOKEN_KEY, newToken);

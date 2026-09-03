@@ -161,6 +161,9 @@ export default function Home() {
               <Button size="lg" onClick={() => router.push("/servicos")}>Encontrar profissionais</Button>
             </div>
           </div>
+          <div className="hero-pets" role="img" aria-label="Cachorro e gato juntos">
+            <Image src="/hero-pets.png" alt="" width={1536} height={1024} priority aria-hidden="true" />
+          </div>
         </section>
 
         <section className="page-width service-shortcuts" id="servicos" aria-labelledby="service-title">

@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -117,7 +118,6 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
           <form className="zoop-app-search" onSubmit={submitSearch} role="search">
             <Search />
             <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="O que você procura para o seu pet?" aria-label="Pesquisar na Zoop" />
-            <kbd>⌘ K</kbd>
           </form>
           <div className="zoop-app-account">
             <button
@@ -199,6 +199,9 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
           <button type="button" onClick={() => { signOut(); router.replace("/entrar"); }}>
             <LogOut /><span>Sair da conta</span>
           </button>
+          <div className="zoop-sidebar__brand" aria-hidden="true">
+            <Image src="/zoop-symbol-source.png" alt="" width={375} height={404} />
+          </div>
           <div className="zoop-sidebar__help">
             <Stethoscope />
             <div><strong>Precisa de ajuda?</strong><small>Fale com o suporte Zoop</small></div>

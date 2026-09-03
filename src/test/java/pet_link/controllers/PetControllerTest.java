@@ -43,6 +43,7 @@ class PetControllerTest {
 
     private HttpHeaders auth(String email, String... roles) {
         when(tokenProvider.getUsername(anyString())).thenReturn(email);
+        when(tokenProvider.getRoles(anyString())).thenReturn(ControllerTestSupport.roles(roles));
         when(userDetailsService.loadUserByUsername(email))
                 .thenReturn(ControllerTestSupport.userDetails(email, roles));
         HttpHeaders headers = new HttpHeaders();

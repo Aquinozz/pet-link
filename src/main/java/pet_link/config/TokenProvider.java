@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -93,5 +94,19 @@ public class TokenProvider {
         log.debug("Username extraído do token: {}", username);
 
         return username;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<GrantedAuthority> getRoles(String token){
+        List<String> roles = getClaims(token).get("roles", List.class);
+
+        if (roles == null) {
+            return List.of();
+        }
+
+        return roles.stream()
+                .map(SimpleGrantedAuthority::new)
+                .map(GrantedAuthority.class::cast)
+                .toList();
     }
 }

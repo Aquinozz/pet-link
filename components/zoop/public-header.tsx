@@ -6,11 +6,14 @@ import { useRouter } from "next/navigation";
 import { Heart, MapPin, Menu, Search, UserRound, X } from "lucide-react";
 
 import { ZoopLogo } from "./brand";
+import { useAuth } from "@/lib/auth";
 
 export function PublicHeader({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
   const [query, setQuery] = useState("");
   const [menu, setMenu] = useState(false);
+  const dashboardPath = user?.role === "ROLE_PROFISSIONAL" ? "/profissional" : "/tutor";
 
   function search(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -28,7 +31,7 @@ export function PublicHeader({ compact = false }: { compact?: boolean }) {
         <div className="zoop-public-actions">
           <Link href="/servicos" aria-label="Localização"><MapPin /></Link>
           <Link href="/servicos?favoritos=1" aria-label="Favoritos"><Heart /></Link>
-          <Link href="/entrar" aria-label="Minha conta"><UserRound /></Link>
+          <Link href={isAuthenticated ? dashboardPath : "/entrar"} aria-label="Minha conta"><UserRound /></Link>
           <button className="zoop-mobile-toggle" type="button" onClick={() => setMenu((value) => !value)} aria-label={menu ? "Fechar menu" : "Abrir menu"}>{menu ? <X /> : <Menu />}</button>
         </div>
       </div>
@@ -40,7 +43,9 @@ export function PublicHeader({ compact = false }: { compact?: boolean }) {
           <Link href="/servicos?tipo=profissional">Profissionais</Link>
           <Link href="/#cuidados">Cuidados</Link>
         </nav>
-        <Link className="zoop-primary-button zoop-primary-button--small" href="/entrar">Entrar</Link>
+        <Link className="zoop-primary-button zoop-primary-button--small" href={isAuthenticated ? dashboardPath : "/entrar"}>
+          {isAuthenticated ? "Minha conta" : "Entrar"}
+        </Link>
       </div>
     </header>
   );

@@ -75,7 +75,12 @@ export default function LoginPage() {
           {error && <p className="zoop-auth-error" role="alert">{error}</p>}
           <button className={`zoop-primary-button zoop-login-submit ${loading ? "is-loading" : ""}`} type="submit" disabled={loading}><span>{loading ? "Entrando..." : "Entrar"}</span><i /></button>
           <div className="zoop-login-divider"><span>ou</span></div>
-          <p className="zoop-create-account">Ainda não tenho conta <button type="button">Criar conta</button></p>
+          <p className="zoop-create-account">Ainda não tenho conta <Link href="/cadastro" style={{ color: "#4e951f", fontWeight: 750, textDecoration: "none" }}>Criar conta</Link></p>
+          <div style={{ marginTop: 16, padding: 12, background: "var(--zoop-bg-muted, #f6f8f4)", border: "1px solid var(--zoop-border)", borderRadius: 10 }}>
+            <p style={{ margin: "0 0 4px", fontSize: ".68rem", fontWeight: 700, color: "var(--zoop-muted)" }}>Credenciais de teste</p>
+            <p style={{ margin: 0, fontSize: ".68rem", color: "var(--zoop-muted)" }}>Tutor: bianca@email.com / 123456</p>
+            <p style={{ margin: "2px 0 0", fontSize: ".68rem", color: "var(--zoop-muted)" }}>Prestador: clinica@petfeliz.com / 123456</p>
+          </div>
           <small><ShieldCheck /> Seus dados são protegidos por criptografia.</small>
         </form>
       </section>

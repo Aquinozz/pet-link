@@ -7,6 +7,7 @@ import { Bell, CalendarDays, ChevronLeft, ChevronRight, Clock, MapPin, Plus, Ste
 import { useZoopNotice } from "@/components/zoop/app-shell";
 import { PageIntro, PetAvatar, StatusPill } from "@/components/zoop/ui";
 import { agendamentoService } from "@/lib/services";
+import { formatPrestadorType } from "@/lib/format";
 import type { AgendamentoResponseDto } from "@/lib/types";
 
 type Tab = "Próximos" | "Concluídos" | "Cancelados";
@@ -84,7 +85,7 @@ export default function AppointmentsPage() {
                   <div className="zoop-appointment-card__copy">
                     <h2>{appointment.servico ?? "Serviço"}</h2>
                     <p><Stethoscope /> {appointment.prestador?.nomePrestador}</p>
-                    <span>{appointment.prestador?.type?.replaceAll("_", " ") ?? ""}</span>
+                    <span>{formatPrestadorType(appointment.prestador?.type)}</span>
                     <small><CalendarDays /> {date.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })} • {date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</small>
                     <small><MapPin /> {[appointment.prestador?.bairro, appointment.prestador?.cidade].filter(Boolean).join(", ") || "Salvador"}</small>
                   </div>

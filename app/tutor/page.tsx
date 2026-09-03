@@ -21,6 +21,7 @@ import { useZoopNotice } from "@/components/zoop/app-shell";
 import { useAuth } from "@/lib/auth";
 import { IconBadge, PageIntro, PersonAvatar, PetAvatar, StatusPill, TiltCard } from "@/components/zoop/ui";
 import { agendamentoService, petService, prestadorService } from "@/lib/services";
+import { formatPrestadorType } from "@/lib/format";
 import type { AgendamentoResponseDto, PetResponseDto, PrestadorResponseDto } from "@/lib/types";
 
 const quickServices = [
@@ -144,7 +145,7 @@ export default function TutorDashboard() {
                 <PersonAvatar initials={initialsOf(professional.nomePrestador)} name={professional.nomePrestador} tone={tones[index % tones.length]} size="lg" />
                 <div>
                   <h3>{professional.nomePrestador}</h3>
-                  <p>{professional.type.replaceAll("_", " ")}</p>
+                  <p>{formatPrestadorType(professional.type)}</p>
                   <span><Star fill="currentColor" /> {(professional.avaliacaoMedia ?? 0).toFixed(1).replace(".", ",")} <b>•</b> <MapPin /> {[professional.bairro, professional.cidade].filter(Boolean).join(" · ") || "Salvador, BA"}</span>
                 </div>
                 <div className="zoop-professional-mini__meta">

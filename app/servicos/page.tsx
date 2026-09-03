@@ -7,7 +7,8 @@ import { Award, Bath, ChevronDown, Dog, Home, MapPin, Search, SlidersHorizontal,
 import { PublicHeader } from "@/components/zoop/public-header";
 import { PersonAvatar, StatusPill } from "@/components/zoop/ui";
 import { prestadorService } from "@/lib/services";
-import type { PrestadorResponseDto, TipoPrestador } from "@/lib/types";
+import { prestadorTypeLabels as typeLabels } from "@/lib/format";
+import type { PrestadorResponseDto } from "@/lib/types";
 
 const categories = [
   { label: "Todos os serviços", icon: SlidersHorizontal },
@@ -17,16 +18,6 @@ const categories = [
   { label: "Hospedagem", icon: Home },
   { label: "Adestramento", icon: Award },
 ];
-
-const typeLabels: Record<TipoPrestador, string> = {
-  CLINICA_VETERINARIA: "Clínica veterinária",
-  VETERINARIO: "Médico-veterinário",
-  PETSHOP: "Pet Shop",
-  PASSEADOR: "Passeador",
-  CRECHE_PET: "Hospedagem",
-  BANHO_E_TOSA: "Banho e Tosa",
-  PET_SITTER: "Pet sitter",
-};
 
 const tones = ["teal", "rose", "gold", "green"] as const;
 

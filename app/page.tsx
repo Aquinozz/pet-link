@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -23,6 +23,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/lib/auth";
+import { prestadorService } from "@/lib/services";
+import { formatPrestadorType } from "@/lib/format";
+import type { PrestadorResponseDto } from "@/lib/types";
 
 const services = [
   { label: "Veterinário", icon: Stethoscope },
@@ -32,24 +36,16 @@ const services = [
   { label: "Adestramento", icon: Award },
 ];
 
-const professionals = [
-  {
-    initials: "MS",
-    name: "Dra. Marina Souza",
-    role: "Veterinária",
-    rating: "4,9 (320)",
-    place: "Pituba",
-    price: "R$ 120",
-  },
-  {
-    initials: "PB",
-    name: "Estética Pet Bella",
-    role: "Banho & Tosa",
-    rating: "4,8 (184)",
-    place: "Itaigara",
-    price: "R$ 80",
-  },
-];
+function initialsOf(name: string) {
+  return name
+    .replace(/^(Dr\.|Dra\.)\s+/i, "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
 
 function scrollToSection(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -57,12 +53,19 @@ function scrollToSection(id: string) {
 
 export default function Home() {
   const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
+  const dashboardPath = user?.role === "ROLE_PROFISSIONAL" ? "/profissional" : "/tutor";
   const [favorite, setFavorite] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [search, setSearch] = useState("");
   const [serviceQuery, setServiceQuery] = useState("");
   const [location, setLocation] = useState("Salvador, BA");
   const [notice, setNotice] = useState("");
+  const [professionals, setProfessionals] = useState<PrestadorResponseDto[]>([]);
+
+  useEffect(() => {
+    prestadorService.listarTopAvaliados(2).then(setProfessionals).catch(() => {});
+  }, []);
 
   function showNotice(message: string) {
     setNotice(message);
@@ -116,7 +119,7 @@ export default function Home() {
             >
               <Heart fill={favorite ? "currentColor" : "none"} />
             </button>
-            <button type="button" aria-label="Minha conta" onClick={() => router.push("/entrar")}>
+            <button type="button" aria-label="Minha conta" onClick={() => router.push(isAuthenticated ? dashboardPath : "/entrar")}>
               <UserRound />
             </button>
             <button
@@ -139,7 +142,9 @@ export default function Home() {
             <a href="/servicos?tipo=profissional" onClick={() => setMobileMenu(false)}>Profissionais</a>
             <a href="#cuidados" onClick={() => setMobileMenu(false)}>Cuidados</a>
           </nav>
-          <Button className="login-button" onClick={() => router.push("/entrar")}>Entrar</Button>
+          <Button className="login-button" onClick={() => router.push(isAuthenticated ? dashboardPath : "/entrar")}>
+            {isAuthenticated ? "Minha conta" : "Entrar"}
+          </Button>
         </div>
       </header>
 
@@ -191,18 +196,19 @@ export default function Home() {
             </form>
 
             <div className="professional-list">
+              {professionals.length === 0 && (
+                <p style={{ margin: 0, fontSize: ".78rem", color: "var(--zoop-muted)" }}>Nenhum profissional avaliado ainda.</p>
+              )}
               {professionals.map((professional) => (
-                <article className="professional-card" key={professional.name}>
-                  <div className="professional-avatar" aria-hidden="true">{professional.initials}</div>
+                <article className="professional-card" key={professional.id}>
+                  <div className="professional-avatar" aria-hidden="true">{initialsOf(professional.nomePrestador)}</div>
                   <div className="professional-main">
-                    <h3>{professional.name}</h3>
-                    <p>{professional.role}</p>
-                    <span><Star fill="currentColor" /> {professional.rating} <b>•</b> {professional.place}</span>
+                    <h3>{professional.nomePrestador}</h3>
+                    <p>{formatPrestadorType(professional.type)}</p>
+                    <span><Star fill="currentColor" /> {professional.avaliacaoMedia?.toFixed(1) ?? "—"} <b>•</b> {professional.bairro ?? professional.cidade ?? "Salvador"}</span>
                   </div>
                   <div className="professional-meta">
                     <Badge>Disponível hoje</Badge>
-                    <small>a partir de</small>
-                    <strong>{professional.price}</strong>
                   </div>
                 </article>
               ))}

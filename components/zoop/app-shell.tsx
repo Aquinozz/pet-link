@@ -55,7 +55,7 @@ const professionalNav = [
 export function AppShell({ role, children }: { role: Role; children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated, nome, signOut } = useAuth();
+  const { isAuthenticated, isHydrated, nome, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [notice, setNotice] = useState("");
   const [search, setSearch] = useState("");
@@ -63,8 +63,8 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
   const nav = role === "tutor" ? tutorNav : professionalNav;
 
   useEffect(() => {
-    if (!isAuthenticated) router.replace("/entrar");
-  }, [isAuthenticated, router]);
+    if (isHydrated && !isAuthenticated) router.replace("/entrar");
+  }, [isHydrated, isAuthenticated, router]);
 
   function showNotice(message: string) {
     setNotice(message);
@@ -98,6 +98,15 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
     },
     [nome, role],
   );
+
+  if (!isHydrated || !isAuthenticated) {
+    return (
+      <div className="zoop-dashboard-loading" role="status" aria-live="polite">
+        <span className="zoop-dashboard-loading__spinner" aria-hidden="true" />
+        Carregando...
+      </div>
+    );
+  }
 
   return (
     <NoticeContext.Provider value={showNotice}>

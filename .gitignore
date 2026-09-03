@@ -48,3 +48,6 @@ next-env.d.ts
 
 # uploads (backend)
 /uploads/
+
+# maven (backend build output)
+/target/

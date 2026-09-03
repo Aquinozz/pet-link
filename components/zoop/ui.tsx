@@ -59,9 +59,9 @@ export function PersonAvatar({
   );
 }
 
-export function PetAvatar({ size = "md", className = "" }: { size?: "sm" | "md" | "lg" | "hero"; className?: string }) {
+export function PetAvatar({ size = "md", className = "", name }: { size?: "sm" | "md" | "lg" | "hero"; className?: string; name?: string }) {
   return (
-    <span className={`zoop-pet-avatar zoop-pet-avatar--${size} ${className}`.trim()} role="img" aria-label="Luna, uma Golden Retriever">
+    <span className={`zoop-pet-avatar zoop-pet-avatar--${size} ${className}`.trim()} role="img" aria-label={name ? `Foto de ${name}` : "Sem foto cadastrada"}>
       <span />
     </span>
   );

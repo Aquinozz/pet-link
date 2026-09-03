@@ -320,11 +320,74 @@
   animation: zoop-notification-pulse 2.2s ease-in-out infinite;
 }
 
+.zoop-account-menu-wrap {
+  position: relative;
+  min-width: 0;
+}
+
 .zoop-account-copy {
   min-width: 0;
   display: flex;
   align-items: center;
   gap: 11px;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.zoop-account-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: transparent;
+  border: 0;
+  cursor: default;
+}
+
+.zoop-account-menu {
+  position: absolute;
+  z-index: 95;
+  top: calc(100% + 12px);
+  right: 0;
+  min-width: 200px;
+  display: grid;
+  gap: 3px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--zoop-border);
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(0,31,28,.18);
+  animation: zoop-fade-in 160ms ease both;
+}
+
+.zoop-account-menu button {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 10px 12px;
+  color: var(--zoop-ink);
+  font-size: .88rem;
+  font-weight: 600;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.zoop-account-menu button:hover {
+  color: var(--zoop-lime);
+  background: #f0f5ed;
+}
+
+.zoop-account-menu svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
 }
 
 .zoop-account-copy > span:nth-child(2) {
@@ -363,7 +426,9 @@
   z-index: 50;
   top: 92px;
   align-self: start;
-  min-height: calc(100vh - 92px);
+  height: calc(100vh - 92px);
+  max-height: calc(100vh - 92px);
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   padding: 28px 20px 20px;
@@ -438,27 +503,13 @@
   background: var(--zoop-border);
 }
 
-.zoop-sidebar__brand {
-  min-height: 145px;
-  display: grid;
-  place-items: center;
-  margin-top: auto;
-  opacity: .92;
-}
-
-.zoop-sidebar__brand img {
-  width: 96px;
-  height: 108px;
-  object-fit: cover;
-  object-position: center;
-  filter: drop-shadow(0 10px 18px rgba(0,63,56,.12));
-}
-
 .zoop-sidebar__help {
   display: flex;
   align-items: center;
   gap: 11px;
   padding: 14px;
+  margin-top: auto;
+  flex: 0 0 auto;
   color: #fff;
   background: linear-gradient(145deg, var(--zoop-forest), #075148);
   border-radius: 16px;
@@ -755,6 +806,41 @@
 .zoop-pet-avatar--hero { width: clamp(170px, 17vw, 260px); height: clamp(220px, 21vw, 310px); border-radius: 18px 70px 18px 18px; }
 .zoop-pet-avatar--hero > span { background-size: 240% auto; background-position: 84% 39%; }
 .zoop-pet-avatar--photo { object-fit: cover; display: block; }
+
+.zoop-pet-avatar-wrap { position: relative; display: inline-flex; flex: 0 0 auto; }
+.zoop-pet-photo-button {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--zoop-forest);
+  background: #fff;
+  border: 1px solid var(--zoop-border);
+  border-radius: 999px;
+  box-shadow: 0 8px 18px rgba(0,63,56,.14);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.zoop-pet-photo-button svg { width: 14px; height: 14px; }
+.zoop-pet-photo-button:hover { color: var(--zoop-lime); }
+.zoop-pet-photo-button:disabled { opacity: .6; cursor: default; }
+
+.zoop-pet-avatar-wrap--sm .zoop-pet-photo-button--icon {
+  left: auto;
+  right: -4px;
+  bottom: -4px;
+  transform: none;
+  padding: 6px;
+  border-radius: 50%;
+}
+.zoop-pet-avatar-wrap--sm .zoop-pet-photo-button--icon svg { width: 13px; height: 13px; }
+
 .zoop-pet-extra-list { display: grid; gap: 12px; }
 .zoop-pet-extra { display: flex; align-items: center; gap: 12px; }
 .zoop-pet-extra > img { border-radius: 14px; }
@@ -926,7 +1012,7 @@
 .zoop-quick-services__grid a {
   min-height: 80px;
   display: grid;
-  grid-template-columns: 52px 1fr 20px;
+  grid-template-columns: 60px 1fr 20px;
   align-items: center;
   gap: 13px;
   padding: 14px;
@@ -951,6 +1037,16 @@
   height: 20px;
   color: var(--zoop-lime);
   transition: transform 180ms ease;
+}
+
+.zoop-quick-services__grid .zoop-icon-badge {
+  width: 60px;
+  height: 60px;
+}
+
+.zoop-quick-services__grid .zoop-icon-badge svg {
+  width: 32px;
+  height: 32px;
 }
 
 .zoop-quick-services__grid a:hover > svg {

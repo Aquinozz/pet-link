@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -57,6 +56,7 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
   const router = useRouter();
   const { isAuthenticated, isHydrated, nome, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [notice, setNotice] = useState("");
   const [search, setSearch] = useState("");
   const [notifications, setNotifications] = useState(3);
@@ -132,10 +132,46 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
               <Bell />
               {notifications > 0 && <span>{notifications}</span>}
             </button>
-            <div className="zoop-account-copy">
-              <PersonAvatar initials={identity.initials} name={identity.name} tone={identity.tone} />
-              <span><strong>{identity.name}</strong><small>{identity.subtitle}</small></span>
-              <ChevronDown />
+            <div className="zoop-account-menu-wrap">
+              <button
+                className="zoop-account-copy"
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={accountMenuOpen}
+                onClick={() => setAccountMenuOpen((value) => !value)}
+              >
+                <PersonAvatar initials={identity.initials} name={identity.name} tone={identity.tone} />
+                <span><strong>{identity.name}</strong><small>{identity.subtitle}</small></span>
+                <ChevronDown />
+              </button>
+              {accountMenuOpen && (
+                <>
+                  <button className="zoop-account-menu-backdrop" type="button" aria-label="Fechar menu" onClick={() => setAccountMenuOpen(false)} />
+                  <div className="zoop-account-menu" role="menu">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setAccountMenuOpen(false);
+                        showNotice("As configurações serão abertas em breve.");
+                      }}
+                    >
+                      <Settings /><span>Configurações</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setAccountMenuOpen(false);
+                        signOut();
+                        router.replace("/entrar");
+                      }}
+                    >
+                      <LogOut /><span>Sair da conta</span>
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
             <button className="zoop-mobile-toggle" type="button" onClick={() => setMenuOpen((value) => !value)} aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}>
               {menuOpen ? <X /> : <Menu />}
@@ -163,9 +199,6 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
           <button type="button" onClick={() => { signOut(); router.replace("/entrar"); }}>
             <LogOut /><span>Sair da conta</span>
           </button>
-          <div className="zoop-sidebar__brand" aria-hidden="true">
-            <Image src="/zoop-symbol-source.png" alt="" width={375} height={404} />
-          </div>
           <div className="zoop-sidebar__help">
             <Stethoscope />
             <div><strong>Precisa de ajuda?</strong><small>Fale com o suporte Zoop</small></div>

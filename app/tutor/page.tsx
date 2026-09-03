@@ -102,7 +102,12 @@ export default function TutorDashboard() {
         </TiltCard>
 
         <TiltCard className="zoop-panel zoop-pet-summary zoop-reveal">
-          <PetAvatar size="hero" />
+          {pet?.fotoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="zoop-pet-avatar zoop-pet-avatar--hero zoop-pet-avatar--photo" src={pet.fotoUrl} alt={pet.nome} />
+          ) : (
+            <PetAvatar size="hero" name={pet?.nome} />
+          )}
           <div>
             <span className="zoop-eyebrow">Meu pet</span>
             <h2>{pet?.nome ?? "Seu pet"}</h2>

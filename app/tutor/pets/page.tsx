@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Atom,
+  Camera,
   CalendarDays,
   Download,
   FileHeart,
@@ -32,6 +33,10 @@ export default function PetsPage() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ nome: "", especie: "Cachorro", raca: "", idade: "" });
   const [formError, setFormError] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [uploadingId, setUploadingId] = useState<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadTargetRef = useRef<number | null>(null);
 
   async function load() {
     try {
@@ -61,15 +66,23 @@ export default function PetsPage() {
     }
     setSaving(true);
     try {
-      await petService.cadastrar({
+      const created = await petService.cadastrar({
         nome: form.nome.trim(),
         especie: form.especie,
         raca: form.raca.trim(),
         idade,
         tutorId,
       });
+      if (photoFile) {
+        try {
+          await petService.uploadFoto(created.id, photoFile);
+        } catch {
+          notice("Pet cadastrado, mas a foto não pôde ser enviada.");
+        }
+      }
       setAdding(false);
       setForm({ nome: "", especie: "Cachorro", raca: "", idade: "" });
+      setPhotoFile(null);
       notice("Pet cadastrado com sucesso.");
       load();
     } catch (err: unknown) {
@@ -77,6 +90,28 @@ export default function PetsPage() {
       setFormError(message ?? "Não foi possível cadastrar o pet.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  function openPhotoPicker(petId: number) {
+    uploadTargetRef.current = petId;
+    fileInputRef.current?.click();
+  }
+
+  async function handlePhotoSelected(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    const petId = uploadTargetRef.current;
+    event.target.value = "";
+    if (!file || !petId) return;
+    setUploadingId(petId);
+    try {
+      await petService.uploadFoto(petId, file);
+      notice("Foto atualizada com sucesso.");
+      load();
+    } catch {
+      notice("Não foi possível enviar a foto.");
+    } finally {
+      setUploadingId(null);
     }
   }
 
@@ -88,14 +123,34 @@ export default function PetsPage() {
         action={<button className="zoop-primary-button" type="button" onClick={() => setAdding(true)}><Plus /> Adicionar pet</button>}
       />
 
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={handlePhotoSelected}
+      />
+
       <section className="zoop-pet-profile-grid">
         <TiltCard className="zoop-panel zoop-pet-profile zoop-reveal">
-          {mainPet?.fotoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img className="zoop-pet-avatar zoop-pet-avatar--hero zoop-pet-avatar--photo" src={mainPet.fotoUrl} alt={mainPet.nome} />
-          ) : (
-            <PetAvatar size="hero" />
-          )}
+          <div className="zoop-pet-avatar-wrap">
+            {mainPet?.fotoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img className="zoop-pet-avatar zoop-pet-avatar--hero zoop-pet-avatar--photo" src={mainPet.fotoUrl} alt={mainPet.nome} />
+            ) : (
+              <PetAvatar size="hero" name={mainPet?.nome} />
+            )}
+            {mainPet && (
+              <button
+                className="zoop-pet-photo-button"
+                type="button"
+                onClick={() => openPhotoPicker(mainPet.id)}
+                disabled={uploadingId === mainPet.id}
+              >
+                <Camera /> {uploadingId === mainPet.id ? "Enviando..." : "Trocar foto"}
+              </button>
+            )}
+          </div>
           <div className="zoop-pet-profile__copy">
             <span className="zoop-eyebrow">{pets.length > 1 ? "Perfil principal" : "Perfil do pet"}</span>
             <h2>{mainPet?.nome ?? "Nenhum pet cadastrado"}</h2>
@@ -113,12 +168,23 @@ export default function PetsPage() {
           <div className="zoop-pet-extra-list zoop-reveal">
             {pets.slice(1).map((pet) => (
               <TiltCard className="zoop-panel zoop-pet-extra" key={pet.id}>
-                {pet.fotoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img className="zoop-pet-avatar zoop-pet-avatar--md zoop-pet-avatar--photo" src={pet.fotoUrl} alt={pet.nome} />
-                ) : (
-                  <PetAvatar size="md" />
-                )}
+                <div className="zoop-pet-avatar-wrap zoop-pet-avatar-wrap--sm">
+                  {pet.fotoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img className="zoop-pet-avatar zoop-pet-avatar--md zoop-pet-avatar--photo" src={pet.fotoUrl} alt={pet.nome} />
+                  ) : (
+                    <PetAvatar size="md" name={pet.nome} />
+                  )}
+                  <button
+                    className="zoop-pet-photo-button zoop-pet-photo-button--icon"
+                    type="button"
+                    aria-label={`Trocar foto de ${pet.nome}`}
+                    onClick={() => openPhotoPicker(pet.id)}
+                    disabled={uploadingId === pet.id}
+                  >
+                    <Camera />
+                  </button>
+                </div>
                 <div><strong>{pet.nome}</strong><span>{pet.especie} • {pet.idade} {pet.idade === 1 ? "ano" : "anos"}</span></div>
               </TiltCard>
             ))}
@@ -159,6 +225,10 @@ export default function PetsPage() {
               <label><span>Espécie</span><select value={form.especie} onChange={(event) => setForm((current) => ({ ...current, especie: event.target.value }))}>{especies.map((especie) => <option key={especie} value={especie}>{especie}</option>)}</select></label>
               <label><span>Raça</span><input value={form.raca} onChange={(event) => setForm((current) => ({ ...current, raca: event.target.value }))} required /></label>
               <label><span>Idade</span><input type="number" min={0} value={form.idade} onChange={(event) => setForm((current) => ({ ...current, idade: event.target.value }))} required /></label>
+              <label>
+                <span>Foto (opcional)</span>
+                <input type="file" accept="image/*" onChange={(event) => setPhotoFile(event.target.files?.[0] ?? null)} />
+              </label>
               {formError && <p className="zoop-auth-error" role="alert">{formError}</p>}
               <button className="zoop-primary-button" type="submit" disabled={saving}>{saving ? "Salvando..." : "Salvar pet"}</button>
             </form>

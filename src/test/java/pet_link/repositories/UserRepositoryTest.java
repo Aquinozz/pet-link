@@ -13,7 +13,10 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest(properties = "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect")
+@DataJpaTest(properties = {
+        "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
+        "spring.flyway.enabled=false"
+})
 class UserRepositoryTest {
 
     @Autowired

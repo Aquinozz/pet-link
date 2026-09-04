@@ -13,7 +13,10 @@ import pet_link.repositories.UserRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest(properties = "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect")
+@DataJpaTest(properties = {
+        "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
+        "spring.flyway.enabled=false"
+})
 @Import(DataInitializer.class)
 class DataInitializerTest {
 

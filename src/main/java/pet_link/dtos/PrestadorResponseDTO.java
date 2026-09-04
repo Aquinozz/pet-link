@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import pet_link.enums.PrestadorType;
+import pet_link.models.PrestadorModel;
 import pet_link.models.Users;
 
 @Data
@@ -51,5 +52,13 @@ public class PrestadorResponseDTO {
                 this.avaliacaoMedia = 0.0;
             }
         }
+    }
+
+    public static PrestadorResponseDTO from(PrestadorModel prestador) {
+        if (prestador == null || prestador.getUser() == null) {
+            return null;
+        }
+        PrestadorResponseDTO dto = new PrestadorResponseDTO(prestador.getUser());
+        return dto;
     }
 }

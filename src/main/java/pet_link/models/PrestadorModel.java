@@ -8,6 +8,10 @@ import pet_link.enums.PrestadorType;
 @Getter
 @Setter
 @Entity
+@Table(name = "prestador_model", indexes = {
+    @Index(name = "idx_prestador_lat_lng", columnList = "latitude,longitude"),
+    @Index(name = "idx_prestador_avaliacao_media", columnList = "avaliacao_media")
+})
 public class PrestadorModel {
 
     @Id

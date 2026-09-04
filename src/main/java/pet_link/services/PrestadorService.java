@@ -28,6 +28,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -101,13 +102,9 @@ public class PrestadorService {
     }
 
     public List<PrestadorResponseDTO> listarTopAvaliados(int limit) {
-        return userRepository.findAllByRoleComPrestador(UserRole.ROLE_PROFISSIONAL.name()).stream()
-                .filter(user -> user.getPrestador() != null
-                        && user.getPrestador().getAvaliacaoMedia() != null
-                        && user.getPrestador().getAvaliacaoMedia() > 0)
-                .sorted(Comparator.comparing((Users u) -> u.getPrestador().getAvaliacaoMedia()).reversed())
-                .limit(limit)
-                .map(PrestadorResponseDTO::new)
+        return prestadorRepository.findTopByAvaliacaoMediaDesc(limit).stream()
+                .map(PrestadorResponseDTO::from)
+                .filter(Objects::nonNull)
                 .toList();
     }
 
@@ -218,17 +215,25 @@ public class PrestadorService {
     }
 
     public List<PrestadorResponseDTO> listarProximos(double lat, double lng, double raioKm) {
-        return userRepository.findAllByRoleComPrestador(UserRole.ROLE_PROFISSIONAL.name()).stream()
-                .filter(user -> user.getPrestador() != null
-                        && user.getPrestador().getLatitude() != null
-                        && user.getPrestador().getLongitude() != null)
-                .map(user -> {
+        // 1. Bounding box aproximado (1 deg lat ~ 111km; lon ajusta por cos(lat))
+        double latDelta = raioKm / 111.0;
+        double lngDelta = raioKm / (111.0 * Math.cos(Math.toRadians(lat)));
+        double latMin = lat - latDelta, latMax = lat + latDelta;
+        double lngMin = lng - lngDelta, lngMax = lng + lngDelta;
+
+        // 2. Candidatos no bounding box (usa índice lat/lng)
+        List<PrestadorModel> candidatos = prestadorRepository.findByBoundingBox(latMin, latMax, lngMin, lngMax);
+
+        // 3. Haversine exato + filtro raio + ordenação em Java (poucos candidatos)
+        return candidatos.stream()
+                .filter(p -> p.getLatitude() != null && p.getLongitude() != null)
+                .map(p -> {
                     double distancia = calcularDistancia(
                             lat, lng,
-                            user.getPrestador().getLatitude(),
-                            user.getPrestador().getLongitude()
+                            p.getLatitude(),
+                            p.getLongitude()
                     );
-                    PrestadorResponseDTO dto = new PrestadorResponseDTO(user);
+                    PrestadorResponseDTO dto = new PrestadorResponseDTO(p.getUser());
                     dto.setDistanciaKm(Math.round(distancia * 10.0) / 10.0);
                     return dto;
                 })
